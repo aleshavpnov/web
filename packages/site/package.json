@@ -1,0 +1,42 @@
+{
+	"name": "@aleshavpnov/web",
+	"private": true,
+	"version": "0.1.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc -b && vite build",
+		"preview": "vite preview",
+		"typecheck": "tsc -b --noEmit",
+		"test": "vitest run",
+		"test:e2e": "playwright test"
+	},
+	"dependencies": {
+		"@base-ui/react": "1.5.0",
+		"@fontsource-variable/manrope": "5.2.8",
+		"@reatom/core": "1001.1.0",
+		"@reatom/react": "1001.0.0",
+		"@tailwindcss/vite": "4.3.1",
+		"class-variance-authority": "0.7.1",
+		"clsx": "2.1.1",
+		"lucide-react": "1.20.0",
+		"next-themes": "0.4.6",
+		"react": "19.2.7",
+		"react-dom": "19.2.7",
+		"sonner": "2.0.7",
+		"tailwind-merge": "3.6.0",
+		"shadcn": "4.11.0",
+		"tailwindcss": "4.3.1",
+		"zod": "3.25.76"
+	},
+	"devDependencies": {
+		"@playwright/test": "1.52.0",
+		"@types/react": "19.2.17",
+		"@types/react-dom": "19.2.3",
+		"@vitejs/plugin-react": "6.0.2",
+		"jsdom": "26.1.0",
+		"typescript": "6.0.3",
+		"vite": "8.0.16",
+		"vitest": "4.1.9"
+	}
+}
