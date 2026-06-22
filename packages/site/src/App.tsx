@@ -9,7 +9,11 @@ import { Status } from '@/ui/screens/Status.tsx'
 
 export const App = reatomComponent(() => {
 	useEffect(() => {
-		document.getElementById('initial-loader')?.classList.add('is-hiding')
+		const loader = document.getElementById('initial-loader')
+		if (loader) {
+			loader.classList.add('is-hiding')
+			setTimeout(() => loader.remove(), 250)
+		}
 		void loadStatus()
 	}, [])
 
