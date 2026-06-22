@@ -2,7 +2,7 @@
 
 Часть монорепо **aleshavpnov** ([`github.com/aimuzov/aleshavpnov`](https://github.com/aimuzov/aleshavpnov)).
 Английский гайд — [README.md](README.md).
-Документация на бот, который раздаёт этот SPA в продакшне — [`../bot/README.ru.md`](../bot/README.ru.md).
+Документация на бот, обслуживающий JSON API этого SPA — [`../bot/README.ru.md`](../bot/README.ru.md).
 
 Публичный сайт VPN-сервиса **Alesha Vpnov**. Технo-минималистичный SPA с тремя экранами:
 главная (`/`), страница подключения (`/get`) и живой статус (`/status`).
@@ -77,12 +77,11 @@ VITE_API_BASE=https://durov.aimuzov.online:8443 npm run dev -w @aleshavpnov/web
 
 ## Продакшн
 
-В продакшне бот (`@aleshavpnov/bot`) раздаёт `packages/web/dist` через `@fastify/static`.
-Многоэтапный Docker-билд (`packages/bot/Dockerfile`, контекст = корень репо) сначала собирает
-веб-пакет, затем пакет бота; runtime-образ запускает процесс бота.
-
-Для будущего статического сплита (например, Timeweb CDN) `dist/` можно раздавать nginx как
-обычную статику — сайт полностью клиентский, SSR нет.
+В продакшне сайт раздаёт контейнер **nginx-sub**. Его многоэтапный образ (`nginx/Dockerfile`,
+контекст = корень репо) собирает этот веб-пакет и вшивает `dist/` в `/usr/share/nginx/web`;
+nginx отдаёт его через `root` + `try_files $uri /index.html` (SPA-fallback) и проксирует JSON API
+(`/status.json`, `/api/nonce`, `/api/bridge`) на бот. Сайт полностью клиентский, SSR нет.
+Фронт Timeweb (`deploy/timeweb`, Caddy) раздаёт `dist/` тем же способом.
 
 ## Ключевые зависимости (точные версии, без `^`/`~`)
 

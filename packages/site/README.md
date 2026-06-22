@@ -2,7 +2,7 @@
 
 Part of the **aleshavpnov** monorepo ([`github.com/aimuzov/aleshavpnov`](https://github.com/aimuzov/aleshavpnov)).
 For the Russian guide see [README.ru.md](README.ru.md).
-For the bot that serves this SPA in production see [`../bot/README.md`](../bot/README.md).
+For the bot that backs this SPA's JSON API see [`../bot/README.md`](../bot/README.md).
 
 The public site for the **Alesha Vpnov** VPN service. A techno-minimal SPA with three screens:
 home page (`/`), access / get-started page (`/get`), and a live status page (`/status`).
@@ -77,12 +77,11 @@ VITE_API_BASE=https://durov.aimuzov.online:8443 npm run dev -w @aleshavpnov/web
 
 ## Production
 
-In production the bot (`@aleshavpnov/bot`) serves `packages/web/dist` via `@fastify/static`.
-The Docker multi-stage build (`packages/bot/Dockerfile`, context = repo root) compiles the web
-package first, then the bot package, and the runtime image runs the bot process.
-
-For a future static-only split (e.g. Timeweb CDN), `dist/` can be served by nginx as a plain
-static directory — the site is fully client-side, no SSR.
+In production the **nginx-sub** container serves `packages/web/dist`. Its multi-stage image
+(`nginx/Dockerfile`, context = repo root) compiles this web package and bakes `dist/` into
+`/usr/share/nginx/web`; nginx serves it with `root` + `try_files $uri /index.html` (SPA fallback)
+and proxies the JSON API (`/status.json`, `/api/nonce`, `/api/bridge`) to the bot. The site is
+fully client-side, no SSR. The Timeweb front (`deploy/timeweb`, Caddy) serves `dist/` the same way.
 
 ## Key dependencies (pinned, no `^`/`~`)
 
