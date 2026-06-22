@@ -6,9 +6,20 @@
 		<meta name="theme-color" content="#0c0a09" />
 		<title>Alesha Vpnov</title>
 		<script>
-			document.documentElement.classList.add('dark')
+			// Apply theme before bundle loads to avoid flash.
+			// Logic mirrors applyTheme() in src/state/theme.ts.
+			try {
+				var t = localStorage.getItem('aleshavpnov.theme')
+				var dark =
+					t === 'dark' ||
+					((t === 'system' || !t) && matchMedia('(prefers-color-scheme: dark)').matches)
+				if (dark) document.documentElement.classList.add('dark')
+			} catch (e) {}
 		</script>
 		<style>
+			/* Initial loader: visible before bundle mounts, removed by App.tsx.
+			   Colors match --background / --muted-foreground from index.css (stone base).
+			   CSS vars aren't available yet (index.css loads with the bundle). */
 			#initial-loader {
 				position: fixed;
 				inset: 0;
@@ -16,8 +27,11 @@
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				background: oklch(0.147 0.004 49.25);
+				background: oklch(1 0 0);
 				transition: opacity 200ms ease-out;
+			}
+			html.dark #initial-loader {
+				background: oklch(0.147 0.004 49.25);
 			}
 			#initial-loader.is-hiding {
 				opacity: 0;
@@ -26,13 +40,22 @@
 				width: 38px;
 				height: 38px;
 				border-radius: 50%;
-				border: 3px solid oklch(0.709 0.01 56.259 / 0.25);
+				border: 3px solid oklch(0.553 0.013 58.071 / 0.25);
 				border-top-color: #10b981;
 				animation: spin 0.7s linear infinite;
+			}
+			html.dark #initial-loader .spinner {
+				border-color: oklch(0.709 0.01 56.259 / 0.25);
+				border-top-color: #10b981;
 			}
 			@keyframes spin {
 				to {
 					transform: rotate(360deg);
+				}
+			}
+			@media (prefers-reduced-motion: reduce) {
+				#initial-loader .spinner {
+					animation-duration: 1.6s;
 				}
 			}
 		</style>

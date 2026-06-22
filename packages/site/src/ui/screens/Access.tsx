@@ -115,7 +115,7 @@ const BridgePanel = reatomComponent(() => {
 	if (!bridge) {
 		return (
 			<div className="flex flex-col items-start gap-4">
-				<p className="text-sm text-stone-400 leading-relaxed">
+				<p className="text-sm text-muted-foreground leading-relaxed">
 					Получите временный доступ на 3 часа / 256 МБ. Ссылка-подписка откроется в HAPP.
 				</p>
 				<button
@@ -138,13 +138,13 @@ const BridgePanel = reatomComponent(() => {
 	return (
 		<div className="space-y-4">
 			<div className="space-y-1.5">
-				<p className="text-xs text-stone-500 uppercase tracking-wider">ссылка-подписка</p>
+				<p className="text-xs text-muted-foreground uppercase tracking-wider">ссылка-подписка</p>
 				<div className="flex items-center gap-2">
-					<div className="flex-1 bg-stone-900 border border-stone-800 rounded-lg px-3 py-2.5 text-sm text-stone-300 overflow-hidden text-ellipsis whitespace-nowrap font-mono">
+					<div className="flex-1 bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground/80 overflow-hidden text-ellipsis whitespace-nowrap font-mono">
 						{shortUrl}
 					</div>
 					<button
-						className="inline-flex items-center gap-2 shrink-0 bg-stone-800 hover:bg-stone-700 text-foreground text-sm font-semibold px-3 py-2.5 rounded-lg transition-colors"
+						className="inline-flex items-center gap-2 shrink-0 bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm font-semibold px-3 py-2.5 rounded-lg transition-colors"
 						onClick={() => void copyUrl()}
 					>
 						<Copy className="size-4" />
@@ -161,7 +161,7 @@ const BridgePanel = reatomComponent(() => {
 				Открыть в Telegram
 			</a>
 
-			<div className="flex items-center gap-2 text-sm text-stone-400">
+			<div className="flex items-center gap-2 text-sm text-muted-foreground">
 				<Clock className="size-3.5 text-amber-500 shrink-0" />
 				Истекает через <span className="text-foreground tabular-nums font-medium">{countdown}</span>
 			</div>
@@ -183,14 +183,18 @@ export const Access = reatomComponent(() => {
 
 				<div className="flex flex-col gap-4">
 					{/* Левая колонка: доступ */}
-					<div className="border border-stone-800 rounded-xl p-5 space-y-1">
-						<p className="text-xs text-stone-500 uppercase tracking-wider mb-4">Ваш доступ</p>
+					<div className="border border-border rounded-xl p-5 space-y-1">
+						<p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+							Ваш доступ
+						</p>
 						<BridgePanel />
 					</div>
 
 					{/* Правая колонка: гайд */}
-					<div className="border border-stone-800 rounded-xl p-5">
-						<p className="text-xs text-stone-500 uppercase tracking-wider mb-4">Как подключить</p>
+					<div className="border border-border rounded-xl p-5">
+						<p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+							Как подключить
+						</p>
 						<Tabs defaultValue="ios">
 							<TabsList variant="line" className="mb-5">
 								<TabsTrigger value="ios">iOS</TabsTrigger>
@@ -205,7 +209,7 @@ export const Access = reatomComponent(() => {
 												<span className="text-emerald-500 font-bold text-sm w-4 shrink-0">
 													{step}
 												</span>
-												<span className="text-sm text-stone-300 leading-relaxed">{text}</span>
+												<span className="text-sm text-foreground/80 leading-relaxed">{text}</span>
 											</li>
 										))}
 									</ol>
@@ -217,7 +221,7 @@ export const Access = reatomComponent(() => {
 
 				<div className="mt-6">
 					<button
-						className="text-sm text-stone-500 hover:text-stone-300 transition-colors"
+						className="text-sm text-muted-foreground hover:text-foreground transition-colors"
 						onClick={() => navigate('home')}
 					>
 						← На главную

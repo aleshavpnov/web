@@ -11,14 +11,14 @@ function overallBg(status: StatusPayload['overall']) {
 	if (status === 'operational') return 'bg-emerald-500/10 border-emerald-500/40'
 	if (status === 'degraded') return 'bg-amber-500/10 border-amber-500/40'
 	if (status === 'down') return 'bg-red-500/10 border-red-500/40'
-	return 'bg-stone-800/60 border-stone-700'
+	return 'bg-muted border-border'
 }
 
 function overallText(status: StatusPayload['overall']) {
 	if (status === 'operational') return 'text-emerald-400'
 	if (status === 'degraded') return 'text-amber-400'
 	if (status === 'down') return 'text-red-400'
-	return 'text-stone-400'
+	return 'text-muted-foreground'
 }
 
 function overallLabel(status: StatusPayload['overall']) {
@@ -32,7 +32,7 @@ function nodeDot(status: StatusNode['status']) {
 	if (status === 'operational') return 'text-emerald-500'
 	if (status === 'degraded') return 'text-amber-500'
 	if (status === 'down') return 'text-red-500'
-	return 'text-stone-500'
+	return 'text-muted-foreground'
 }
 
 function formatPct(v: number | null) {
@@ -46,8 +46,8 @@ function UptimeBars({ bars }: { bars: StatusNode['bars'] }) {
 	return (
 		<div className="flex gap-px items-end h-5">
 			{cells.map((bar, i) => {
-				let color = 'bg-stone-700'
-				if (bar.ratio === null) color = 'bg-stone-700'
+				let color = 'bg-muted'
+				if (bar.ratio === null) color = 'bg-muted'
 				else if (bar.ratio >= 0.99) color = 'bg-emerald-500'
 				else if (bar.ratio >= 0.5) color = 'bg-amber-500'
 				else color = 'bg-red-500'
@@ -75,7 +75,7 @@ async function checkNode(name: string, checkUrl: string) {
 
 function NodeCard({ node }: { node: StatusNode }) {
 	return (
-		<div className="border border-stone-800 rounded-xl p-5 space-y-4">
+		<div className="border border-border rounded-xl p-5 space-y-4">
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-2">
 					<span className={`text-base leading-none ${nodeDot(node.status)}`}>●</span>
@@ -84,7 +84,7 @@ function NodeCard({ node }: { node: StatusNode }) {
 					</span>
 				</div>
 				{node.uptime.d1 !== null && (
-					<span className="text-xs text-stone-500 tabular-nums">
+					<span className="text-xs text-muted-foreground tabular-nums">
 						{formatPct(node.uptime.d1)} / 24ч
 					</span>
 				)}
@@ -94,12 +94,12 @@ function NodeCard({ node }: { node: StatusNode }) {
 				<div className="space-y-1.5">
 					<UptimeBars bars={node.bars} />
 					<div className="flex justify-between items-center">
-						<span className="text-xs text-stone-600">90 дней</span>
+						<span className="text-xs text-muted-foreground/60">90 дней</span>
 					</div>
 				</div>
 			)}
 
-			<div className="flex gap-6 text-xs text-stone-500">
+			<div className="flex gap-6 text-xs text-muted-foreground">
 				<span>
 					24ч <span className="text-foreground font-medium">{formatPct(node.uptime.d1)}</span>
 				</span>
@@ -112,7 +112,7 @@ function NodeCard({ node }: { node: StatusNode }) {
 			</div>
 
 			<button
-				className="inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-300 transition-colors border border-stone-800 hover:border-stone-600 rounded-lg px-3 py-1.5"
+				className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border hover:border-foreground/30 rounded-lg px-3 py-1.5"
 				onClick={() => void checkNode(node.name, node.checkUrl)}
 			>
 				<Wifi className="size-3.5" />
@@ -125,20 +125,22 @@ function NodeCard({ node }: { node: StatusNode }) {
 function IncidentItem({ incident }: { incident: StatusIncident }) {
 	const resolved = incident.status === 'resolved' || incident.resolvedAt !== null
 	return (
-		<div className="border border-stone-800 rounded-lg px-4 py-3 space-y-1">
+		<div className="border border-border rounded-lg px-4 py-3 space-y-1">
 			<div className="flex items-center justify-between gap-2">
 				<span className="text-sm font-medium">{incident.title}</span>
 				<span
 					className={`text-xs px-2 py-0.5 rounded-full ${
-						resolved ? 'bg-stone-800 text-stone-400' : 'bg-amber-500/20 text-amber-400'
+						resolved ? 'bg-muted text-muted-foreground' : 'bg-amber-500/20 text-amber-400'
 					}`}
 				>
 					{resolved ? 'закрыто' : incident.status}
 				</span>
 			</div>
-			{incident.body && <p className="text-xs text-stone-500 leading-relaxed">{incident.body}</p>}
+			{incident.body && (
+				<p className="text-xs text-muted-foreground leading-relaxed">{incident.body}</p>
+			)}
 			{incident.startedAt && (
-				<p className="text-xs text-stone-600">
+				<p className="text-xs text-muted-foreground/60">
 					{new Date(incident.startedAt).toLocaleDateString('ru-RU', {
 						day: 'numeric',
 						month: 'long',
@@ -167,7 +169,7 @@ export const Status = reatomComponent(() => {
 				<div className="flex items-center justify-between">
 					<h1 className="text-xl font-bold tracking-tight">Статус системы</h1>
 					{status && (
-						<span className="text-xs text-stone-600">
+						<span className="text-xs text-muted-foreground/60">
 							обновлено{' '}
 							{new Date(status.generatedAt).toLocaleTimeString('ru-RU', {
 								hour: '2-digit',
@@ -179,14 +181,14 @@ export const Status = reatomComponent(() => {
 
 				{/* Overall banner */}
 				{error ? (
-					<div className="border border-stone-700 rounded-xl px-5 py-4 flex items-center gap-3">
-						<span className="w-2 h-2 rounded-full bg-stone-500 shrink-0" />
-						<span className="text-sm text-stone-400">Статус недоступен</span>
+					<div className="border border-border rounded-xl px-5 py-4 flex items-center gap-3">
+						<span className="w-2 h-2 rounded-full bg-muted-foreground/40 shrink-0" />
+						<span className="text-sm text-muted-foreground">Статус недоступен</span>
 					</div>
 				) : !status ? (
-					<div className="border border-stone-700 rounded-xl px-5 py-4 flex items-center gap-3 animate-pulse">
-						<span className="w-2 h-2 rounded-full bg-stone-600 shrink-0" />
-						<span className="text-sm text-stone-500">Загрузка…</span>
+					<div className="border border-border rounded-xl px-5 py-4 flex items-center gap-3 animate-pulse">
+						<span className="w-2 h-2 rounded-full bg-muted-foreground/30 shrink-0" />
+						<span className="text-sm text-muted-foreground">Загрузка…</span>
 					</div>
 				) : (
 					<>
@@ -197,7 +199,7 @@ export const Status = reatomComponent(() => {
 								{overallLabel(status.overall)}
 							</span>
 							{status.internet?.latencyMs !== null && status.internet?.latencyMs !== undefined && (
-								<span className="text-xs text-stone-500 tabular-nums">
+								<span className="text-xs text-muted-foreground tabular-nums">
 									{status.internet.latencyMs} мс
 								</span>
 							)}
@@ -215,20 +217,22 @@ export const Status = reatomComponent(() => {
 						{/* Incidents */}
 						{status.incidents.length > 0 ? (
 							<div className="space-y-2">
-								<h2 className="text-sm font-semibold text-stone-400">Инциденты</h2>
+								<h2 className="text-sm font-semibold text-muted-foreground">Инциденты</h2>
 								{status.incidents.map((inc) => (
 									<IncidentItem key={inc.id} incident={inc} />
 								))}
 							</div>
 						) : (
-							<p className="text-sm text-stone-600">Инцидентов за последние 30 дней нет</p>
+							<p className="text-sm text-muted-foreground/60">
+								Инцидентов за последние 30 дней нет
+							</p>
 						)}
 					</>
 				)}
 
 				<div>
 					<button
-						className="text-sm text-stone-500 hover:text-stone-300 transition-colors"
+						className="text-sm text-muted-foreground hover:text-foreground transition-colors"
 						onClick={() => navigate('home')}
 					>
 						← На главную

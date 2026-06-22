@@ -9,7 +9,7 @@ function healthDot(status: StatusPayload['overall']) {
 	if (status === 'operational') return 'bg-emerald-500'
 	if (status === 'degraded') return 'bg-amber-500'
 	if (status === 'down') return 'bg-red-500'
-	return 'bg-stone-500'
+	return 'bg-muted-foreground/40'
 }
 
 function healthLabel(status: StatusPayload['overall']) {
@@ -23,7 +23,7 @@ function nodeDot(status: StatusPayload['overall']) {
 	if (status === 'operational') return 'text-emerald-500'
 	if (status === 'degraded') return 'text-amber-500'
 	if (status === 'down') return 'text-red-500'
-	return 'text-stone-500'
+	return 'text-muted-foreground'
 }
 
 const MiniStatus = reatomComponent(() => {
@@ -34,7 +34,7 @@ const MiniStatus = reatomComponent(() => {
 		return (
 			<div className="border border-border/60 rounded-xl p-4">
 				<div className="flex items-center gap-2 text-sm text-muted-foreground">
-					<span className="w-2 h-2 rounded-full bg-stone-500 shrink-0" />
+					<span className="w-2 h-2 rounded-full bg-muted-foreground/40 shrink-0" />
 					Статус недоступен
 				</div>
 			</div>
@@ -45,7 +45,7 @@ const MiniStatus = reatomComponent(() => {
 		return (
 			<div className="border border-border/60 rounded-xl p-4">
 				<div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
-					<span className="w-2 h-2 rounded-full bg-stone-500 shrink-0" />
+					<span className="w-2 h-2 rounded-full bg-muted-foreground/40 shrink-0" />
 					Загрузка статуса…
 				</div>
 			</div>
@@ -76,7 +76,7 @@ const MiniStatus = reatomComponent(() => {
 						<div key={node.name} className="flex items-center justify-between text-xs">
 							<span className="flex items-center gap-1.5">
 								<span className={`${nodeDot(node.status)} text-base leading-none`}>●</span>
-								<span className="text-foreground/80">
+								<span className="text-foreground/70">
 									{node.name} · {node.city}
 								</span>
 							</span>
@@ -105,7 +105,7 @@ export const Home = reatomComponent(() => {
 					<h1 className="text-4xl sm:text-5xl font-bold leading-tight tracking-tight">
 						Ваше ради кальное решение проблем
 					</h1>
-					<p className="text-base text-stone-400 max-w-sm leading-relaxed">
+					<p className="text-base text-muted-foreground max-w-sm leading-relaxed">
 						Быстрое незаметное соединение на своих серверах.
 					</p>
 					<div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export const Home = reatomComponent(() => {
 							Получить доступ
 						</button>
 						<button
-							className="inline-flex items-center gap-2 border border-stone-700 hover:border-stone-600 text-stone-400 hover:text-stone-300 text-sm px-5 py-2.5 rounded-lg transition-colors"
+							className="inline-flex items-center gap-2 border border-border hover:border-foreground/30 text-muted-foreground hover:text-foreground text-sm px-5 py-2.5 rounded-lg transition-colors"
 							onClick={() => navigate('status')}
 						>
 							<Activity className="size-4" />
