@@ -1,5 +1,6 @@
 import { reatomComponent } from '@reatom/react'
 import { useEffect, useState, type ReactNode } from 'react'
+import { Clock, Copy, Send, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
 import { bridgeAtom, bridgeBusyAtom, bridgeErrorAtom, requestBridge } from '@/state/bridge.ts'
@@ -119,9 +120,10 @@ const BridgePanel = reatomComponent(() => {
 				</p>
 				<button
 					disabled={busy}
-					className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-emerald-950 font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
+					className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-emerald-950 font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
 					onClick={() => void requestBridge()}
 				>
+					<Zap className="size-4" />
 					{busy ? 'Получаем доступ…' : 'Получить доступ'}
 				</button>
 			</div>
@@ -142,9 +144,10 @@ const BridgePanel = reatomComponent(() => {
 						{shortUrl}
 					</div>
 					<button
-						className="shrink-0 bg-stone-800 hover:bg-stone-700 text-foreground text-sm font-semibold px-3 py-2.5 rounded-lg transition-colors"
+						className="inline-flex items-center gap-2 shrink-0 bg-stone-800 hover:bg-stone-700 text-foreground text-sm font-semibold px-3 py-2.5 rounded-lg transition-colors"
 						onClick={() => void copyUrl()}
 					>
+						<Copy className="size-4" />
 						Копировать
 					</button>
 				</div>
@@ -152,13 +155,14 @@ const BridgePanel = reatomComponent(() => {
 
 			<a
 				href={bridge.deepLink}
-				className="block bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-sm text-center py-3 rounded-lg transition-colors"
+				className="inline-flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-sm text-center py-3 rounded-lg transition-colors w-full"
 			>
-				↗ Открыть в Telegram
+				<Send className="size-4" />
+				Открыть в Telegram
 			</a>
 
 			<div className="flex items-center gap-2 text-sm text-stone-400">
-				<span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+				<Clock className="size-3.5 text-amber-500 shrink-0" />
 				Истекает через <span className="text-foreground tabular-nums font-medium">{countdown}</span>
 			</div>
 		</div>
@@ -170,7 +174,8 @@ export const Access = reatomComponent(() => {
 		<Layout>
 			<main className="flex-1 px-5 py-8 w-full">
 				<div className="mb-6">
-					<p className="text-xs font-medium tracking-[0.2em] uppercase text-emerald-500 mb-2">
+					<p className="inline-flex items-center gap-2 text-xs font-medium tracking-[0.2em] uppercase text-emerald-500 mb-2">
+						<Clock className="size-3.5" />
 						пробный доступ · 3 часа / 256 МБ
 					</p>
 					<h1 className="text-2xl font-bold tracking-tight">Ваша ссылка готова</h1>

@@ -1,4 +1,5 @@
 import { reatomComponent } from '@reatom/react'
+import { Activity, ArrowRight, Lock, Zap } from 'lucide-react'
 import { navigate } from '@/state/screen.ts'
 import { statusAtom, statusErrorAtom } from '@/state/status.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
@@ -63,10 +64,10 @@ const MiniStatus = reatomComponent(() => {
 					</span>
 				</span>
 				<button
-					className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+					className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
 					onClick={() => navigate('status')}
 				>
-					подробнее →
+					подробнее <ArrowRight className="size-3.5" />
 				</button>
 			</div>
 			{status.nodes.length > 0 && (
@@ -97,7 +98,8 @@ export const Home = reatomComponent(() => {
 		<Layout>
 			<main className="flex-1 flex flex-col justify-center px-5 py-12 w-full gap-10">
 				<div className="space-y-6">
-					<p className="text-xs font-medium tracking-[0.2em] uppercase text-emerald-500">
+					<p className="inline-flex items-center gap-2 text-xs font-medium tracking-[0.2em] uppercase text-emerald-500">
+						<Lock className="size-3.5" />
 						Частный доступ
 					</p>
 					<h1 className="text-4xl sm:text-5xl font-bold leading-tight tracking-tight">
@@ -108,15 +110,17 @@ export const Home = reatomComponent(() => {
 					</p>
 					<div className="flex items-center gap-3">
 						<button
-							className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
+							className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
 							onClick={() => navigate('access')}
 						>
+							<Zap className="size-4" />
 							Получить доступ
 						</button>
 						<button
-							className="border border-stone-700 hover:border-stone-600 text-stone-400 hover:text-stone-300 text-sm px-5 py-2.5 rounded-lg transition-colors"
+							className="inline-flex items-center gap-2 border border-stone-700 hover:border-stone-600 text-stone-400 hover:text-stone-300 text-sm px-5 py-2.5 rounded-lg transition-colors"
 							onClick={() => navigate('status')}
 						>
+							<Activity className="size-4" />
 							Статус
 						</button>
 					</div>

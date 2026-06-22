@@ -1,5 +1,6 @@
 import { reatomComponent } from '@reatom/react'
 import { useEffect } from 'react'
+import { Wifi } from 'lucide-react'
 import { toast } from 'sonner'
 import { statusAtom, statusErrorAtom, loadStatus } from '@/state/status.ts'
 import { navigate } from '@/state/screen.ts'
@@ -111,9 +112,10 @@ function NodeCard({ node }: { node: StatusNode }) {
 			</div>
 
 			<button
-				className="text-xs text-stone-500 hover:text-stone-300 transition-colors border border-stone-800 hover:border-stone-600 rounded-lg px-3 py-1.5"
+				className="inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-300 transition-colors border border-stone-800 hover:border-stone-600 rounded-lg px-3 py-1.5"
 				onClick={() => void checkNode(node.name, node.checkUrl)}
 			>
+				<Wifi className="size-3.5" />
 				Проверить мою связь
 			</button>
 		</div>
