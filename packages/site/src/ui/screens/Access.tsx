@@ -4,8 +4,7 @@ import { toast } from 'sonner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
 import { bridgeAtom, bridgeBusyAtom, bridgeErrorAtom, requestBridge } from '@/state/bridge.ts'
 import { navigate } from '@/state/screen.ts'
-import { Topbar } from '@/ui/components/Topbar.tsx'
-import { Footer } from '@/ui/components/Footer.tsx'
+import { Layout } from '@/ui/components/Layout.tsx'
 
 function friendlyError(e: string) {
 	if (e === 'rate-limit') return 'Слишком много запросов — попробуйте позже.'
@@ -168,9 +167,8 @@ const BridgePanel = reatomComponent(() => {
 
 export const Access = reatomComponent(() => {
 	return (
-		<div className="dark min-h-screen flex flex-col bg-stone-950 text-stone-50">
-			<Topbar />
-			<main className="flex-1 px-5 py-8 max-w-md mx-auto w-full">
+		<Layout>
+			<main className="flex-1 px-5 py-8 w-full">
 				<div className="mb-6">
 					<p className="text-xs font-medium tracking-[0.2em] uppercase text-emerald-500 mb-2">
 						пробный доступ · 3 часа / 256 МБ
@@ -221,7 +219,6 @@ export const Access = reatomComponent(() => {
 					</button>
 				</div>
 			</main>
-			<Footer />
-		</div>
+		</Layout>
 	)
 })

@@ -3,8 +3,7 @@ import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { statusAtom, statusErrorAtom, loadStatus } from '@/state/status.ts'
 import { navigate } from '@/state/screen.ts'
-import { Topbar } from '@/ui/components/Topbar.tsx'
-import { Footer } from '@/ui/components/Footer.tsx'
+import { Layout } from '@/ui/components/Layout.tsx'
 import type { StatusNode, StatusIncident, StatusPayload } from '@/api/schemas.ts'
 
 function overallBg(status: StatusPayload['overall']) {
@@ -161,9 +160,8 @@ export const Status = reatomComponent(() => {
 	}, [])
 
 	return (
-		<div className="dark min-h-screen flex flex-col bg-stone-950 text-stone-50">
-			<Topbar />
-			<main className="flex-1 px-5 py-8 max-w-md mx-auto w-full space-y-6">
+		<Layout>
+			<main className="flex-1 px-5 py-8 w-full space-y-6">
 				<div className="flex items-center justify-between">
 					<h1 className="text-xl font-bold tracking-tight">Статус системы</h1>
 					{status && (
@@ -235,7 +233,6 @@ export const Status = reatomComponent(() => {
 					</button>
 				</div>
 			</main>
-			<Footer />
-		</div>
+		</Layout>
 	)
 })

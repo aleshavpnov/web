@@ -1,8 +1,7 @@
 import { reatomComponent } from '@reatom/react'
 import { navigate } from '@/state/screen.ts'
 import { statusAtom, statusErrorAtom } from '@/state/status.ts'
-import { Topbar } from '@/ui/components/Topbar.tsx'
-import { Footer } from '@/ui/components/Footer.tsx'
+import { Layout } from '@/ui/components/Layout.tsx'
 import type { StatusPayload } from '@/api/schemas.ts'
 
 function healthDot(status: StatusPayload['overall']) {
@@ -95,9 +94,8 @@ const MiniStatus = reatomComponent(() => {
 
 export const Home = reatomComponent(() => {
 	return (
-		<div className="dark min-h-screen flex flex-col bg-stone-950 text-stone-50">
-			<Topbar />
-			<main className="flex-1 flex flex-col justify-center px-5 py-12 max-w-md mx-auto w-full gap-10">
+		<Layout>
+			<main className="flex-1 flex flex-col justify-center px-5 py-12 w-full gap-10">
 				<div className="space-y-6">
 					<p className="text-xs font-medium tracking-[0.2em] uppercase text-emerald-500">
 						Частный доступ
@@ -125,7 +123,6 @@ export const Home = reatomComponent(() => {
 				</div>
 				<MiniStatus />
 			</main>
-			<Footer />
-		</div>
+		</Layout>
 	)
 })
