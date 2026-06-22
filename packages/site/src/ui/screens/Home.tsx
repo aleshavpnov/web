@@ -76,9 +76,7 @@ const MiniStatus = reatomComponent(() => {
 						<div key={node.name} className="flex items-center justify-between text-xs">
 							<span className="flex items-center gap-1.5">
 								<span className={`${nodeDot(node.status)} text-base leading-none`}>●</span>
-								<span className="text-foreground/70">
-									{node.name} · {node.city}
-								</span>
+								<span className="text-foreground/70">{node.city || node.name}</span>
 							</span>
 							{node.uptime.d1 !== null && (
 								<span className="text-muted-foreground tabular-nums">

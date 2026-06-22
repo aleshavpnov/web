@@ -64,12 +64,12 @@ function UptimeBars({ bars }: { bars: StatusNode['bars'] }) {
 	)
 }
 
-async function checkNode(name: string, checkUrl: string) {
+async function checkNode(label: string, checkUrl: string) {
 	try {
 		await fetch(checkUrl, { mode: 'no-cors' })
-		toast.success(`${name}: связь есть`)
+		toast.success(`${label}: связь есть`)
 	} catch {
-		toast.error(`${name}: нет ответа`)
+		toast.error(`${label}: нет ответа`)
 	}
 }
 
@@ -79,9 +79,7 @@ function NodeCard({ node }: { node: StatusNode }) {
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-2">
 					<span className={`text-base leading-none ${nodeDot(node.status)}`}>●</span>
-					<span className="font-semibold text-sm">
-						{node.name} · {node.city}
-					</span>
+					<span className="font-semibold text-sm">{node.city || node.name}</span>
 				</div>
 				{node.uptime.d1 !== null && (
 					<span className="text-xs text-muted-foreground tabular-nums">
@@ -113,7 +111,7 @@ function NodeCard({ node }: { node: StatusNode }) {
 
 			<button
 				className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border hover:border-foreground/30 rounded-lg px-3 py-1.5"
-				onClick={() => void checkNode(node.name, node.checkUrl)}
+				onClick={() => void checkNode(node.city || node.name, node.checkUrl)}
 			>
 				<Wifi className="size-3.5" />
 				Проверить мою связь
