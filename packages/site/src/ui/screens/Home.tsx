@@ -97,15 +97,13 @@ export const Home = reatomComponent(() => {
 	return (
 		<div className="dark min-h-screen flex flex-col bg-stone-950 text-stone-50">
 			<Topbar />
-			<main className="flex-1 flex flex-col justify-center px-5 py-12 max-w-2xl mx-auto w-full gap-10">
+			<main className="flex-1 flex flex-col justify-center px-5 py-12 max-w-md mx-auto w-full gap-10">
 				<div className="space-y-6">
 					<p className="text-xs font-medium tracking-[0.2em] uppercase text-emerald-500">
 						Частный доступ
 					</p>
 					<h1 className="text-4xl sm:text-5xl font-bold leading-tight tracking-tight">
-						Своя сеть.
-						<br />
-						Без лишних глаз.
+						Ваше ради кальное решение проблем
 					</h1>
 					<p className="text-base text-stone-400 max-w-sm leading-relaxed">
 						Быстрое незаметное соединение на своих серверах.

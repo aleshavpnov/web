@@ -163,7 +163,7 @@ export const Status = reatomComponent(() => {
 	return (
 		<div className="dark min-h-screen flex flex-col bg-stone-950 text-stone-50">
 			<Topbar />
-			<main className="flex-1 px-5 py-8 max-w-3xl mx-auto w-full space-y-6">
+			<main className="flex-1 px-5 py-8 max-w-md mx-auto w-full space-y-6">
 				<div className="flex items-center justify-between">
 					<h1 className="text-xl font-bold tracking-tight">Статус системы</h1>
 					{status && (

@@ -170,7 +170,7 @@ export const Access = reatomComponent(() => {
 	return (
 		<div className="dark min-h-screen flex flex-col bg-stone-950 text-stone-50">
 			<Topbar />
-			<main className="flex-1 px-5 py-8 max-w-4xl mx-auto w-full">
+			<main className="flex-1 px-5 py-8 max-w-md mx-auto w-full">
 				<div className="mb-6">
 					<p className="text-xs font-medium tracking-[0.2em] uppercase text-emerald-500 mb-2">
 						пробный доступ · 3 часа / 256 МБ
@@ -178,7 +178,7 @@ export const Access = reatomComponent(() => {
 					<h1 className="text-2xl font-bold tracking-tight">Ваша ссылка готова</h1>
 				</div>
 
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+				<div className="flex flex-col gap-4">
 					{/* Левая колонка: доступ */}
 					<div className="border border-stone-800 rounded-xl p-5 space-y-1">
 						<p className="text-xs text-stone-500 uppercase tracking-wider mb-4">Ваш доступ</p>
