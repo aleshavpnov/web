@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { statusAtom, statusErrorAtom, loadStatus } from '@/state/status.ts'
 import { navigate } from '@/state/screen.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
+import { Skeleton } from '@/components/ui/skeleton.tsx'
 import type { StatusNode, StatusIncident, StatusPayload } from '@/api/schemas.ts'
 
 function overallBg(status: StatusPayload['overall']) {
@@ -120,6 +121,49 @@ function NodeCard({ node }: { node: StatusNode }) {
 	)
 }
 
+// Mirrors NodeCard's layout so the loading state reserves the same height
+// (header 20 / bars block 42 / stats 16 / button 30, inside p-5 + space-y-4).
+function NodeCardSkeleton() {
+	return (
+		<div className="border border-border rounded-xl p-5 space-y-4">
+			<div className="flex h-5 items-center justify-between">
+				<div className="flex items-center gap-2">
+					<Skeleton className="size-2 rounded-full" />
+					<Skeleton className="h-4 w-24" />
+				</div>
+				<Skeleton className="h-3 w-16" />
+			</div>
+			<div className="space-y-1.5">
+				<Skeleton className="h-5 w-full" />
+				<div className="flex h-4 items-center">
+					<Skeleton className="h-3 w-12" />
+				</div>
+			</div>
+			<div className="flex h-4 items-center">
+				<Skeleton className="h-3 w-44" />
+			</div>
+			<Skeleton className="h-[30px] w-40 rounded-lg" />
+		</div>
+	)
+}
+
+function StatusSkeleton() {
+	return (
+		<>
+			<div className="border border-border rounded-xl px-5 h-[54px] flex items-center justify-between">
+				<Skeleton className="h-4 w-44" />
+				<Skeleton className="h-3 w-12" />
+			</div>
+			<div className="space-y-3">
+				<NodeCardSkeleton />
+				<NodeCardSkeleton />
+			</div>
+			{/* Reserves the height of the incidents line ("Инцидентов нет") below */}
+			<Skeleton className="h-5 w-64" />
+		</>
+	)
+}
+
 function IncidentItem({ incident }: { incident: StatusIncident }) {
 	const resolved = incident.status === 'resolved' || incident.resolvedAt !== null
 	return (
@@ -184,10 +228,7 @@ export const Status = reatomComponent(() => {
 						<span className="text-sm text-muted-foreground">Статус недоступен</span>
 					</div>
 				) : !status ? (
-					<div className="border border-border rounded-xl px-5 py-4 flex items-center gap-3 animate-pulse">
-						<span className="w-2 h-2 rounded-full bg-muted-foreground/30 shrink-0" />
-						<span className="text-sm text-muted-foreground">Загрузка…</span>
-					</div>
+					<StatusSkeleton />
 				) : (
 					<>
 						<div
