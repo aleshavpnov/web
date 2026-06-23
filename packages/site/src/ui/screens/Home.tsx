@@ -1,9 +1,10 @@
 import { reatomComponent } from '@reatom/react'
-import { Activity, ArrowRight, Lock, Zap } from 'lucide-react'
+import { ArrowRight, Lock, Zap } from 'lucide-react'
 import { navigate } from '@/state/screen.ts'
 import { statusAtom, statusErrorAtom } from '@/state/status.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
 import { Skeleton } from '@/components/ui/skeleton.tsx'
+import { ctaClass } from '@/ui/cta.ts'
 import type { StatusPayload } from '@/api/schemas.ts'
 
 function healthDot(status: StatusPayload['overall']) {
@@ -116,22 +117,12 @@ export const Home = reatomComponent(() => {
 						Ваше ради кальное решение проблем
 					</h1>
 					<p className="text-base text-muted-foreground max-w-sm leading-relaxed">
-						Быстрое незаметное соединение на своих серверах.
+						Тихое и&nbsp;быстрое соединение без&nbsp;ограничений.
 					</p>
-					<div className="flex items-center gap-3">
-						<button
-							className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
-							onClick={() => navigate('access')}
-						>
+					<div>
+						<button className={ctaClass} onClick={() => navigate('access')}>
 							<Zap className="size-4" />
 							Получить доступ
-						</button>
-						<button
-							className="inline-flex items-center gap-2 border border-border hover:border-foreground/30 text-muted-foreground hover:text-foreground text-sm px-5 py-2.5 rounded-lg transition-colors"
-							onClick={() => navigate('status')}
-						>
-							<Activity className="size-4" />
-							Статус
 						</button>
 					</div>
 				</div>
