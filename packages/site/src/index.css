@@ -125,3 +125,24 @@
 		@apply bg-background text-foreground font-sans;
 	}
 }
+
+/* Привлекающее внимание мягкое свечение для главной CTA-кнопки. */
+@keyframes cta-glow {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 rgb(16 185 129 / 0.5);
+	}
+	50% {
+		box-shadow: 0 0 24px 5px rgb(16 185 129 / 0.4);
+	}
+}
+
+.cta-glow {
+	animation: cta-glow 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cta-glow {
+		animation: none;
+	}
+}
