@@ -107,7 +107,7 @@ const MiniStatus = reatomComponent(() => {
 export const Home = reatomComponent(() => {
 	return (
 		<Layout>
-			<main className="flex-1 flex flex-col justify-center px-5 py-12 w-full gap-10">
+			<main className="flex-1 flex flex-col justify-center px-4 py-12 w-full gap-10">
 				<div className="space-y-6">
 					<p className="inline-flex items-center gap-2 text-xs font-medium tracking-[0.2em] uppercase text-emerald-500">
 						<Lock className="size-3.5" />

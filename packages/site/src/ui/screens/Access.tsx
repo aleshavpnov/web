@@ -42,15 +42,21 @@ function HappLink() {
 	)
 }
 
-// Компактная CTA-кнопка «Скачать» с небольшим отступом слева от текста.
+// Компактная CTA-кнопка «Скачать» — на отдельной строке под текстом шага.
 const downloadBtnClass =
-	'inline-flex items-center gap-1.5 ml-2 align-[-0.2em] bg-emerald-500 hover:bg-emerald-400 ' +
+	'flex w-fit items-center gap-1.5 mt-2 bg-emerald-500 hover:bg-emerald-400 ' +
 	'text-white font-semibold text-xs uppercase tracking-wide px-3 py-1.5 rounded-md ' +
 	'transition-all hover:shadow-md hover:shadow-emerald-500/30 active:scale-95'
 
 // Заголовок шага — заметный emerald-бейдж, чтобы шаги не терялись.
 const stepBadgeClass =
 	'inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-bold uppercase tracking-wider text-emerald-500'
+
+// CTA-кнопка копирования — по высоте инпута (items-stretch), только иконка.
+const copyBtnClass =
+	'inline-flex items-center justify-center shrink-0 px-3.5 bg-emerald-500 ' +
+	'hover:bg-emerald-400 text-white rounded-lg transition-all duration-200 ' +
+	'hover:shadow-lg hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0'
 
 // Инлайн-чип, имитирующий кнопку интерфейса Happ внутри текста инструкции.
 function InlineKey({ children, className }: { children: ReactNode; className?: string }) {
@@ -167,7 +173,7 @@ function IosDownloadButton() {
 // Шаг 1: настройка маршрутов через routing.help (после установки Happ).
 const routingStep: ReactNode = (
 	<>
-		Для работы внутри&nbsp;РФ надо <RoutingButton /> маршруты для&nbsp;обхода.
+		Для работы внутри&nbsp;РФ нужны маршруты для&nbsp;обхода: <RoutingButton />
 	</>
 )
 
@@ -327,26 +333,26 @@ const BridgePanel = reatomComponent(() => {
 			: bridge.subscriptionUrl
 
 	return (
-		<div className="space-y-4">
-			<div className="space-y-1.5">
+		<div className="space-y-2">
+			<div className="flex items-center justify-between gap-2">
 				<p className="text-xs text-muted-foreground uppercase tracking-wider">ссылка-подписка</p>
-				<div className="bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground/80 overflow-hidden text-ellipsis whitespace-nowrap font-mono">
-					{shortUrl}
+				<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+					<Clock className="size-3.5 text-amber-500 shrink-0" />
+					<span className="text-foreground tabular-nums font-medium">{countdown}</span>
 				</div>
 			</div>
 
-			<button
-				className="inline-flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm font-semibold px-3 py-2.5 rounded-lg transition-colors"
-				onClick={() => void copyUrl()}
-			>
-				<Copy className="size-4" />
-				Копировать
-			</button>
-
-			<div className="flex items-center gap-2 text-sm text-muted-foreground">
-				<Clock className="size-3.5 text-amber-500 shrink-0" />
-				Истекает через{' '}
-				<span className="text-foreground tabular-nums font-medium">{countdown}</span>
+			<div className="flex items-stretch gap-2">
+				<div className="flex-1 min-w-0 bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground/80 overflow-hidden text-ellipsis whitespace-nowrap font-mono">
+					{shortUrl}
+				</div>
+				<button
+					className={copyBtnClass}
+					onClick={() => void copyUrl()}
+					aria-label="Копировать ссылку"
+				>
+					<Copy className="size-4" />
+				</button>
 			</div>
 		</div>
 	)
@@ -425,7 +431,7 @@ export const Access = reatomComponent(() => {
 
 	return (
 		<Layout>
-			<main className="flex-1 px-5 py-8 w-full">
+			<main className="flex-1 px-4 py-8 w-full">
 				<div className="mb-6">
 					<p className="inline-flex items-center gap-2 text-xs font-medium tracking-[0.2em] uppercase text-emerald-500 mb-2">
 						<Clock className="size-3.5" />
@@ -452,14 +458,18 @@ export const Access = reatomComponent(() => {
 							ваше соединение.
 						</p>
 						<ol className="space-y-3">
-							<li className="flex gap-3 items-start">
-								<span className="text-emerald-500 font-bold text-sm w-4 shrink-0">1</span>
+							<li className="flex gap-2 items-start">
+								<span className="text-emerald-500 font-bold text-sm leading-relaxed w-4 shrink-0">
+									1
+								</span>
 								<span className="text-sm text-foreground/80 leading-relaxed">
 									{installSteps[activeTab]}
 								</span>
 							</li>
-							<li className="flex gap-3 items-start">
-								<span className="text-emerald-500 font-bold text-sm w-4 shrink-0">2</span>
+							<li className="flex gap-2 items-start">
+								<span className="text-emerald-500 font-bold text-sm leading-relaxed w-4 shrink-0">
+									2
+								</span>
 								<span className="text-sm text-foreground/80 leading-relaxed">{routingStep}</span>
 							</li>
 						</ol>
@@ -471,13 +481,17 @@ export const Access = reatomComponent(() => {
 							<span className={stepBadgeClass}>Шаг 2</span>
 						</div>
 						<p className="text-sm text-muted-foreground leading-relaxed mb-4">
-							Получите временную ссылку-подписку и&nbsp;добавьте её в&nbsp;Happ.
+							Получите временную ссылку-подписку
+							<br />
+							и&nbsp;добавьте её в&nbsp;Happ.
 						</p>
 						<BridgePanel />
 						<ol className="space-y-3 mt-4">
 							{connectSteps.map(({ step, text }) => (
-								<li key={step} className="flex gap-3 items-start">
-									<span className="text-emerald-500 font-bold text-sm w-4 shrink-0">{step}</span>
+								<li key={step} className="flex gap-2 items-start">
+									<span className="text-emerald-500 font-bold text-sm leading-relaxed w-4 shrink-0">
+										{step}
+									</span>
 									<span className="text-sm text-foreground/80 leading-relaxed">{text}</span>
 								</li>
 							))}
