@@ -85,11 +85,11 @@ const MiniStatus = reatomComponent(() => {
 			</div>
 			{status.nodes.length > 0 && (
 				<div className="space-y-1.5 border-t border-border/40 pt-3">
-					{status.nodes.map((node) => (
-						<div key={node.name} className="flex items-center justify-between text-xs">
+					{status.nodes.map((node, i) => (
+						<div key={i} className="flex items-center justify-between text-xs">
 							<span className="flex items-center gap-1.5">
 								<span className={`${nodeDot(node.status)} text-base leading-none`}>●</span>
-								<span className="text-foreground/70">{node.city || node.name}</span>
+								<span className="text-foreground/70">{node.label}</span>
 							</span>
 							{node.uptime.d1 !== null && (
 								<span className="text-muted-foreground tabular-nums">

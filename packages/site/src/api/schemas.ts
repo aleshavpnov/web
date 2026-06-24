@@ -3,8 +3,7 @@ import { z } from 'zod'
 export const HealthSchema = z.enum(['operational', 'degraded', 'down', 'unknown'])
 
 export const StatusNodeSchema = z.object({
-	name: z.string(),
-	city: z.string(),
+	label: z.string(),
 	status: HealthSchema,
 	uptime: z.object({
 		d1: z.number().nullable(),
@@ -16,7 +15,7 @@ export const StatusNodeSchema = z.object({
 })
 export const StatusIncidentSchema = z.object({
 	id: z.number(),
-	target: z.string().nullable(),
+	location: z.string().nullable(),
 	severity: z.string(),
 	title: z.string(),
 	body: z.string().nullable(),

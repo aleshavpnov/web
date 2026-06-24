@@ -69,7 +69,7 @@ function NodeCard({ node }: { node: StatusNode }) {
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-2">
 					<span className={`text-base leading-none ${nodeDot(node.status)}`}>●</span>
-					<span className="font-semibold text-sm">{node.city || node.name}</span>
+					<span className="font-semibold text-sm">{node.label}</span>
 				</div>
 				{node.uptime.d1 !== null && (
 					<span className="text-xs text-muted-foreground tabular-nums">
@@ -168,7 +168,7 @@ function IncidentItem({ incident }: { incident: StatusIncident }) {
 						month: 'long',
 						year: 'numeric',
 					})}
-					{incident.target ? ` · ${incident.target}` : ''}
+					{incident.location ? ` · ${incident.location}` : ''}
 				</p>
 			)}
 		</div>
@@ -227,8 +227,8 @@ export const Status = reatomComponent(() => {
 						{/* Node cards */}
 						{status.nodes.length > 0 && (
 							<div className="space-y-3">
-								{status.nodes.map((node) => (
-									<NodeCard key={node.name} node={node} />
+								{status.nodes.map((node, i) => (
+									<NodeCard key={i} node={node} />
 								))}
 							</div>
 						)}
