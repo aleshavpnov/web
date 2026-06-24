@@ -547,20 +547,24 @@ export const Access = reatomComponent(() => {
 
 				{/* Тогглер клиента: переключает все ссылки и название приложения в инструкции. */}
 				<div className="inline-flex rounded-lg border border-border p-0.5 mb-6">
-					{(['incy', 'happ'] as Client[]).map((c) => (
-						<button
-							key={c}
-							type="button"
-							onClick={() => setClient(c)}
-							className={`px-4 py-1.5 rounded-md text-sm font-semibold uppercase tracking-wide transition-colors ${
-								c === client
-									? 'bg-emerald-500/10 text-emerald-500'
-									: 'text-muted-foreground hover:text-foreground'
-							}`}
-						>
-							{CLIENTS[c].name}
-						</button>
-					))}
+					{(['incy', 'happ'] as Client[]).map((c) => {
+						const Icon = CLIENTS[c].Icon
+						return (
+							<button
+								key={c}
+								type="button"
+								onClick={() => setClient(c)}
+								className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold uppercase tracking-wide transition-colors ${
+									c === client
+										? 'bg-emerald-500/10 text-emerald-500'
+										: 'text-muted-foreground hover:text-foreground'
+								}`}
+							>
+								<Icon className="h-4 w-auto shrink-0" />
+								{CLIENTS[c].name}
+							</button>
+						)
+					})}
 				</div>
 
 				<div className="flex flex-col gap-4">
