@@ -314,46 +314,53 @@ const BridgePanel = reatomComponent(() => {
 		toast.success('Ссылка скопирована')
 	}
 
-	if (!bridge) {
-		return (
-			<button
-				disabled={busy}
-				className={`${ctaClass} cta-glow`}
-				onClick={() => void requestBridge()}
-			>
-				<Zap className="size-4" />
-				{busy ? 'Получаем доступ…' : 'Получить временный доступ'}
-			</button>
-		)
-	}
-
+	// Без раннего return: оба состояния живут в одной обёртке фиксированной
+	// высоты, поэтому shortUrl вычисляем с guard на отсутствие bridge.
 	const shortUrl =
-		bridge.subscriptionUrl.length > 42
+		bridge && bridge.subscriptionUrl.length > 42
 			? bridge.subscriptionUrl.slice(0, 42) + '…'
-			: bridge.subscriptionUrl
+			: (bridge?.subscriptionUrl ?? '')
 
+	// min-h резервирует высоту панельного состояния, чтобы при переключении
+	// кнопка↔панель список-инструкция ниже не прыгал; justify-center даёт
+	// кнопке симметричный отступ сверху и снизу.
 	return (
-		<div className="space-y-2">
-			<div className="flex items-center justify-between gap-2">
-				<p className="text-xs text-muted-foreground uppercase tracking-wider">ссылка-подписка</p>
-				<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-					<Clock className="size-3.5 text-amber-500 shrink-0" />
-					<span className="text-foreground tabular-nums font-medium">{countdown}</span>
-				</div>
-			</div>
-
-			<div className="flex items-stretch gap-2">
-				<div className="flex-1 min-w-0 bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground/80 overflow-hidden text-ellipsis whitespace-nowrap font-mono">
-					{shortUrl}
-				</div>
+		<div className="flex flex-col justify-center min-h-[4.375rem]">
+			{!bridge ? (
 				<button
-					className={copyBtnClass}
-					onClick={() => void copyUrl()}
-					aria-label="Копировать ссылку"
+					disabled={busy}
+					className={`${ctaClass} cta-glow`}
+					onClick={() => void requestBridge()}
 				>
-					<Copy className="size-4" />
+					<Zap className="size-4" />
+					{busy ? 'Получаем доступ…' : 'Получить временный доступ'}
 				</button>
-			</div>
+			) : (
+				<div className="space-y-2">
+					<div className="flex items-center justify-between gap-2">
+						<p className="text-xs text-muted-foreground uppercase tracking-wider">
+							ссылка-подписка
+						</p>
+						<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+							<Clock className="size-3.5 text-amber-500 shrink-0" />
+							<span className="text-foreground tabular-nums font-medium">{countdown}</span>
+						</div>
+					</div>
+
+					<div className="flex items-stretch gap-2">
+						<div className="flex-1 min-w-0 bg-muted border border-border rounded-lg px-3 py-2.5 text-sm text-foreground/80 overflow-hidden text-ellipsis whitespace-nowrap font-mono">
+							{shortUrl}
+						</div>
+						<button
+							className={copyBtnClass}
+							onClick={() => void copyUrl()}
+							aria-label="Копировать ссылку"
+						>
+							<Copy className="size-4" />
+						</button>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 })
