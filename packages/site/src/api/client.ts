@@ -1,8 +1,10 @@
 import {
 	BridgeSchema,
+	CheckPayloadSchema,
 	NonceSchema,
 	StatusPayloadSchema,
 	type BridgeResult,
+	type CheckPayload,
 	type StatusPayload,
 } from './schemas.ts'
 
@@ -16,6 +18,10 @@ async function getJson<T>(path: string, schema: { parse: (v: unknown) => T }): P
 
 export function fetchStatus(): Promise<StatusPayload> {
 	return getJson('/status.json', StatusPayloadSchema)
+}
+
+export function checkNodes(): Promise<CheckPayload> {
+	return getJson('/api/check', CheckPayloadSchema)
 }
 
 export async function createBridge(): Promise<BridgeResult> {
