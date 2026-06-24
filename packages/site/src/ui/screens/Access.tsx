@@ -1,6 +1,6 @@
 import { reatomComponent } from '@reatom/react'
-import { useEffect, useState, type ReactNode } from 'react'
-import { Check, Clock, Copy, Download, Plus, Power, Route, Send, Zap } from 'lucide-react'
+import { useEffect, useState, type ComponentType, type ReactNode } from 'react'
+import { Check, Clock, Copy, Download, Plus, Power, Route, Send, Shield, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import { bridgeAtom, bridgeBusyAtom, bridgeErrorAtom, requestBridge } from '@/state/bridge.ts'
 import { navigate } from '@/state/screen.ts'
@@ -27,17 +27,18 @@ function HappIcon({ className }: { className?: string }) {
 	)
 }
 
-// Название приложения как ссылка на сайт с логотипом.
-function HappLink() {
+// Название клиента как ссылка на его сайт, с фирменной иконкой.
+function ClientLink({ client }: { client: ClientConfig }) {
+	const Icon = client.Icon
 	return (
 		<a
-			href="https://happ.su"
+			href={client.site}
 			target="_blank"
 			rel="noopener noreferrer"
 			className="inline-flex items-center gap-1 font-semibold text-emerald-500 hover:text-emerald-400 underline underline-offset-2"
 		>
-			<HappIcon className="h-[0.95em] w-auto shrink-0 no-underline" />
-			Happ
+			<Icon className="h-[0.95em] w-auto shrink-0 no-underline" />
+			{client.name}
 		</a>
 	)
 }
@@ -78,32 +79,15 @@ function DownloadButton({ href, device }: { href: string; device: string }) {
 	)
 }
 
-// CTA-кнопка «Добавить» — открывает routing.help, который ставит в Happ маршруты обхода.
-function RoutingButton() {
+// CTA-кнопка «Добавить» — открывает routing-страницу клиента, которая ставит маршруты обхода.
+function RoutingButton({ href }: { href: string }) {
 	return (
-		<a
-			href="https://routing.help/"
-			target="_blank"
-			rel="noopener noreferrer"
-			className={downloadBtnClass}
-		>
+		<a href={href} target="_blank" rel="noopener noreferrer" className={downloadBtnClass}>
 			<Route className="size-3.5" />
 			Добавить
 		</a>
 	)
 }
-
-// iOS доступен в двух магазинах — кнопка открывает поповер с выбором.
-const iosStores = [
-	{
-		label: '🇷🇺 RU App Store',
-		href: 'https://apps.apple.com/ru/app/happ-proxy-utility-plus/id6746188973',
-	},
-	{
-		label: '🇺🇸 US App Store',
-		href: 'https://apps.apple.com/us/app/happ-proxy-utility/id6504287215',
-	},
-]
 
 // Общее модальное окно: затемнённый оверлей + центрированная панель, закрытие по Escape/клику вне.
 function Dialog({
@@ -143,69 +127,92 @@ function Dialog({
 	)
 }
 
-function IosDownloadButton() {
+// Магазины приложений: кнопка открывает поповер с выбором (iOS у обоих, а у Incy и Mac).
+// Пункт с blocked не ведёт в стор, а показывает тост.
+function StoreDownloadButton({ stores, device }: { stores: Store[]; device: string }) {
 	const [open, setOpen] = useState(false)
+	const itemClass =
+		'flex items-center rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors'
 
 	return (
 		<>
 			<button type="button" className={downloadBtnClass} onClick={() => setOpen(true)}>
 				<Download className="size-3.5" />
-				Скачать для iOS
+				Скачать для {device}
 			</button>
 			<Dialog open={open} title="Выберите магазин" onClose={() => setOpen(false)}>
-				{iosStores.map((s) => (
-					<a
-						key={s.href}
-						href={s.href}
-						target="_blank"
-						rel="noopener noreferrer"
-						onClick={() => setOpen(false)}
-						className="flex items-center rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
-					>
-						{s.label}
-					</a>
-				))}
+				{stores.map((s) =>
+					s.blocked ? (
+						<button
+							key={s.href}
+							type="button"
+							onClick={() => {
+								setOpen(false)
+								toast.error('Happ недоступен в RU App Store. Попробуйте Incy.')
+							}}
+							className={`${itemClass} text-left`}
+						>
+							{s.label}
+						</button>
+					) : (
+						<a
+							key={s.href}
+							href={s.href}
+							target="_blank"
+							rel="noopener noreferrer"
+							onClick={() => setOpen(false)}
+							className={itemClass}
+						>
+							{s.label}
+						</a>
+					),
+				)}
 			</Dialog>
 		</>
 	)
 }
 
-// Шаг 1: настройка маршрутов через routing.help (после установки Happ).
-const routingStep: ReactNode = (
-	<>
-		Для работы внутри&nbsp;РФ нужны маршруты для&nbsp;обхода: <RoutingButton />
-	</>
-)
+// Настройка маршрутов через routing-страницу клиента (после установки приложения).
+function routingStep(client: ClientConfig): ReactNode {
+	return (
+		<>
+			Для работы внутри&nbsp;РФ нужны маршруты для&nbsp;обхода:{' '}
+			<RoutingButton href={client.routingUrl} />
+		</>
+	)
+}
 
-// Шаг 2: добавляем полученную ссылку-подписку в Happ и включаем подключение.
-const connectSteps: { step: string; text: ReactNode }[] = [
-	{
-		step: '1',
-		text: (
-			<>
-				Скопируйте ссылку-подписку и&nbsp;добавьте её в&nbsp;Happ: справа сверху нажмите{' '}
-				<InlineKey className="rounded border-border bg-muted text-foreground">
-					<Plus className="size-3.5" />
-				</InlineKey>
-			</>
-		),
-	},
-	{
-		step: '2',
-		text: <>Выберите «Добавить из&nbsp;буфера»</>,
-	},
-	{
-		step: '3',
-		text: (
-			<>
-				Нажмите кнопку подключения{' '}
-				<InlineKey className="rounded-full border-emerald-500/40 bg-emerald-500/15 text-emerald-500">
-					<Power className="size-3" />
-				</InlineKey>
-			</>
-		),
-	},
-]
+// Шаги: добавляем полученную ссылку-подписку в приложение клиента и включаем подключение.
+function connectSteps(name: string): { step: string; text: ReactNode }[] {
+	return [
+		{
+			step: '1',
+			text: (
+				<>
+					Скопируйте ссылку-подписку и&nbsp;добавьте её в&nbsp;{name}: справа сверху нажмите{' '}
+					<InlineKey className="rounded border-border bg-muted text-foreground">
+						<Plus className="size-3.5" />
+					</InlineKey>
+				</>
+			),
+		},
+		{
+			step: '2',
+			text: <>Выберите «Добавить из&nbsp;буфера»</>,
+		},
+		{
+			step: '3',
+			text: (
+				<>
+					Нажмите кнопку подключения{' '}
+					<InlineKey className="rounded-full border-emerald-500/40 bg-emerald-500/15 text-emerald-500">
+						<Power className="size-3" />
+					</InlineKey>
+				</>
+			),
+		},
+	]
+}
 
 function friendlyError(e: string) {
 	if (e === 'rate-limit') return 'Слишком много запросов — попробуйте позже.'
@@ -245,40 +252,122 @@ const platforms: { key: Platform; label: string }[] = [
 	{ key: 'mac', label: 'Mac' },
 ]
 
-// Установка Happ — единственный платформо-зависимый шаг (Шаг 1).
-const installSteps: Record<Platform, ReactNode> = {
-	ios: (
+type Client = 'incy' | 'happ' // порядок = порядок в тогглере (INCY слева, дефолт)
+
+type Store = { label: string; href: string; blocked?: boolean }
+
+// Способ установки клиента на конкретной платформе.
+type InstallMethod =
+	| { kind: 'stores'; device: string; stores: Store[] } // диалог выбора магазина
+	| { kind: 'direct'; href: string; device: string } // прямая кнопка «Скачать для …»
+	| { kind: 'unavailable' } // нет версии под платформу
+
+interface ClientConfig {
+	id: Client
+	name: string
+	site: string
+	routingUrl: string
+	Icon: ComponentType<{ className?: string }>
+	install: Record<Platform, InstallMethod>
+}
+
+// Incy на iOS и Mac ставится из App Store по одной и той же ссылке.
+const incyStores: Store[] = [
+	{ label: '🇷🇺 RU App Store', href: 'https://apps.apple.com/ru/app/incy/id6756943388' },
+	{ label: '🇺🇸 US App Store', href: 'https://apps.apple.com/us/app/incy/id6756943388' },
+]
+
+const CLIENTS: Record<Client, ClientConfig> = {
+	incy: {
+		id: 'incy',
+		name: 'Incy',
+		site: 'https://incy.cc/',
+		routingUrl: 'https://incy.routing.help/',
+		Icon: Shield,
+		install: {
+			ios: { kind: 'stores', device: 'iOS', stores: incyStores },
+			android: {
+				kind: 'direct',
+				href: 'https://play.google.com/store/apps/details?id=llc.itdev.incy&hl=ru',
+				device: 'Android',
+			},
+			windows: { kind: 'unavailable' },
+			mac: { kind: 'stores', device: 'Mac', stores: incyStores },
+		},
+	},
+	happ: {
+		id: 'happ',
+		name: 'Happ',
+		site: 'https://happ.su',
+		routingUrl: 'https://routing.help/',
+		Icon: HappIcon,
+		install: {
+			ios: {
+				kind: 'stores',
+				device: 'iOS',
+				stores: [
+					{
+						label: '🇷🇺 RU App Store',
+						href: 'https://apps.apple.com/ru/app/happ-proxy-utility-plus/id6746188973',
+						blocked: true,
+					},
+					{
+						label: '🇺🇸 US App Store',
+						href: 'https://apps.apple.com/us/app/happ-proxy-utility/id6504287215',
+					},
+				],
+			},
+			android: {
+				kind: 'direct',
+				href: 'https://play.google.com/store/apps/details?id=com.happproxy',
+				device: 'Android',
+			},
+			windows: {
+				kind: 'direct',
+				href: 'https://github.com/Happ-proxy/happ-desktop/releases/latest/download/setup-Happ.x64.exe',
+				device: 'Windows',
+			},
+			mac: {
+				kind: 'direct',
+				href: 'https://github.com/Happ-proxy/happ-desktop/releases/latest/download/Happ.macOS.universal.dmg',
+				device: 'Mac',
+			},
+		},
+	},
+}
+
+// Пометка для платформы, под которую у клиента нет версии (Windows у Incy).
+function UnavailableNote({ name, siteHref }: { name: string; siteHref: string }) {
+	return (
 		<>
-			Установите приложение <IosDownloadButton />
+			{name} пока недоступен для&nbsp;этой платформы.{' '}
+			<a
+				href={siteHref}
+				target="_blank"
+				rel="noopener noreferrer"
+				className="text-emerald-500 hover:text-emerald-400 underline underline-offset-2"
+			>
+				Открыть сайт
+			</a>
 		</>
-	),
-	android: (
-		<>
-			Установите приложение{' '}
-			<DownloadButton
-				href="https://play.google.com/store/apps/details?id=com.happproxy"
-				device="Android"
-			/>
-		</>
-	),
-	windows: (
-		<>
-			Установите приложение{' '}
-			<DownloadButton
-				href="https://github.com/Happ-proxy/happ-desktop/releases/latest/download/setup-Happ.x64.exe"
-				device="Windows"
-			/>
-		</>
-	),
-	mac: (
-		<>
-			Установите приложение{' '}
-			<DownloadButton
-				href="https://github.com/Happ-proxy/happ-desktop/releases/latest/download/Happ.macOS.universal.dmg"
-				device="Mac"
-			/>
-		</>
-	),
+	)
+}
+
+// Шаг 1 (установка) — единственный платформо-зависимый шаг, формируется по способу установки.
+function renderInstall(method: InstallMethod, client: ClientConfig): ReactNode {
+	if (method.kind === 'stores')
+		return (
+			<>
+				Установите приложение <StoreDownloadButton stores={method.stores} device={method.device} />
+			</>
+		)
+	if (method.kind === 'direct')
+		return (
+			<>
+				Установите приложение <DownloadButton href={method.href} device={method.device} />
+			</>
+		)
+	return <UnavailableNote name={client.name} siteHref={client.site} />
 }
 
 // Определяем платформу пользователя, чтобы сразу открыть нужную вкладку гайда.
@@ -433,8 +522,10 @@ function PlatformDialog({
 }
 
 export const Access = reatomComponent(() => {
+	const [client, setClient] = useState<Client>('incy')
 	const [activeTab, setActiveTab] = useState(defaultPlatform)
 	const [dialogOpen, setDialogOpen] = useState(false)
+	const cfg = CLIENTS[client]
 
 	return (
 		<Layout>
@@ -445,6 +536,24 @@ export const Access = reatomComponent(() => {
 						пробный доступ · 3&nbsp;часа
 					</p>
 					<h1 className="text-2xl font-bold tracking-tight">Получение доступа</h1>
+				</div>
+
+				{/* Тогглер клиента: переключает все ссылки и название приложения в инструкции. */}
+				<div className="inline-flex rounded-lg border border-border p-0.5 mb-6">
+					{(['incy', 'happ'] as Client[]).map((c) => (
+						<button
+							key={c}
+							type="button"
+							onClick={() => setClient(c)}
+							className={`px-4 py-1.5 rounded-md text-sm font-semibold uppercase tracking-wide transition-colors ${
+								c === client
+									? 'bg-emerald-500/10 text-emerald-500'
+									: 'text-muted-foreground hover:text-foreground'
+							}`}
+						>
+							{CLIENTS[c].name}
+						</button>
+					))}
 				</div>
 
 				<div className="flex flex-col gap-4">
@@ -461,8 +570,8 @@ export const Access = reatomComponent(() => {
 							</button>
 						</div>
 						<p className="text-sm text-muted-foreground leading-relaxed mb-4">
-							Установите и&nbsp;настройте <HappLink /> — приложение, через&nbsp;которое работает
-							ваше соединение.
+							Установите и&nbsp;настройте <ClientLink client={cfg} /> — приложение,
+							через&nbsp;которое работает ваше соединение.
 						</p>
 						<ol className="space-y-3">
 							<li className="flex gap-2 items-start">
@@ -470,14 +579,16 @@ export const Access = reatomComponent(() => {
 									1
 								</span>
 								<span className="text-sm text-foreground/80 leading-relaxed">
-									{installSteps[activeTab]}
+									{renderInstall(cfg.install[activeTab], cfg)}
 								</span>
 							</li>
 							<li className="flex gap-2 items-start">
 								<span className="text-emerald-500 font-bold text-sm leading-relaxed w-4 shrink-0">
 									2
 								</span>
-								<span className="text-sm text-foreground/80 leading-relaxed">{routingStep}</span>
+								<span className="text-sm text-foreground/80 leading-relaxed">
+									{routingStep(cfg)}
+								</span>
 							</li>
 						</ol>
 					</div>
@@ -490,11 +601,11 @@ export const Access = reatomComponent(() => {
 						<p className="text-sm text-muted-foreground leading-relaxed mb-4">
 							Получите временную ссылку-подписку
 							<br />
-							и&nbsp;добавьте её в&nbsp;Happ.
+							и&nbsp;добавьте её в&nbsp;{cfg.name}.
 						</p>
 						<BridgePanel />
 						<ol className="space-y-3 mt-4">
-							{connectSteps.map(({ step, text }) => (
+							{connectSteps(cfg.name).map(({ step, text }) => (
 								<li key={step} className="flex gap-2 items-start">
 									<span className="text-emerald-500 font-bold text-sm leading-relaxed w-4 shrink-0">
 										{step}
