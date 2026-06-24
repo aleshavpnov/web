@@ -59,11 +59,12 @@ const copyBtnClass =
 	'hover:bg-emerald-400 text-white rounded-lg transition-all duration-200 ' +
 	'hover:shadow-lg hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0'
 
-// Инлайн-чип, имитирующий кнопку интерфейса Happ внутри текста инструкции.
+// Инлайн-чип, имитирующий кнопку интерфейса Happ/Incy внутри текста инструкции.
+// Размер задаётся в месте вызова: иконочные чипы — size-5, кнопка с подписью — px/py.
 function InlineKey({ children, className }: { children: ReactNode; className?: string }) {
 	return (
 		<span
-			className={`inline-flex items-center justify-center size-5 mx-1 align-middle border ${className}`}
+			className={`inline-flex items-center justify-center gap-1 mx-1 align-middle border ${className}`}
 		>
 			{children}
 		</span>
@@ -183,35 +184,41 @@ function routingStep(client: ClientConfig): ReactNode {
 }
 
 // Шаги: добавляем полученную ссылку-подписку в приложение клиента и включаем подключение.
-function connectSteps(name: string): { step: string; text: ReactNode }[] {
-	return [
-		{
-			step: '1',
-			text: (
-				<>
-					Скопируйте ссылку-подписку и&nbsp;добавьте её в&nbsp;{name}: справа сверху нажмите{' '}
-					<InlineKey className="rounded border-border bg-muted text-foreground">
-						<Plus className="size-3.5" />
-					</InlineKey>
-				</>
-			),
-		},
-		{
-			step: '2',
-			text: <>Выберите «Добавить из&nbsp;буфера»</>,
-		},
-		{
-			step: '3',
-			text: (
-				<>
-					Нажмите кнопку подключения{' '}
-					<InlineKey className="rounded-full border-emerald-500/40 bg-emerald-500/15 text-emerald-500">
-						<Power className="size-3" />
-					</InlineKey>
-				</>
-			),
-		},
-	]
+// У Incy кнопка «Вставить» добавляет подписку из буфера за один тап, поэтому отдельного
+// шага «Добавить из буфера» (как у Happ) для него нет.
+function connectSteps(client: ClientConfig): { step: string; text: ReactNode }[] {
+	const addText =
+		client.id === 'incy' ? (
+			<>
+				Скопируйте ссылку-подписку и&nbsp;добавьте её в&nbsp;{client.name}: справа снизу нажмите{' '}
+				<InlineKey className="rounded border-border bg-muted text-foreground px-1.5 py-0.5 text-xs font-medium">
+					<Copy className="size-3.5" />
+					Вставить
+				</InlineKey>
+			</>
+		) : (
+			<>
+				Скопируйте ссылку-подписку и&nbsp;добавьте её в&nbsp;{client.name}: справа сверху нажмите{' '}
+				<InlineKey className="size-5 rounded border-border bg-muted text-foreground">
+					<Plus className="size-3.5" />
+				</InlineKey>
+			</>
+		)
+
+	const texts: ReactNode[] = [addText]
+	if (client.id !== 'incy') {
+		texts.push(<>Выберите «Добавить из&nbsp;буфера»</>)
+	}
+	texts.push(
+		<>
+			Нажмите кнопку подключения{' '}
+			<InlineKey className="size-5 rounded-full border-emerald-500/40 bg-emerald-500/15 text-emerald-500">
+				<Power className="size-3" />
+			</InlineKey>
+		</>,
+	)
+
+	return texts.map((text, i) => ({ step: String(i + 1), text }))
 }
 
 function friendlyError(e: string) {
@@ -605,7 +612,7 @@ export const Access = reatomComponent(() => {
 						</p>
 						<BridgePanel />
 						<ol className="space-y-3 mt-4">
-							{connectSteps(cfg.name).map(({ step, text }) => (
+							{connectSteps(cfg).map(({ step, text }) => (
 								<li key={step} className="flex gap-2 items-start">
 									<span className="text-emerald-500 font-bold text-sm leading-relaxed w-4 shrink-0">
 										{step}
