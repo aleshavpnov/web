@@ -1,15 +1,6 @@
 import { reatomComponent } from '@reatom/react'
 import { useEffect } from 'react'
-import { Wifi } from 'lucide-react'
-import { toast } from 'sonner'
-import {
-	statusAtom,
-	statusErrorAtom,
-	loadStatus,
-	liveChecksAtom,
-	runLiveCheck,
-	type LiveState,
-} from '@/state/status.ts'
+import { statusAtom, statusErrorAtom, loadStatus } from '@/state/status.ts'
 import { navigate } from '@/state/screen.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
 import { Skeleton } from '@/components/ui/skeleton.tsx'
@@ -72,30 +63,7 @@ function UptimeBars({ bars }: { bars: StatusNode['bars'] }) {
 	)
 }
 
-async function checkNode(label: string, name: string) {
-	const results = await runLiveCheck()
-	const r = results?.find((x) => x.name === name)
-	if (r?.up) toast.success(`${label}: связь есть (${r.latencyMs} мс)`)
-	else toast.error(`${label}: нет ответа`)
-}
-
-function LiveIndicator({ state }: { state: LiveState | undefined }) {
-	const phase = state?.phase ?? 'idle'
-	if (phase === 'checking') {
-		return <span className="text-xs text-muted-foreground tabular-nums">проверка…</span>
-	}
-	if (phase === 'up') {
-		return (
-			<span className="text-xs text-emerald-500 tabular-nums">● {state?.latencyMs ?? 0} мс</span>
-		)
-	}
-	if (phase === 'down') {
-		return <span className="text-xs text-red-500 tabular-nums">● недоступно</span>
-	}
-	return null
-}
-
-function NodeCard({ node, live }: { node: StatusNode; live: LiveState | undefined }) {
+function NodeCard({ node }: { node: StatusNode }) {
 	return (
 		<div className="border border-border rounded-xl p-5 space-y-4">
 			<div className="flex items-center justify-between">
@@ -130,23 +98,12 @@ function NodeCard({ node, live }: { node: StatusNode; live: LiveState | undefine
 					30д <span className="text-foreground font-medium">{formatPct(node.uptime.d30)}</span>
 				</span>
 			</div>
-
-			<div className="flex items-center gap-3">
-				<button
-					className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border hover:border-foreground/30 rounded-lg px-3 py-1.5"
-					onClick={() => void checkNode(node.city || node.name, node.name)}
-				>
-					<Wifi className="size-3.5" />
-					Проверить мою связь
-				</button>
-				<LiveIndicator state={live} />
-			</div>
 		</div>
 	)
 }
 
 // Mirrors NodeCard's layout so the loading state reserves the same height
-// (header 20 / bars block 42 / stats 16 / button 30, inside p-5 + space-y-4).
+// (header 20 / bars block 42 / stats 16, inside p-5 + space-y-4).
 function NodeCardSkeleton() {
 	return (
 		<div className="border border-border rounded-xl p-5 space-y-4">
@@ -166,7 +123,6 @@ function NodeCardSkeleton() {
 			<div className="flex h-4 items-center">
 				<Skeleton className="h-3 w-44" />
 			</div>
-			<Skeleton className="h-[30px] w-40 rounded-lg" />
 		</div>
 	)
 }
@@ -222,19 +178,12 @@ function IncidentItem({ incident }: { incident: StatusIncident }) {
 export const Status = reatomComponent(() => {
 	const status = statusAtom()
 	const error = statusErrorAtom()
-	const live = liveChecksAtom()
 
 	// Periodic refetch
 	useEffect(() => {
 		const id = setInterval(() => void loadStatus(), 60_000)
 		return () => clearInterval(id)
 	}, [])
-
-	// Auto-run live node check once the node list appears (and on its change)
-	const nodeNames = (statusAtom()?.nodes ?? []).map((n) => n.name).join(',')
-	useEffect(() => {
-		if (nodeNames) void runLiveCheck()
-	}, [nodeNames])
 
 	return (
 		<Layout>
@@ -279,7 +228,7 @@ export const Status = reatomComponent(() => {
 						{status.nodes.length > 0 && (
 							<div className="space-y-3">
 								{status.nodes.map((node) => (
-									<NodeCard key={node.name} node={node} live={live[node.name]} />
+									<NodeCard key={node.name} node={node} />
 								))}
 							</div>
 						)}

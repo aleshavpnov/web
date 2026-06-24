@@ -13,7 +13,6 @@ export const StatusNodeSchema = z.object({
 	}),
 	bars: z.array(z.object({ day: z.string(), ratio: z.number().nullable() })),
 	lastCheck: z.string().nullable(),
-	checkUrl: z.string(),
 })
 export const StatusIncidentSchema = z.object({
 	id: z.number(),
@@ -32,15 +31,6 @@ export const StatusPayloadSchema = z.object({
 	internet: z.object({ latencyMs: z.number().nullable() }).nullable(),
 	incidents: z.array(StatusIncidentSchema),
 })
-export const CheckResultSchema = z.object({
-	name: z.string(),
-	up: z.boolean(),
-	latencyMs: z.number().nullable(),
-})
-export const CheckPayloadSchema = z.object({
-	generatedAt: z.string(),
-	results: z.array(CheckResultSchema),
-})
 export const NonceSchema = z.object({ token: z.string() })
 export const BridgeSchema = z.object({
 	subscriptionUrl: z.string(),
@@ -49,8 +39,6 @@ export const BridgeSchema = z.object({
 })
 
 export type Health = z.infer<typeof HealthSchema>
-export type CheckPayload = z.infer<typeof CheckPayloadSchema>
-export type CheckResult = z.infer<typeof CheckResultSchema>
 export type StatusPayload = z.infer<typeof StatusPayloadSchema>
 export type StatusNode = z.infer<typeof StatusNodeSchema>
 export type StatusIncident = z.infer<typeof StatusIncidentSchema>
