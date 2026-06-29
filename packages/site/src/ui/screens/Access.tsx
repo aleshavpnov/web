@@ -129,7 +129,6 @@ function Dialog({
 }
 
 // Магазины приложений: кнопка открывает поповер с выбором (iOS у обоих, а у Incy и Mac).
-// Пункт с blocked не ведёт в стор, а показывает тост.
 function StoreDownloadButton({ stores, device }: { stores: Store[]; device: string }) {
 	const [open, setOpen] = useState(false)
 	const itemClass =
@@ -142,32 +141,18 @@ function StoreDownloadButton({ stores, device }: { stores: Store[]; device: stri
 				Скачать для {device}
 			</button>
 			<Dialog open={open} title="Выберите магазин" onClose={() => setOpen(false)}>
-				{stores.map((s) =>
-					s.blocked ? (
-						<button
-							key={s.href}
-							type="button"
-							onClick={() => {
-								setOpen(false)
-								toast.error('Happ недоступен в RU App Store. Попробуйте Incy.')
-							}}
-							className={`${itemClass} text-left`}
-						>
-							{s.label}
-						</button>
-					) : (
-						<a
-							key={s.href}
-							href={s.href}
-							target="_blank"
-							rel="noopener noreferrer"
-							onClick={() => setOpen(false)}
-							className={itemClass}
-						>
-							{s.label}
-						</a>
-					),
-				)}
+				{stores.map((s) => (
+					<a
+						key={s.href}
+						href={s.href}
+						target="_blank"
+						rel="noopener noreferrer"
+						onClick={() => setOpen(false)}
+						className={itemClass}
+					>
+						{s.label}
+					</a>
+				))}
 			</Dialog>
 		</>
 	)
@@ -261,7 +246,7 @@ const platforms: { key: Platform; label: string }[] = [
 
 type Client = 'incy' | 'happ' // порядок = порядок в тогглере (INCY слева, дефолт)
 
-type Store = { label: string; href: string; blocked?: boolean }
+type Store = { label: string; href: string }
 
 // Способ установки клиента на конкретной платформе.
 type InstallMethod =
@@ -315,8 +300,7 @@ const CLIENTS: Record<Client, ClientConfig> = {
 				stores: [
 					{
 						label: '🇷🇺 RU App Store',
-						href: 'https://apps.apple.com/ru/app/happ-proxy-utility-plus/id6746188973',
-						blocked: true,
+						href: 'https://apps.apple.com/ru/app/happ-proxy-utility/id6783623643',
 					},
 					{
 						label: '🇺🇸 US App Store',
