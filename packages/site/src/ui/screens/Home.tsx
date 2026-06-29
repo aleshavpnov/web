@@ -3,6 +3,7 @@ import { ArrowRight, Lock, Zap } from 'lucide-react'
 import { navigate } from '@/state/screen.ts'
 import { statusAtom, statusErrorAtom } from '@/state/status.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
+import { VpnStatusBadge } from '@/ui/components/VpnStatusBadge.tsx'
 import { Skeleton } from '@/components/ui/skeleton.tsx'
 import { ctaClass } from '@/ui/cta.ts'
 import type { StatusPayload } from '@/api/schemas.ts'
@@ -125,6 +126,7 @@ export const Home = reatomComponent(() => {
 							Получить доступ
 						</button>
 					</div>
+					<VpnStatusBadge />
 				</div>
 				<MiniStatus />
 			</main>
