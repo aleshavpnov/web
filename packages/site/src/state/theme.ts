@@ -26,9 +26,17 @@ function resolveDark(mode: ThemeMode): boolean {
 	return media?.matches ?? false
 }
 
+/**
+ * Reactive resolved theme: reflects the actual light/dark in effect (not the mode).
+ * Unlike `themeAtom`, this also flips when the OS scheme changes while on 'system'.
+ */
+export const isDarkAtom = atom<boolean>(resolveDark(load()), 'isDark')
+
 /** Applies the theme to <html>: toggles `.dark` class (respects system preference). */
 export function applyTheme(mode: ThemeMode = themeAtom()): void {
-	document.documentElement.classList.toggle('dark', resolveDark(mode))
+	const dark = resolveDark(mode)
+	document.documentElement.classList.toggle('dark', dark)
+	isDarkAtom.set(dark)
 }
 
 export const setTheme = action((mode: ThemeMode) => {
