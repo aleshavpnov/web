@@ -244,7 +244,7 @@ const platforms: { key: Platform; label: string }[] = [
 	{ key: 'mac', label: 'Mac' },
 ]
 
-type Client = 'incy' | 'happ' // порядок = порядок в тогглере (INCY слева, дефолт)
+type Client = 'incy' | 'happ' // порядок в тогглере задаётся ниже (HAPP слева, дефолт)
 
 type Store = { label: string; href: string }
 
@@ -513,7 +513,7 @@ function PlatformDialog({
 }
 
 export const Access = reatomComponent(() => {
-	const [client, setClient] = useState<Client>('incy')
+	const [client, setClient] = useState<Client>('happ')
 	const [activeTab, setActiveTab] = useState(defaultPlatform)
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const cfg = CLIENTS[client]
@@ -531,7 +531,7 @@ export const Access = reatomComponent(() => {
 
 				{/* Тогглер клиента: переключает все ссылки и название приложения в инструкции. */}
 				<div className="inline-flex rounded-lg border border-border p-0.5 mb-6">
-					{(['incy', 'happ'] as Client[]).map((c) => {
+					{(['happ', 'incy'] as Client[]).map((c) => {
 						const Icon = CLIENTS[c].Icon
 						return (
 							<button
