@@ -6,6 +6,7 @@ import { loadStatus } from '@/state/status.ts'
 import { Home } from '@/ui/screens/Home.tsx'
 import { Access } from '@/ui/screens/Access.tsx'
 import { Status } from '@/ui/screens/Status.tsx'
+import { NotFound } from '@/ui/screens/NotFound.tsx'
 
 export const App = reatomComponent(() => {
 	useEffect(() => {
@@ -21,7 +22,15 @@ export const App = reatomComponent(() => {
 
 	return (
 		<>
-			{screen === 'access' ? <Access /> : screen === 'status' ? <Status /> : <Home />}
+			{screen === 'access' ? (
+				<Access />
+			) : screen === 'status' ? (
+				<Status />
+			) : screen === 'notfound' ? (
+				<NotFound />
+			) : (
+				<Home />
+			)}
 			<Toaster position="top-center" />
 		</>
 	)

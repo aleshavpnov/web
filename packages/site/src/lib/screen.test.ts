@@ -6,7 +6,8 @@ describe('screen routing', () => {
 		expect(screenFromPath('/')).toBe('home')
 		expect(screenFromPath('/get')).toBe('access')
 		expect(screenFromPath('/status')).toBe('status')
-		expect(screenFromPath('/whatever')).toBe('home')
+		expect(screenFromPath('/whatever')).toBe('notfound')
+		expect(screenFromPath('/wl')).toBe('notfound')
 	})
 	it('maps screen back to pathname', () => {
 		expect(pathFromScreen('access')).toBe('/get')
