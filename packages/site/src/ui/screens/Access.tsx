@@ -1,6 +1,7 @@
 import { reatomComponent } from '@reatom/react'
 import { useEffect, useState, type ComponentType, type ReactNode } from 'react'
 import { Check, Clock, Copy, Download, Plus, Power, Route, Send, Shield, Zap } from 'lucide-react'
+import QRCode from 'qrcode'
 import { toast } from 'sonner'
 import {
 	bridgeAtom,
@@ -386,6 +387,9 @@ function detectPlatform(): Platform {
 
 const defaultPlatform = detectPlatform()
 
+// QR имеет смысл только там, где Telegram-аккаунт живёт на другом устройстве.
+const isDesktop = defaultPlatform === 'windows' || defaultPlatform === 'mac'
+
 const BridgePanel = reatomComponent(() => {
 	const bridge = bridgeAtom()
 	const busy = bridgeBusyAtom()
@@ -454,9 +458,31 @@ const BridgePanel = reatomComponent(() => {
 })
 
 // Шаг 3: открыть бота в Telegram. Ссылка приходит с бэкенда после получения доступа,
-// поэтому без доступа кнопка неактивна.
+// поэтому без доступа кнопка неактивна. На десктопе рядом QR с тем же deep-link:
+// телефон сканирует и открывает бота с токеном привязки (кросс-девайс сценарий).
 const TelegramBlock = reatomComponent(() => {
 	const bridge = bridgeAtom()
+	const [qr, setQr] = useState<string | null>(null)
+	const deepLink = bridge?.deepLink ?? null
+
+	useEffect(() => {
+		if (!deepLink || !isDesktop) {
+			setQr(null)
+			return
+		}
+		let alive = true
+		// width 320 = 2x от отображаемых 160px, чтобы не мылился на ретине
+		QRCode.toDataURL(deepLink, { margin: 1, width: 320 })
+			.then((url) => {
+				if (alive) setQr(url)
+			})
+			.catch(() => {
+				if (alive) setQr(null)
+			})
+		return () => {
+			alive = false
+		}
+	}, [deepLink])
 
 	return (
 		<div className="border border-border rounded-xl p-5">
@@ -467,10 +493,25 @@ const TelegramBlock = reatomComponent(() => {
 				Перейдите в&nbsp;бота в&nbsp;Telegram и&nbsp;активируйте подписку.
 			</p>
 			{bridge ? (
-				<a href={bridge.deepLink} className={ctaClass}>
-					<Send className="size-4" />
-					Открыть в Telegram
-				</a>
+				<>
+					<a href={bridge.deepLink} className={ctaClass}>
+						<Send className="size-4" />
+						Открыть в Telegram
+					</a>
+					{qr && (
+						<div className="mt-4 flex items-center gap-4">
+							<img
+								src={qr}
+								alt="QR-код: открыть бота в Telegram"
+								className="size-40 shrink-0 rounded-lg bg-white p-2"
+							/>
+							<p className="text-sm text-muted-foreground leading-relaxed">
+								Или отсканируйте с&nbsp;телефона — бот откроется сразу с&nbsp;привязкой вашего
+								доступа.
+							</p>
+						</div>
+					)}
+				</>
 			) : (
 				<button
 					type="button"
