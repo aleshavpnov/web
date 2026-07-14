@@ -2,7 +2,13 @@ import { reatomComponent } from '@reatom/react'
 import { useEffect, useState, type ComponentType, type ReactNode } from 'react'
 import { Check, Clock, Copy, Download, Plus, Power, Route, Send, Shield, Zap } from 'lucide-react'
 import { toast } from 'sonner'
-import { bridgeAtom, bridgeBusyAtom, bridgeErrorAtom, requestBridge } from '@/state/bridge.ts'
+import {
+	bridgeAtom,
+	bridgeBusyAtom,
+	bridgeErrorAtom,
+	expireBridge,
+	requestBridge,
+} from '@/state/bridge.ts'
 import { navigate } from '@/state/screen.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
 import { ctaClass } from '@/ui/cta.ts'
@@ -219,7 +225,9 @@ function useCountdown(expiresAt: string | null) {
 		const tick = () => {
 			const diff = new Date(expiresAt).getTime() - Date.now()
 			if (diff <= 0) {
-				setRemaining('истёк')
+				// Срок вышел: сбрасываем bridge целиком — панель вернётся к кнопке
+				// «Получить временный доступ», мёртвую ссылку не показываем.
+				expireBridge()
 				return
 			}
 			const h = Math.floor(diff / 3_600_000)
