@@ -12,7 +12,13 @@ export function readStoredBridge(now: number = Date.now()): BridgeResult | null 
 		const raw = localStorage.getItem(KEY)
 		if (!raw) return null
 		const parsed = BridgeSchema.safeParse(JSON.parse(raw))
-		if (!parsed.success || Date.parse(parsed.data.expiresAt) <= now) {
+		if (!parsed.success) {
+			localStorage.removeItem(KEY)
+			return null
+		}
+		// NaN от Date.parse не проходит ни одно сравнение — мусорная дата иначе жила бы вечно
+		const expires = Date.parse(parsed.data.expiresAt)
+		if (Number.isNaN(expires) || expires <= now) {
 			localStorage.removeItem(KEY)
 			return null
 		}

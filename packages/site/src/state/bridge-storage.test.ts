@@ -38,6 +38,12 @@ describe('bridge storage', () => {
 		expect(localStorage.getItem('bridge:v1')).toBeNull()
 	})
 
+	it('чистит запись с невалидной датой', () => {
+		persistBridge(bridge('not-a-date'))
+		expect(readStoredBridge(NOW)).toBeNull()
+		expect(localStorage.getItem('bridge:v1')).toBeNull()
+	})
+
 	it('clearStoredBridge удаляет запись', () => {
 		persistBridge(bridge('2026-07-14T15:00:00Z'))
 		clearStoredBridge()
