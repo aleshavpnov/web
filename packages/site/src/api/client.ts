@@ -18,11 +18,15 @@ export function fetchStatus(): Promise<StatusPayload> {
 	return getJson('/status.json', StatusPayloadSchema)
 }
 
-export async function createBridge(): Promise<BridgeResult> {
+export async function createBridge(ref?: string | null): Promise<BridgeResult> {
 	const { token } = await getJson('/api/nonce', NonceSchema)
 	const res = await fetch(`${BASE}/api/bridge`, {
 		method: 'POST',
-		headers: { 'x-bridge-token': token },
+		headers: {
+			'x-bridge-token': token,
+			...(ref ? { 'content-type': 'application/json' } : {}),
+		},
+		...(ref ? { body: JSON.stringify({ ref }) } : {}),
 	})
 	if (res.status === 429) throw new Error('rate-limit')
 	if (!res.ok) throw new Error(`/api/bridge -> ${res.status}`)
