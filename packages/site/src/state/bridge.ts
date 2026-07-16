@@ -2,6 +2,7 @@ import { action, atom, wrap } from '@reatom/core'
 import { createBridge } from '@/api/client.ts'
 import type { BridgeResult } from '@/api/schemas.ts'
 import { clearStoredBridge, persistBridge, readStoredBridge } from './bridge-storage.ts'
+import { getStoredRef } from './ref.ts'
 
 // Стартуем с восстановленного из localStorage bridge (если не истёк):
 // повторный визит показывает выданную ссылку вместо создания нового клиента.
@@ -13,7 +14,7 @@ export const requestBridge = action(async () => {
 	bridgeBusyAtom.set(true)
 	bridgeErrorAtom.set(null)
 	try {
-		const res = await wrap(createBridge())
+		const res = await wrap(createBridge(getStoredRef()))
 		bridgeAtom.set(res)
 		persistBridge(res)
 	} catch (e) {
