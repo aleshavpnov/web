@@ -28,6 +28,8 @@ export const StatusPayloadSchema = z.object({
 	generatedAt: z.string(),
 	nodes: z.array(StatusNodeSchema),
 	internet: z.object({ latencyMs: z.number().nullable() }).nullable(),
+	// optional — старый бэкенд (кэш) может ещё не отдавать поле.
+	traffic: z.object({ avgBps: z.number(), samples: z.number() }).nullable().optional(),
 	incidents: z.array(StatusIncidentSchema),
 })
 export const NonceSchema = z.object({ token: z.string() })
