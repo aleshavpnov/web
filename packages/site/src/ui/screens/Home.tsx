@@ -1,11 +1,12 @@
 import { reatomComponent } from '@reatom/react'
-import { ArrowRight, Lock, Zap } from 'lucide-react'
+import { Activity, ArrowRight, Gauge, Lock, Zap } from 'lucide-react'
 import { navigate } from '@/state/screen.ts'
 import { statusAtom, statusErrorAtom } from '@/state/status.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
 import { VpnStatusBadge } from '@/ui/components/VpnStatusBadge.tsx'
 import { Skeleton } from '@/components/ui/skeleton.tsx'
 import { ctaClass } from '@/ui/cta.ts'
+import { formatMbps } from '@/lib/format.ts'
 import type { StatusPayload } from '@/api/schemas.ts'
 
 function healthDot(status: StatusPayload['overall']) {
@@ -105,6 +106,39 @@ const MiniStatus = reatomComponent(() => {
 	)
 })
 
+const metricClass =
+	'inline-flex items-center gap-1 mx-1 align-baseline whitespace-nowrap text-emerald-500'
+
+const Tagline = reatomComponent(() => {
+	const status = statusAtom()
+	const avgBps = status?.traffic?.avgBps ?? null
+	const pingMs = status?.internet?.latencyMs ?? null
+
+	if (avgBps === null || pingMs === null) {
+		return (
+			<p className="text-base text-muted-foreground max-w-sm leading-relaxed">
+				Тихое и&nbsp;быстрое соединение без&nbsp;ограничений.
+			</p>
+		)
+	}
+
+	return (
+		<p className="text-base text-muted-foreground max-w-sm leading-relaxed">
+			Быстрое соединение без&nbsp;ограничений со&nbsp;средней скоростью в{' '}
+			<span className={metricClass}>
+				<Gauge className="size-3.5" />
+				<span className="tabular-nums font-medium">{formatMbps(avgBps)}&nbsp;Мбит/с</span>
+			</span>{' '}
+			и&nbsp;пингом{' '}
+			<span className={metricClass}>
+				<Activity className="size-3.5" />
+				<span className="tabular-nums font-medium">{pingMs}&nbsp;мс</span>
+			</span>{' '}
+			за&nbsp;сегодня
+		</p>
+	)
+})
+
 export const Home = reatomComponent(() => {
 	return (
 		<Layout>
@@ -117,9 +151,7 @@ export const Home = reatomComponent(() => {
 					<h1 className="text-4xl sm:text-5xl font-bold leading-tight tracking-tight">
 						Ваше ради кальное решение проблем
 					</h1>
-					<p className="text-base text-muted-foreground max-w-sm leading-relaxed">
-						Тихое и&nbsp;быстрое соединение без&nbsp;ограничений.
-					</p>
+					<Tagline />
 					<div>
 						<button className={ctaClass} onClick={() => navigate('access')}>
 							<Zap className="size-4" />
