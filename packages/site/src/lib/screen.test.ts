@@ -6,11 +6,13 @@ describe('screen routing', () => {
 		expect(screenFromPath('/')).toBe('home')
 		expect(screenFromPath('/get')).toBe('access')
 		expect(screenFromPath('/status')).toBe('status')
+		expect(screenFromPath('/faq')).toBe('faq')
 		expect(screenFromPath('/whatever')).toBe('notfound')
 	})
 	it('maps screen back to pathname', () => {
 		expect(pathFromScreen('access')).toBe('/get')
 		expect(pathFromScreen('status')).toBe('/status')
+		expect(pathFromScreen('faq')).toBe('/faq')
 		expect(pathFromScreen('home')).toBe('/')
 	})
 })

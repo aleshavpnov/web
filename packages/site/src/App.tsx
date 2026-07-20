@@ -6,6 +6,7 @@ import { loadStatus } from '@/state/status.ts'
 import { Home } from '@/ui/screens/Home.tsx'
 import { Access } from '@/ui/screens/Access.tsx'
 import { Status } from '@/ui/screens/Status.tsx'
+import { Faq } from '@/ui/screens/Faq.tsx'
 import { NotFound } from '@/ui/screens/NotFound.tsx'
 
 export const App = reatomComponent(() => {
@@ -26,6 +27,8 @@ export const App = reatomComponent(() => {
 				<Access />
 			) : screen === 'status' ? (
 				<Status />
+			) : screen === 'faq' ? (
+				<Faq />
 			) : screen === 'notfound' ? (
 				<NotFound />
 			) : (

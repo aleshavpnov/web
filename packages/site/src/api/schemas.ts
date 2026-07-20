@@ -30,6 +30,8 @@ export const StatusPayloadSchema = z.object({
 	internet: z.object({ latencyMs: z.number().nullable() }).nullable(),
 	// optional — старый бэкенд (кэш) может ещё не отдавать поле.
 	traffic: z.object({ avgBps: z.number(), samples: z.number() }).nullable().optional(),
+	// optional — старый бэкенд может ещё не отдавать поле; null пока getMe не прошёл.
+	botUsername: z.string().nullable().optional(),
 	incidents: z.array(StatusIncidentSchema),
 })
 export const NonceSchema = z.object({ token: z.string() })
