@@ -1,5 +1,5 @@
 import { reatomComponent } from '@reatom/react'
-import { Activity, House, Monitor, Moon, Sun, Zap } from 'lucide-react'
+import { Activity, CircleHelp, House, Monitor, Moon, Sun, Zap } from 'lucide-react'
 import { navigate, screenAtom } from '@/state/screen.ts'
 import { themeAtom, setTheme, type ThemeMode } from '@/state/theme.ts'
 
@@ -35,7 +35,7 @@ export const Topbar = reatomComponent(() => {
 	return (
 		<header className="flex items-center justify-between px-4 py-3.5 border-b border-border/50">
 			<button
-				className="inline-flex items-center gap-2 text-sm font-bold text-foreground hover:text-foreground/80 transition-colors"
+				className="inline-flex items-center gap-2 text-sm font-bold whitespace-nowrap text-foreground hover:text-foreground/80 transition-colors"
 				onClick={() => navigate('home')}
 			>
 				<Zap className="size-4 text-emerald-500" />
@@ -47,7 +47,7 @@ export const Topbar = reatomComponent(() => {
 					aria-current={screen === 'home' ? 'page' : undefined}
 					onClick={() => navigate('home')}
 				>
-					<House className="size-3.5" />
+					<House className="size-3.5 max-[420px]:hidden" />
 					Главная
 				</button>
 				<button
@@ -55,8 +55,16 @@ export const Topbar = reatomComponent(() => {
 					aria-current={screen === 'status' ? 'page' : undefined}
 					onClick={() => navigate('status')}
 				>
-					<Activity className="size-3.5" />
+					<Activity className="size-3.5 max-[420px]:hidden" />
 					Статус
+				</button>
+				<button
+					className={navItemClass(screen === 'faq')}
+					aria-current={screen === 'faq' ? 'page' : undefined}
+					onClick={() => navigate('faq')}
+				>
+					<CircleHelp className="size-3.5 max-[420px]:hidden" />
+					FAQ
 				</button>
 				<button
 					className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
