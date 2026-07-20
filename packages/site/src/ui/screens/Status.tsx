@@ -1,4 +1,5 @@
 import { reatomComponent } from '@reatom/react'
+import { Activity } from 'lucide-react'
 import { useEffect } from 'react'
 import { statusAtom, statusErrorAtom, loadStatus } from '@/state/status.ts'
 import { navigate } from '@/state/screen.ts'
@@ -188,8 +189,14 @@ export const Status = reatomComponent(() => {
 	return (
 		<Layout>
 			<main className="flex-1 px-4 py-8 w-full space-y-6">
-				<div className="flex items-center justify-between">
-					<h1 className="text-xl font-bold tracking-tight">Статус системы</h1>
+				<div className="flex items-end justify-between">
+					<div>
+						<p className="inline-flex items-center gap-2 text-xs font-medium tracking-[0.2em] uppercase text-emerald-500 mb-2">
+							<Activity className="size-3.5" />
+							серверы · аптайм · инциденты
+						</p>
+						<h1 className="text-2xl font-bold tracking-tight">Статус системы</h1>
+					</div>
 					{status && (
 						<span className="text-xs text-muted-foreground/60">
 							обновлено{' '}

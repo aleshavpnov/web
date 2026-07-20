@@ -1,15 +1,48 @@
+import { reatomComponent } from '@reatom/react'
 import type { ReactNode } from 'react'
 import { navigate } from '@/state/screen.ts'
+import { statusAtom } from '@/state/status.ts'
 import type { Screen } from '@/lib/screen.ts'
+
+/** Диплинк на подписку «Прайм» в Tribute (кнопка Share у подписки в дашборде). */
+const TRIBUTE_SUB_URL = 'https://t.me/tribute/app?startapp=sVea'
+
+export const SUPPORT_EMAIL = 'support@aimuzov.online'
+
+const linkClass = 'text-emerald-500 hover:text-emerald-400 underline underline-offset-2'
+
+/**
+ * Ссылка на экран поддержки бота (?start=support). Username приходит с бэкенда
+ * в status-payload — как deepLink у кнопки «Открыть в Telegram»; пока его нет,
+ * рендерим просто текст.
+ */
+const SupportBotLink = reatomComponent(({ children }: { children: ReactNode }) => {
+	const username = statusAtom()?.botUsername
+	if (!username) return <>{children}</>
+	return (
+		<a
+			href={`https://t.me/${username}?start=support`}
+			target="_blank"
+			rel="noopener noreferrer"
+			className={linkClass}
+		>
+			{children}
+		</a>
+	)
+})
+
+function TributeLink({ children }: { children: ReactNode }) {
+	return (
+		<a href={TRIBUTE_SUB_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>
+			{children}
+		</a>
+	)
+}
 
 /** Инлайн-ссылка на внутренний экран — в стиле emerald-ссылок Access. */
 function ScreenLink({ to, children }: { to: Screen; children: ReactNode }) {
 	return (
-		<button
-			type="button"
-			onClick={() => navigate(to)}
-			className="text-emerald-500 hover:text-emerald-400 underline underline-offset-2"
-		>
+		<button type="button" onClick={() => navigate(to)} className={linkClass}>
 			{children}
 		</button>
 	)
@@ -62,10 +95,11 @@ export const FAQ_ITEMS: FaqEntry[] = [
 		q: 'Можно ли попробовать бесплатно?',
 		a: (
 			<>
-				Да, двумя способами. На&nbsp;странице <ScreenLink to="access">«Получить доступ»</ScreenLink>{' '}
-				выдаётся быстрый пробный доступ на&nbsp;3&nbsp;часа и&nbsp;до&nbsp;5&nbsp;ГБ трафика — без
-				регистрации и&nbsp;оплаты, хватит проверить скорость и&nbsp;стабильность.
-				А&nbsp;в&nbsp;Telegram-боте есть полноценный пробный период на&nbsp;3&nbsp;дня.
+				Да. В&nbsp;Telegram-боте выдаётся пробный период на&nbsp;3&nbsp;дня. Если без VPN
+				не&nbsp;открывается сам Telegram, поможет страница{' '}
+				<ScreenLink to="access">«Получить доступ»</ScreenLink> — временный доступ
+				на&nbsp;3&nbsp;часа и&nbsp;до&nbsp;5&nbsp;ГБ трафика, без регистрации и&nbsp;оплаты. Его как
+				раз хватит, чтобы зайти в&nbsp;бот и&nbsp;получить пробный период или оформить подписку.
 			</>
 		),
 	},
@@ -74,9 +108,9 @@ export const FAQ_ITEMS: FaqEntry[] = [
 		q: 'Сколько стоит и как оплатить?',
 		a: (
 			<>
-				Тариф один — «Прайм», актуальная цена в&nbsp;Telegram-боте. Оплата проходит через сервис
-				Tribute прямо в&nbsp;Telegram, доступ активируется автоматически в&nbsp;течение минуты после
-				оплаты.
+				Тариф один — «Прайм», 149&nbsp;₽ в&nbsp;месяц. Оплата проходит через сервис{' '}
+				<TributeLink>Tribute</TributeLink> прямо в&nbsp;Telegram, доступ активируется автоматически
+				в&nbsp;течение минуты после оплаты.
 			</>
 		),
 	},
@@ -85,9 +119,9 @@ export const FAQ_ITEMS: FaqEntry[] = [
 		q: 'Как отменить подписку или отключить автопродление?',
 		a: (
 			<>
-				В&nbsp;любой момент через Tribute — там&nbsp;же, где проходила оплата, доступны управление
-				подпиской, смена карты и&nbsp;отмена. После отмены доступ сохраняется до&nbsp;конца
-				оплаченного периода.
+				В&nbsp;любой момент через <TributeLink>Tribute</TributeLink> — там&nbsp;же, где проходила
+				оплата, доступны управление подпиской, смена карты и&nbsp;отмена. После отмены доступ
+				сохраняется до&nbsp;конца оплаченного периода.
 			</>
 		),
 	},
@@ -129,9 +163,13 @@ export const FAQ_ITEMS: FaqEntry[] = [
 			<>
 				Сначала стоит проверить <ScreenLink to="status">страницу статуса</ScreenLink> — возможно,
 				идут работы. Затем обновить подписку в&nbsp;приложении и&nbsp;убедиться, что включены
-				«маршруты обхода» (нужны для работы из&nbsp;России). Если не&nbsp;помогло — написать
-				в&nbsp;техподдержку в&nbsp;Telegram-боте, приложив скриншот и&nbsp;указав устройство. Ответ
-				придёт в&nbsp;тот&nbsp;же чат.
+				«маршруты обхода» (нужны для работы из&nbsp;России). Если не&nbsp;помогло — написать{' '}
+				<SupportBotLink>в&nbsp;техподдержку в&nbsp;Telegram-боте</SupportBotLink>, приложив скриншот
+				и&nbsp;указав устройство, — ответ придёт в&nbsp;тот&nbsp;же чат. Или на&nbsp;почту{' '}
+				<a href={`mailto:${SUPPORT_EMAIL}`} className={linkClass}>
+					{SUPPORT_EMAIL}
+				</a>
+				.
 			</>
 		),
 	},

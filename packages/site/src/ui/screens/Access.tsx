@@ -664,6 +664,17 @@ export const Access = reatomComponent(() => {
 					<TelegramBlock />
 				</div>
 
+				<div className="border border-border rounded-xl p-5 mt-8">
+					<p className="font-semibold text-sm mb-1">Есть вопросы?</p>
+					<p className="text-sm text-muted-foreground leading-relaxed mb-4">
+						В&nbsp;FAQ собраны ответы про тариф и&nbsp;оплату, пробный период, поддерживаемые
+						устройства и&nbsp;типичные проблемы с&nbsp;подключением.
+					</p>
+					<button className={ctaClass} onClick={() => navigate('faq')}>
+						Открыть FAQ
+					</button>
+				</div>
+
 				<div className="mt-6">
 					<button
 						className="text-sm text-muted-foreground hover:text-foreground transition-colors"
