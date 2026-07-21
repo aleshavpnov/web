@@ -4,12 +4,13 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 		<meta name="theme-color" content="#0c0a09" />
-		<title>Alesha Vpnov</title>
+		<meta name="robots" content="noindex, nofollow" />
+		<title>Личный кабинет</title>
 		<script>
 			// Apply theme before bundle loads to avoid flash.
 			// Logic mirrors applyTheme() in src/state/theme.ts.
 			try {
-				var t = localStorage.getItem('aleshavpnov.theme')
+				var t = localStorage.getItem('app.theme')
 				var dark =
 					t === 'dark' ||
 					((t === 'system' || !t) && matchMedia('(prefers-color-scheme: dark)').matches)

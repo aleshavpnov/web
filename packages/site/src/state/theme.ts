@@ -2,7 +2,9 @@ import { action, atom } from '@reatom/core'
 
 export type ThemeMode = 'system' | 'light' | 'dark'
 
-const KEY = 'aleshavpnov.theme'
+// Нейтральный ключ (без бренда): попадает в голый инлайн-скрипт index.html, а «aleshavpnov»
+// содержит подстроку «vpn» → палило бы фронт не-JS-сканеру. Зеркалится в index.html.
+const KEY = 'app.theme'
 
 function load(): ThemeMode {
 	try {
