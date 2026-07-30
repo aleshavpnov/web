@@ -1,5 +1,5 @@
 import { reatomComponent } from '@reatom/react'
-import { Activity, ArrowLeft, CircleHelp, Monitor, Moon, Sun, Zap } from 'lucide-react'
+import { Activity, ArrowLeft, CircleHelp, Globe, Monitor, Moon, Sun } from 'lucide-react'
 import { navigate, screenAtom } from '@/state/screen.ts'
 import { themeAtom, setTheme, type ThemeMode } from '@/state/theme.ts'
 
@@ -40,7 +40,7 @@ export const Topbar = reatomComponent(() => {
 			>
 				{screen === 'home' ? (
 					<>
-						<Zap className="size-4 text-emerald-500" />
+						<Globe className="size-4 text-emerald-500" />
 						Alesha Vepenov
 					</>
 				) : (
