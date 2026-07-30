@@ -169,8 +169,7 @@ function StoreDownloadButton({ stores, device }: { stores: Store[]; device: stri
 function routingStep(client: ClientConfig): ReactNode {
 	return (
 		<>
-			Для работы внутри&nbsp;РФ нужны маршруты для&nbsp;обхода:{' '}
-			<RoutingButton href={client.routingUrl} />
+			Для работы внутри&nbsp;РФ нужны маршруты: <RoutingButton href={client.routingUrl} />
 		</>
 	)
 }

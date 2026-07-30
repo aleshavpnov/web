@@ -7,6 +7,8 @@ import { Home } from '@/ui/screens/Home.tsx'
 import { Access } from '@/ui/screens/Access.tsx'
 import { Status } from '@/ui/screens/Status.tsx'
 import { Faq } from '@/ui/screens/Faq.tsx'
+import { Privacy } from '@/ui/screens/Privacy.tsx'
+import { Terms } from '@/ui/screens/Terms.tsx'
 import { NotFound } from '@/ui/screens/NotFound.tsx'
 
 export const App = reatomComponent(() => {
@@ -32,6 +34,10 @@ export const App = reatomComponent(() => {
 				<Status />
 			) : screen === 'faq' ? (
 				<Faq />
+			) : screen === 'privacy' ? (
+				<Privacy />
+			) : screen === 'terms' ? (
+				<Terms />
 			) : screen === 'notfound' ? (
 				<NotFound />
 			) : (
