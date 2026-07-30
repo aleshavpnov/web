@@ -29,7 +29,11 @@ export const StatusPayloadSchema = z.object({
 	nodes: z.array(StatusNodeSchema),
 	internet: z.object({ latencyMs: z.number().nullable() }).nullable(),
 	// optional — старый бэкенд (кэш) может ещё не отдавать поле.
-	traffic: z.object({ avgBps: z.number(), samples: z.number() }).nullable().optional(),
+	// peakBps тоже optional: свежий бэкенд отдаёт, старый кэш — ещё нет.
+	traffic: z
+		.object({ avgBps: z.number(), peakBps: z.number().optional(), samples: z.number() })
+		.nullable()
+		.optional(),
 	// optional — старый бэкенд может ещё не отдавать поле; null пока getMe не прошёл.
 	botUsername: z.string().nullable().optional(),
 	incidents: z.array(StatusIncidentSchema),

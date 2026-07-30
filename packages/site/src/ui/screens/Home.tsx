@@ -5,6 +5,7 @@ import { statusAtom, statusErrorAtom } from '@/state/status.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
 import { VpnStatusBadge } from '@/ui/components/VpnStatusBadge.tsx'
 import { Skeleton } from '@/components/ui/skeleton.tsx'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip.tsx'
 import { ctaClass } from '@/ui/cta.ts'
 import { formatMbps } from '@/lib/format.ts'
 import type { StatusPayload } from '@/api/schemas.ts'
@@ -111,10 +112,12 @@ const metricClass =
 
 const Tagline = reatomComponent(() => {
 	const status = statusAtom()
+	// Пик — основное число; на старом кэше без peakBps откатываемся на среднее.
+	const peakBps = status?.traffic?.peakBps ?? status?.traffic?.avgBps ?? null
 	const avgBps = status?.traffic?.avgBps ?? null
 	const pingMs = status?.internet?.latencyMs ?? null
 
-	if (avgBps === null || pingMs === null) {
+	if (peakBps === null || pingMs === null) {
 		return (
 			<p className="text-base text-muted-foreground max-w-sm leading-relaxed">
 				Тихое и&nbsp;быстрое соединение без&nbsp;ограничений.
@@ -124,11 +127,20 @@ const Tagline = reatomComponent(() => {
 
 	return (
 		<p className="text-base text-muted-foreground max-w-sm leading-relaxed">
-			Быстрое соединение без&nbsp;ограничений со&nbsp;средней скоростью в{' '}
-			<span className={metricClass}>
-				<Gauge className="size-3.5" />
-				<span className="tabular-nums font-medium">{formatMbps(avgBps)}&nbsp;Мбит/с</span>
-			</span>{' '}
+			Быстрое соединение без&nbsp;ограничений со&nbsp;скоростью до{' '}
+			<Tooltip>
+				<TooltipTrigger
+					className={`${metricClass} cursor-help rounded-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50`}
+				>
+					<Gauge className="size-3.5" />
+					<span className="tabular-nums font-medium">{formatMbps(peakBps)}&nbsp;Мбит/с</span>
+				</TooltipTrigger>
+				{avgBps !== null && (
+					<TooltipContent>
+						Средняя за&nbsp;сегодня — {formatMbps(avgBps)}&nbsp;Мбит/с
+					</TooltipContent>
+				)}
+			</Tooltip>{' '}
 			и&nbsp;пингом{' '}
 			<span className={metricClass}>
 				<Activity className="size-3.5" />
@@ -142,7 +154,7 @@ const Tagline = reatomComponent(() => {
 export const Home = reatomComponent(() => {
 	return (
 		<Layout>
-			<main className="flex-1 flex flex-col justify-center px-4 py-12 w-full gap-10">
+			<main className="flex-1 flex flex-col justify-center px-4 py-12 w-full gap-6">
 				<div className="space-y-6">
 					<p className="inline-flex items-center gap-2 text-xs font-medium tracking-[0.2em] uppercase text-emerald-500">
 						<Lock className="size-3.5" />
