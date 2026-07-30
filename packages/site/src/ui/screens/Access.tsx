@@ -10,8 +10,10 @@ import {
 	expireBridge,
 	requestBridge,
 } from '@/state/bridge.ts'
+import { statusAtom } from '@/state/status.ts'
 import { navigate } from '@/state/screen.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
+import { BackLink } from '@/ui/components/BackLink.tsx'
 import { ctaClass } from '@/ui/cta.ts'
 
 // Логотип Happ (https://happ.su/imgs/logo_small.svg), перекрашивается через currentColor.
@@ -389,6 +391,10 @@ const defaultPlatform = detectPlatform()
 // QR имеет смысл только там, где Telegram-аккаунт живёт на другом устройстве.
 const isDesktop = defaultPlatform === 'windows' || defaultPlatform === 'mac'
 
+// Крайний fallback для кнопки «Открыть в Telegram»: если username бота ещё не пришёл
+// со статусом, кнопка всё равно ведёт в бота (не должна блокироваться).
+const BOT_FALLBACK_URL = 'https://t.me/aleshavpnrobot'
+
 const BridgePanel = reatomComponent(() => {
 	const bridge = bridgeAtom()
 	const busy = bridgeBusyAtom()
@@ -456,13 +462,15 @@ const BridgePanel = reatomComponent(() => {
 	)
 })
 
-// Шаг 3: открыть бота в Telegram. Ссылка приходит с бэкенда после получения доступа,
-// поэтому без доступа кнопка неактивна. На десктопе рядом QR с тем же deep-link:
-// телефон сканирует и открывает бота с токеном привязки (кросс-девайс сценарий).
+// Шаг 3: открыть бота в Telegram. Если доступ уже получен на шаге 2 — ссылка с токеном
+// привязки (bridge.deepLink) + QR на десктопе. Иначе кнопка ведёт просто в бота
+// (t.me/<botUsername>) — человек мог получить доступ раньше и хочет сразу перейти.
 const TelegramBlock = reatomComponent(() => {
 	const bridge = bridgeAtom()
+	const botUsername = statusAtom()?.botUsername
 	const [qr, setQr] = useState<string | null>(null)
 	const deepLink = bridge?.deepLink ?? null
+	const botLink = deepLink ?? (botUsername ? `https://t.me/${botUsername}` : BOT_FALLBACK_URL)
 
 	useEffect(() => {
 		if (!deepLink || !isDesktop) {
@@ -491,35 +499,21 @@ const TelegramBlock = reatomComponent(() => {
 			<p className="text-sm text-muted-foreground leading-relaxed mb-4">
 				Перейдите в&nbsp;бота в&nbsp;Telegram и&nbsp;активируйте подписку.
 			</p>
-			{bridge ? (
-				<>
-					<a href={bridge.deepLink} className={ctaClass}>
-						<Send className="size-4" />
-						Открыть в Telegram
-					</a>
-					{qr && (
-						<div className="mt-4 flex items-center gap-4">
-							<img
-								src={qr}
-								alt="QR-код: открыть бота в Telegram"
-								className="size-40 shrink-0 rounded-lg bg-white p-2"
-							/>
-							<p className="text-sm text-muted-foreground leading-relaxed">
-								Или отсканируйте с&nbsp;телефона — бот откроется сразу с&nbsp;привязкой вашего
-								доступа.
-							</p>
-						</div>
-					)}
-				</>
-			) : (
-				<button
-					type="button"
-					className={`${ctaClass} opacity-50`}
-					onClick={() => toast.info('Сначала получите доступ на шаге 2.')}
-				>
-					<Send className="size-4" />
-					Открыть в Telegram
-				</button>
+			<a href={botLink} className={ctaClass}>
+				<Send className="size-4" />
+				Открыть в Telegram
+			</a>
+			{qr && (
+				<div className="mt-4 flex items-center gap-4">
+					<img
+						src={qr}
+						alt="QR-код: открыть бота в Telegram"
+						className="size-40 shrink-0 rounded-lg bg-white p-2"
+					/>
+					<p className="text-sm text-muted-foreground leading-relaxed">
+						Или отсканируйте с&nbsp;телефона — бот откроется сразу с&nbsp;привязкой вашего доступа.
+					</p>
+				</div>
 			)}
 		</div>
 	)
@@ -675,12 +669,7 @@ export const Access = reatomComponent(() => {
 				</div>
 
 				<div className="mt-6">
-					<button
-						className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-						onClick={() => navigate('home')}
-					>
-						← На главную
-					</button>
+					<BackLink />
 				</div>
 				<PlatformDialog
 					open={dialogOpen}

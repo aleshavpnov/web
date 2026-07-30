@@ -2,6 +2,7 @@ import { reatomComponent } from '@reatom/react'
 import { CircleHelp } from 'lucide-react'
 import { navigate } from '@/state/screen.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
+import { BackLink } from '@/ui/components/BackLink.tsx'
 import { ctaClass } from '@/ui/cta.ts'
 import {
 	Accordion,
@@ -52,12 +53,7 @@ export const Faq = reatomComponent(() => {
 				</div>
 
 				<div className="mt-6">
-					<button
-						className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-						onClick={() => navigate('home')}
-					>
-						← На главную
-					</button>
+					<BackLink />
 				</div>
 			</main>
 		</Layout>

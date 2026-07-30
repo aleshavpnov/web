@@ -15,7 +15,7 @@ export const App = reatomComponent(() => {
 	useEffect(() => {
 		// Голый index.html обезличен (нейтральный title против не-JS-сканеров) — брендовую
 		// вкладку возвращаем живому пользователю здесь. Неиндексацию держит meta robots, не title.
-		document.title = 'Alesha Vpnov'
+		document.title = 'Alesha Vepenov'
 		const loader = document.getElementById('initial-loader')
 		if (loader) {
 			loader.classList.add('is-hiding')

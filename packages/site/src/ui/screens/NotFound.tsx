@@ -1,7 +1,7 @@
 import { reatomComponent } from '@reatom/react'
 import { SearchX } from 'lucide-react'
-import { navigate } from '@/state/screen.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
+import { BackLink } from '@/ui/components/BackLink.tsx'
 
 export const NotFound = reatomComponent(() => {
 	return (
@@ -14,12 +14,7 @@ export const NotFound = reatomComponent(() => {
 						Такой страницы не существует или она была удалена.
 					</p>
 				</div>
-				<button
-					className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-					onClick={() => navigate('home')}
-				>
-					← На главную
-				</button>
+				<BackLink />
 			</main>
 		</Layout>
 	)

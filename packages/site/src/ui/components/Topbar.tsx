@@ -1,5 +1,5 @@
 import { reatomComponent } from '@reatom/react'
-import { Activity, CircleHelp, House, Monitor, Moon, Sun, Zap } from 'lucide-react'
+import { Activity, ArrowLeft, CircleHelp, Monitor, Moon, Sun, Zap } from 'lucide-react'
 import { navigate, screenAtom } from '@/state/screen.ts'
 import { themeAtom, setTheme, type ThemeMode } from '@/state/theme.ts'
 
@@ -38,17 +38,26 @@ export const Topbar = reatomComponent(() => {
 				className="inline-flex items-center gap-2 text-sm font-bold whitespace-nowrap text-foreground hover:text-foreground/80 transition-colors"
 				onClick={() => navigate('home')}
 			>
-				<Zap className="size-4 text-emerald-500" />
-				Alesha Vpnov
+				{screen === 'home' ? (
+					<>
+						<Zap className="size-4 text-emerald-500" />
+						Alesha Vepenov
+					</>
+				) : (
+					<>
+						<ArrowLeft className="size-4 text-emerald-500" />
+						Вернуться
+					</>
+				)}
 			</button>
 			<nav className="flex items-center gap-4 text-xs text-muted-foreground">
 				<button
-					className={navItemClass(screen === 'home')}
-					aria-current={screen === 'home' ? 'page' : undefined}
-					onClick={() => navigate('home')}
+					className={navItemClass(screen === 'faq')}
+					aria-current={screen === 'faq' ? 'page' : undefined}
+					onClick={() => navigate('faq')}
 				>
-					<House className="size-3.5 max-[420px]:hidden" />
-					Главная
+					<CircleHelp className="size-3.5 max-[420px]:hidden" />
+					FAQ
 				</button>
 				<button
 					className={navItemClass(screen === 'status')}
@@ -57,14 +66,6 @@ export const Topbar = reatomComponent(() => {
 				>
 					<Activity className="size-3.5 max-[420px]:hidden" />
 					Статус
-				</button>
-				<button
-					className={navItemClass(screen === 'faq')}
-					aria-current={screen === 'faq' ? 'page' : undefined}
-					onClick={() => navigate('faq')}
-				>
-					<CircleHelp className="size-3.5 max-[420px]:hidden" />
-					FAQ
 				</button>
 				<button
 					className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"

@@ -57,7 +57,7 @@ export interface FaqEntry {
 export const FAQ_ITEMS: FaqEntry[] = [
 	{
 		id: 'what-is',
-		q: 'Что такое Alesha Vpnov?',
+		q: 'Что такое Alesha Vepenov?',
 		a: (
 			<>
 				Частный сервис для своих — закрытая сеть, а&nbsp;не&nbsp;массовый публичный сервис. Серверы
