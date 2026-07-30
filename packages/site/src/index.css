@@ -121,6 +121,11 @@
 	* {
 		@apply border-border outline-ring/50;
 	}
+	/* Резервируем место под вертикальный скроллбар всегда, чтобы контент не «прыгал»
+	   по горизонтали при переходе между короткими и длинными (со скроллом) страницами. */
+	html {
+		scrollbar-gutter: stable;
+	}
 	body {
 		@apply bg-background text-foreground font-sans;
 	}

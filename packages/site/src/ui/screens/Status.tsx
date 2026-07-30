@@ -2,7 +2,7 @@ import { reatomComponent } from '@reatom/react'
 import { Activity } from 'lucide-react'
 import { useEffect } from 'react'
 import { statusAtom, statusErrorAtom, loadStatus } from '@/state/status.ts'
-import { navigate } from '@/state/screen.ts'
+import { BackLink } from '@/ui/components/BackLink.tsx'
 import { Layout } from '@/ui/components/Layout.tsx'
 import { Skeleton } from '@/components/ui/skeleton.tsx'
 import type { StatusNode, StatusIncident, StatusPayload } from '@/api/schemas.ts'
@@ -257,12 +257,7 @@ export const Status = reatomComponent(() => {
 				)}
 
 				<div>
-					<button
-						className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-						onClick={() => navigate('home')}
-					>
-						← На главную
-					</button>
+					<BackLink />
 				</div>
 			</main>
 		</Layout>

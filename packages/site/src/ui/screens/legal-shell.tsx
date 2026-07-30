@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 import { ShieldCheck } from 'lucide-react'
-import { navigate } from '@/state/screen.ts'
+import { BackLink } from '@/ui/components/BackLink.tsx'
 import { Layout } from '@/ui/components/Layout.tsx'
 
 /** Название сервиса и общие реквизиты, используемые в юридических документах. */
-export const SERVICE_NAME = 'Alesha Vpnov'
+export const SERVICE_NAME = 'Alesha Vepenov'
 export const SERVICE_SITE = 'durov.aimuzov.online'
 export const LEGAL_EMAIL = 'support@aimuzov.online'
 /** Дата последней редакции документов (обновлять при изменениях). */
@@ -72,12 +72,7 @@ export function LegalShell({
 				{children}
 
 				<div className="mt-8">
-					<button
-						className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-						onClick={() => navigate('home')}
-					>
-						← На главную
-					</button>
+					<BackLink />
 				</div>
 			</main>
 		</Layout>
