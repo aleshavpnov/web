@@ -29,7 +29,7 @@ export const VpnStatusBadge = reatomComponent(() => {
 						height={128}
 						loading="lazy"
 						className="w-full h-auto"
-						alt="Рейтинг Alesha Vepenov на VPN Статус — 5 из 5"
+						alt="Рейтинг Alesha Vepenov — 5 из 5"
 					/>
 				</a>
 			)}

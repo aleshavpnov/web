@@ -18,7 +18,7 @@ function healthDot(status: StatusPayload['overall']) {
 }
 
 function healthLabel(status: StatusPayload['overall']) {
-	if (status === 'operational') return 'Все системы работают'
+	if (status === 'operational') return 'Всё работает'
 	if (status === 'degraded') return 'Частичные проблемы'
 	if (status === 'down') return 'Сбой'
 	return 'Статус неизвестен'

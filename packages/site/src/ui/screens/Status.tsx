@@ -22,7 +22,7 @@ function overallText(status: StatusPayload['overall']) {
 }
 
 function overallLabel(status: StatusPayload['overall']) {
-	if (status === 'operational') return '● Все системы работают'
+	if (status === 'operational') return '● Всё работает'
 	if (status === 'degraded') return '◐ Частичные проблемы'
 	if (status === 'down') return '● Сбой'
 	return '○ Статус неизвестен'
