@@ -3,7 +3,7 @@ import { Activity, ArrowRight, Gauge, Lock, Zap } from 'lucide-react'
 import { navigate } from '@/state/screen.ts'
 import { statusAtom, statusErrorAtom } from '@/state/status.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
-import { VpnStatusBadge } from '@/ui/components/VpnStatusBadge.tsx'
+// import { VpnStatusBadge } from '@/ui/components/VpnStatusBadge.tsx' // временно скрыто на время ревью платёжной системы
 import { Skeleton } from '@/components/ui/skeleton.tsx'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip.tsx'
 import { ctaClass } from '@/ui/cta.ts'
@@ -170,7 +170,7 @@ export const Home = reatomComponent(() => {
 							Получить доступ
 						</button>
 					</div>
-					<VpnStatusBadge />
+					{/* <VpnStatusBadge /> — временно скрыто на время ревью платёжной системы */}
 				</div>
 				<MiniStatus />
 			</main>
