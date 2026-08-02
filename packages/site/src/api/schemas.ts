@@ -41,6 +41,8 @@ export const StatusPayloadSchema = z.object({
 export const NonceSchema = z.object({ token: z.string() })
 export const BridgeSchema = z.object({
 	subscriptionUrl: z.string(),
+	// Ссылка на домене-зеркале (SUB_BACKUP_DOMAIN); отсутствует, если зеркало не настроено.
+	subscriptionUrlBackup: z.string().optional(),
 	deepLink: z.string(),
 	expiresAt: z.string(),
 })
