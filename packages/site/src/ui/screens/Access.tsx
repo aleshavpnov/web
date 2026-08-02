@@ -8,6 +8,7 @@ import {
 	bridgeBusyAtom,
 	bridgeErrorAtom,
 	expireBridge,
+	pickSubscriptionUrl,
 	requestBridge,
 } from '@/state/bridge.ts'
 import { statusAtom } from '@/state/status.ts'
@@ -405,18 +406,19 @@ const BridgePanel = reatomComponent(() => {
 		if (error) toast.error(friendlyError(error))
 	}, [error])
 
+	// Ссылка под текущий домен: на зеркале — backup-домен, иначе основной. window.location
+	// читаем здесь (а не в persist), чтобы один сохранённый bridge резолвился по хосту визита.
+	const subUrl = bridge ? pickSubscriptionUrl(bridge, window.location.hostname) : ''
+
 	const copyUrl = async () => {
-		if (!bridge?.subscriptionUrl) return
-		await navigator.clipboard.writeText(bridge.subscriptionUrl)
+		if (!subUrl) return
+		await navigator.clipboard.writeText(subUrl)
 		toast.success('Ссылка скопирована')
 	}
 
 	// Без раннего return: оба состояния живут в одной обёртке фиксированной
 	// высоты, поэтому shortUrl вычисляем с guard на отсутствие bridge.
-	const shortUrl =
-		bridge && bridge.subscriptionUrl.length > 42
-			? bridge.subscriptionUrl.slice(0, 42) + '…'
-			: (bridge?.subscriptionUrl ?? '')
+	const shortUrl = subUrl.length > 42 ? subUrl.slice(0, 42) + '…' : subUrl
 
 	// min-h резервирует высоту панельного состояния, чтобы при переключении
 	// кнопка↔панель список-инструкция ниже не прыгал; justify-center даёт

@@ -24,6 +24,23 @@ export const requestBridge = action(async () => {
 	}
 }, 'requestBridge')
 
+/**
+ * Ссылка-подписка для текущего домена. Если сайт открыт с домена-зеркала (host совпал с хостом
+ * backup-ссылки) — отдаём backup, чтобы клиент получил ссылку на достижимом домене; иначе основную.
+ * Домены не хардкодятся — сравнивается хост самой backup-ссылки, пришедшей с бэкенда.
+ */
+export function pickSubscriptionUrl(bridge: BridgeResult, hostname: string): string {
+	const backup = bridge.subscriptionUrlBackup
+	if (backup) {
+		try {
+			if (new URL(backup).hostname === hostname) return backup
+		} catch {
+			/* невалидный URL — падаем на основную */
+		}
+	}
+	return bridge.subscriptionUrl
+}
+
 /** Сброс истёкшего bridge: панель возвращается к кнопке получения доступа. */
 export const expireBridge = action(() => {
 	bridgeAtom.set(null)
