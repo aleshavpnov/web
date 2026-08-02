@@ -44,13 +44,19 @@ export async function fetchStatus(): Promise<StatusPayload> {
 
 export async function createBridge(ref?: string | null): Promise<BridgeResult> {
 	const token = await getNonce()
-	const res = await fetch(`${BASE}/api/bridge`, {
-		method: 'POST',
+	// GET, а не POST: на домене-зеркале (durov.aimuzov.xyz за Yandex CDN) POST режется на кромке
+	// yccdn (405, CDN пропускает только GET/HEAD). Токен и ref идём query — заголовок через CDN
+	// может не дойти; токен эфемерный (HMAC, TTL 10 мин), не PII. `_` — cache-buster: ответ
+	// уникален, нельзя отдать чужой bridge из кеша (сервер тоже шлёт no-store).
+	const params = new URLSearchParams()
+	if (token) params.set('token', token)
+	if (ref) params.set('ref', ref)
+	params.set('_', String(Date.now()))
+	const res = await fetch(`${BASE}/api/bridge?${params.toString()}`, {
 		headers: {
+			accept: 'application/json',
 			...(token ? { 'x-bridge-token': token } : {}),
-			...(ref ? { 'content-type': 'application/json' } : {}),
 		},
-		...(ref ? { body: JSON.stringify({ ref }) } : {}),
 	})
 	if (res.status === 429) throw new Error('rate-limit')
 	if (!res.ok) throw new Error(`/api/bridge -> ${res.status}`)
