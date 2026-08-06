@@ -42,6 +42,25 @@ export async function fetchStatus(): Promise<StatusPayload> {
 	return StatusPayloadSchema.parse(await res.json())
 }
 
+/**
+ * Отметить переход по реф-ссылке. Fire-and-forget: ответ 204, ошибки глотаем —
+ * счётчик у реферера не повод ломать загрузку лендинга. GET и cache-buster — по той
+ * же причине, что в createBridge (yccdn режет POST, кеш не должен схлопывать вызовы).
+ */
+export async function reportRefHit(ref: string, visitorKey: string | null): Promise<void> {
+	if (!visitorKey) return
+	try {
+		const token = await getNonce()
+		const params = new URLSearchParams({ ref, v: visitorKey, _: String(Date.now()) })
+		if (token) params.set('token', token)
+		await fetch(`${BASE}/api/ref-hit?${params.toString()}`, {
+			headers: token ? { 'x-bridge-token': token } : {},
+		})
+	} catch {
+		// сеть/гейт недоступны — переход не засчитан, это не ошибка для пользователя
+	}
+}
+
 export async function createBridge(ref?: string | null): Promise<BridgeResult> {
 	const token = await getNonce()
 	// GET, а не POST: на домене-зеркале (durov.aimuzov.xyz за Yandex CDN) POST режется на кромке

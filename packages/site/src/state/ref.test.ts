@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { captureRef, getStoredRef } from './ref.ts'
+import { captureRef, getStoredRef, getVisitorKey } from './ref.ts'
 
 function setSearch(search: string): void {
 	window.history.replaceState(null, '', `/${search}`)
@@ -8,12 +8,13 @@ function setSearch(search: string): void {
 describe('ref state', () => {
 	beforeEach(() => {
 		sessionStorage.clear()
+		localStorage.clear()
 		setSearch('')
 	})
 
-	it('captureRef сохраняет валидный ?ref= в sessionStorage', () => {
+	it('captureRef сохраняет валидный ?ref= в sessionStorage и возвращает его', () => {
 		setSearch('?ref=abcd1234')
-		captureRef()
+		expect(captureRef()).toBe('abcd1234')
 		expect(getStoredRef()).toBe('abcd1234')
 	})
 
@@ -31,11 +32,17 @@ describe('ref state', () => {
 		setSearch('?ref=abcd1234')
 		captureRef()
 		setSearch('')
-		captureRef()
+		expect(captureRef()).toBeNull()
 		expect(getStoredRef()).toBe('abcd1234')
 	})
 
 	it('getStoredRef без сохранённого кода — null', () => {
 		expect(getStoredRef()).toBeNull()
+	})
+
+	it('getVisitorKey стабилен между вызовами', () => {
+		const key = getVisitorKey()
+		expect(key).toBeTruthy()
+		expect(getVisitorKey()).toBe(key)
 	})
 })
