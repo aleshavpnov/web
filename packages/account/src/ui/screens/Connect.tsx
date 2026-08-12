@@ -176,7 +176,7 @@ export const Connect = reatomComponent(() => {
 							<button
 								type="button"
 								onClick={() => setPlatformOpen(true)}
-								className="text-xs text-brand underline underline-offset-2"
+								className="min-h-11 px-1 text-sm text-brand underline underline-offset-2"
 							>
 								другое устройство?
 							</button>

@@ -59,9 +59,12 @@ export const SECTION_CARD = 'rounded-xl bg-card p-4 ring-1 ring-foreground/10'
 export const BRAND_ON = 'bg-brand text-brand-foreground hover:bg-brand/85'
 
 const SEGMENT_TRIGGER =
-	'px-2.5 text-xs data-active:bg-brand data-active:text-brand-foreground dark:data-active:bg-brand dark:data-active:text-brand-foreground'
+	'px-3 text-sm data-active:bg-brand data-active:text-brand-foreground dark:data-active:bg-brand dark:data-active:text-brand-foreground'
 
-/** Переключатель «одно из нескольких»: окно графика, платформа, тариф. */
+/**
+ * Переключатель «одно из нескольких»: окно графика, платформа, тариф.
+ * Панель во всю ширину и ростом с кнопку — делениями попадают пальцем так же часто.
+ */
 export function Segmented<T extends string>({
 	value,
 	onValueChange,
@@ -81,7 +84,7 @@ export function Segmented<T extends string>({
 			onValueChange={(next) => onValueChange(String(next) as T)}
 			className={className}
 		>
-			<TabsList>
+			<TabsList className="h-11 w-full">
 				{options.map((o) => (
 					<TabsTrigger
 						key={o.value}
@@ -174,15 +177,17 @@ export function CopyValue({
 			title="Скопировать"
 			onClick={() => void onClick()}
 			className={cn(
-				'inline-flex items-center gap-1 transition-colors hover:text-foreground',
+				// min-h-11: строка со ссылкой — такая же кнопка, как остальные, и по ней
+				// целятся пальцем ровно так же.
+				'inline-flex min-h-11 items-center gap-2 transition-colors hover:text-foreground',
 				className,
 			)}
 		>
 			{children ?? value}
 			{copied ? (
-				<CheckIcon className="size-3 shrink-0 text-viz-good" />
+				<CheckIcon className="size-4 shrink-0 text-viz-good" />
 			) : (
-				<CopyIcon className="size-3 shrink-0 opacity-60" />
+				<CopyIcon className="size-4 shrink-0 opacity-60" />
 			)}
 		</button>
 	)

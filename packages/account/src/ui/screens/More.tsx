@@ -62,11 +62,12 @@ const SettingsCard = reatomComponent(() => {
 									<div className="text-xs text-muted-foreground">{hint}</div>
 								</div>
 								<Button
-									size="sm"
 									variant={settings[key] ? 'default' : 'outline'}
 									disabled={busy === key}
 									className={cn(
-										'shrink-0',
+										// Фиксированная ширина: «Включены» и «Выключены» разной длины, и без
+										// неё кнопка дёргается прямо под пальцем при каждом переключении.
+										'w-32 shrink-0',
 										settings[key] && 'bg-brand text-brand-foreground hover:bg-brand/85',
 									)}
 									onClick={() => void toggle(key, !settings[key])}
@@ -118,7 +119,7 @@ const WhatsnewCard = reatomComponent(() => {
 							<button
 								type="button"
 								onClick={() => setOpen((v) => !v)}
-								className="flex w-full items-center justify-center gap-1 pt-2 text-sm text-brand"
+								className="flex min-h-11 w-full items-center justify-center gap-1 pt-2 text-sm text-brand"
 							>
 								{open ? 'Свернуть' : 'Показать прошлые версии'}
 								<ChevronDownIcon

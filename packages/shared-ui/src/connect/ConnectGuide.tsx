@@ -20,10 +20,13 @@ import {
 	type Store,
 } from './apps.tsx'
 
-/** Компактная CTA-кнопка «Скачать» — на отдельной строке под текстом шага. */
+/**
+ * CTA-кнопка «Скачать» — на отдельной строке под текстом шага. Высота 40px: инструкцию
+ * читают с телефона (и на лендинге, и в кабинете), а по кнопке в 28px палец промахивается.
+ */
 const downloadBtnClass =
-	'flex w-fit items-center gap-1.5 mt-2 bg-emerald-500 hover:bg-emerald-400 ' +
-	'text-white font-semibold text-xs uppercase tracking-wide px-3 py-1.5 rounded-md ' +
+	'flex min-h-10 w-fit items-center gap-1.5 mt-2 bg-emerald-500 hover:bg-emerald-400 ' +
+	'text-white font-semibold text-[0.8125rem] uppercase tracking-wide px-4 py-2 rounded-md ' +
 	'transition-all hover:shadow-md hover:shadow-emerald-500/30 active:scale-95'
 
 /** Заголовок шага — заметный emerald-бейдж, чтобы шаги не терялись. */
@@ -121,7 +124,7 @@ function RoutingButton({ href }: { href: string }) {
 function StoreDownloadButton({ stores, device }: { stores: Store[]; device: string }) {
 	const [open, setOpen] = useState(false)
 	const itemClass =
-		'flex items-center rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors'
+		'flex min-h-11 items-center rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors'
 
 	return (
 		<>
@@ -265,7 +268,7 @@ export function ClientToggle({
 						key={c}
 						type="button"
 						onClick={() => onChange(c)}
-						className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold uppercase tracking-wide transition-colors ${
+						className={`inline-flex min-h-10 items-center gap-1.5 px-4 py-2 rounded-md text-sm font-semibold uppercase tracking-wide transition-colors ${
 							c === value
 								? 'bg-emerald-500/10 text-emerald-500'
 								: 'text-muted-foreground hover:text-foreground'
@@ -302,7 +305,7 @@ export function PlatformDialog({
 						onSelect(p.key)
 						onClose()
 					}}
-					className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
+					className={`flex min-h-11 items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
 						p.key === current
 							? 'bg-emerald-500/10 text-emerald-500 font-semibold'
 							: 'text-foreground hover:bg-muted'
