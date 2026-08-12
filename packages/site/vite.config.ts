@@ -7,7 +7,14 @@ import tailwindcss from '@tailwindcss/vite'
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-	resolve: { alias: { '@': path.resolve(rootDir, './src') } },
+	resolve: {
+		alias: {
+			'@': path.resolve(rootDir, './src'),
+			// Общие компоненты инструкции подключения (packages/shared-ui) подключаются
+			// исходниками: отдельного шага сборки у пакета нет, транспилирует потребитель.
+			'@shared': path.resolve(rootDir, '../shared-ui/src'),
+		},
+	},
 	plugins: [react(), tailwindcss()],
 	server: { host: true },
 	test: {

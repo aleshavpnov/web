@@ -1,0 +1,21 @@
+{
+	"name": "@aleshavpnov/shared-ui",
+	"private": true,
+	"version": "3.3.0",
+	"type": "module",
+	"description": "Общие React-компоненты фронтов aleshavpnov: инструкция подключения (лендинг + кабинет).",
+	"exports": {
+		"./connect": "./src/connect/index.ts"
+	},
+	"scripts": {
+		"typecheck": "tsc -b --noEmit"
+	},
+	"peerDependencies": {
+		"lucide-react": "*",
+		"react": "*"
+	},
+	"devDependencies": {
+		"@types/react": "19.2.17",
+		"typescript": "6.0.3"
+	}
+}

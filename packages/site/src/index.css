@@ -1,6 +1,13 @@
 @import 'tailwindcss';
 @import 'shadcn/tailwind.css';
 
+/*
+ * Общие компоненты инструкции подключения лежат вне этого пакета, а Tailwind сканирует
+ * только дерево проекта — без @source их классы молча вырежутся из бандла (вёрстка
+ * поедет, ошибки не будет).
+ */
+@source '../../shared-ui/src';
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
