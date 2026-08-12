@@ -2,9 +2,9 @@
 @import 'shadcn/tailwind.css';
 
 /*
- * Общие компоненты инструкции подключения лежат вне этого пакета, а Tailwind сканирует
- * только дерево проекта — без @source их классы молча вырежутся из бандла (вёрстка
- * поедет, ошибки не будет).
+ * Инструкция подключения приходит из packages/shared-ui, а Tailwind сканирует только
+ * дерево проекта — без @source её классы молча вырежутся из бандла (вёрстка поедет,
+ * ошибки не будет).
  */
 @source '../../shared-ui/src';
 
@@ -138,23 +138,54 @@
 	}
 }
 
-/* Привлекающее внимание мягкое свечение для главной CTA-кнопки. */
-@keyframes cta-glow {
-	0%,
-	100% {
-		box-shadow: 0 0 0 0 rgb(16 185 129 / 0.5);
-	}
-	50% {
-		box-shadow: 0 0 24px 5px rgb(16 185 129 / 0.4);
-	}
+/* Токены графиков. Категориальные слоты 1–2 (синий/оранжевый) и статусы —
+   значения провалидированы validate_palette.js против наших поверхностей
+   (светлая #ffffff, тёмная #292524) в обоих режимах: разделение при
+   дальтонизме и контраст к фону проходят с запасом.
+   Статусные цвета зарезервированы: они НИКОГДА не используются как «серия N»
+   и всегда идут в паре с подписью, а не в одиночку. */
+/* Фирменный зелёный — тот же акцент, что на сайте (emerald). Оттенок разный по темам:
+   emerald-500 сайта на белом фоне не дотягивает по контрасту для текста и иконок,
+   поэтому в светлой теме берём emerald-600, в тёмной — emerald-400. */
+:root {
+	--brand: oklch(0.596 0.145 163.225);
+	--brand-foreground: oklch(1 0 0);
 }
 
-.cta-glow {
-	animation: cta-glow 2.6s ease-in-out infinite;
+.dark {
+	--brand: oklch(0.765 0.177 163.223);
+	--brand-foreground: oklch(0.147 0.004 49.25);
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.cta-glow {
-		animation: none;
-	}
+@theme inline {
+	--color-brand: var(--brand);
+	--color-brand-foreground: var(--brand-foreground);
+}
+
+:root {
+	--viz-series-1: #2a78d6;
+	--viz-series-2: #eb6834;
+	--viz-grid: oklch(0.923 0.003 48.717);
+	--viz-axis: oklch(0.553 0.013 58.071);
+
+	--viz-good: #0ca30c;
+	--viz-warning: #fab219;
+	--viz-serious: #ec835a;
+	--viz-critical: #d03b3b;
+}
+
+.dark {
+	--viz-series-1: #3987e5;
+	--viz-series-2: #d95926;
+	--viz-grid: oklch(1 0 0 / 12%);
+	--viz-axis: oklch(0.709 0.01 56.259);
+}
+
+@theme inline {
+	--color-viz-series-1: var(--viz-series-1);
+	--color-viz-series-2: var(--viz-series-2);
+	--color-viz-good: var(--viz-good);
+	--color-viz-warning: var(--viz-warning);
+	--color-viz-serious: var(--viz-serious);
+	--color-viz-critical: var(--viz-critical);
 }
