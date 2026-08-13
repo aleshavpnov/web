@@ -5,9 +5,10 @@
  * быть не должно: карту клиента мы не видим и видеть не хотим.
  */
 import { reatomComponent } from '@reatom/react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ExternalLinkIcon, GiftIcon, SettingsIcon } from 'lucide-react'
 
+import { trackEvent } from '@/api/client.ts'
 import type { Plan } from '@/api/schemas.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { formatDevices } from '@/lib/format.ts'
@@ -15,6 +16,7 @@ import { openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { plansRes } from '@/state/cabinet.ts'
 import { Async, BRAND_ON, CopyValue, SECTION_CARD, SectionTitle } from '@/ui/components/common.tsx'
+import { Wizard } from '@/ui/screens/purchase/Wizard.tsx'
 
 function PlanRow({
 	plan,
@@ -50,9 +52,18 @@ function PlanRow({
 }
 
 export const Plans = reatomComponent(() => {
+	// Список тарифов свёрнут: экран открывается подбором, а витрина — для тех, кто уже
+	// знает, чего хочет.
+	const [listOpen, setListOpen] = useState(false)
+
 	useEffect(() => {
 		void plansRes.load()
 	}, [])
+
+	function openList() {
+		setListOpen(true)
+		trackEvent('plans_list_open')
+	}
 
 	return (
 		<Async
@@ -63,30 +74,46 @@ export const Plans = reatomComponent(() => {
 		>
 			{(data) => (
 				<>
-					<p className="text-sm text-muted-foreground">
-						Серверы, скорость и&nbsp;трафик во&nbsp;всех тарифах одинаковые — отличается только
-						число устройств.
-					</p>
+					<Wizard />
 
-					<div className="space-y-3">
-						{data.plans.map((plan) => (
-							<PlanRow
-								key={plan.code}
-								plan={plan}
-								current={data.current?.planCode === plan.code}
-								action={
-									data.current
-										? data.current.planCode === plan.code
-											? 'Продлить'
-											: 'Перейти на этот тариф'
-										: 'Оформить'
-								}
-								onBuy={() => openLink(plan.buyUrl)}
-							/>
-						))}
-					</div>
+					{!listOpen && (
+						<button
+							type="button"
+							onClick={openList}
+							className="flex min-h-11 w-full items-center justify-center gap-1 text-sm text-muted-foreground underline underline-offset-4"
+						>
+							Показать все тарифы
+						</button>
+					)}
 
-					{data.current && (
+					{listOpen && (
+						<>
+							<p className="text-sm text-muted-foreground">
+								Серверы, скорость и&nbsp;трафик во&nbsp;всех тарифах одинаковые — отличается только
+								число устройств.
+							</p>
+
+							<div className="space-y-3">
+								{data.plans.map((plan) => (
+									<PlanRow
+										key={plan.code}
+										plan={plan}
+										current={data.current?.planCode === plan.code}
+										action={
+											data.current
+												? data.current.planCode === plan.code
+													? 'Продлить'
+													: 'Перейти на этот тариф'
+												: 'Оформить'
+										}
+										onBuy={() => openLink(plan.buyUrl)}
+									/>
+								))}
+							</div>
+						</>
+					)}
+
+					{listOpen && data.current && (
 						<p className="text-xs text-muted-foreground">
 							Смена тарифа вступит в&nbsp;силу со&nbsp;следующего оплаченного периода.
 						</p>
@@ -120,7 +147,9 @@ export const Plans = reatomComponent(() => {
 						</section>
 					)}
 
-					{data.gifts.length > 0 && (
+					{/* Подарки в развёрнутом списке: в свёрнутом виде за них отвечает ветка
+					    «в подарок» самого подбора, и две витрины подряд только путают. */}
+					{listOpen && data.gifts.length > 0 && (
 						<section>
 							<SectionTitle>Подарить подписку</SectionTitle>
 							<div className="space-y-3">

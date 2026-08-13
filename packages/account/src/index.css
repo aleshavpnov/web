@@ -189,3 +189,47 @@
 	--color-viz-serious: var(--viz-serious);
 	--color-viz-critical: var(--viz-critical);
 }
+
+/*
+ * Анимации визарда покупки. Свои @keyframes, а не плагин: нужны ровно две штуки, и тащить
+ * ради них зависимость (tailwindcss-animate) незачем.
+ *
+ * prefers-reduced-motion уважаем: у части людей движение вызывает тошноту, а шаги должны
+ * оставаться проходимыми и без него.
+ */
+@keyframes step-in {
+	from {
+		opacity: 0;
+		transform: translateX(1.25rem);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+@keyframes result-pop {
+	from {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+.step-in {
+	animation: step-in 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.result-pop {
+	animation: result-pop 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.step-in,
+	.result-pop {
+		animation: none;
+	}
+}

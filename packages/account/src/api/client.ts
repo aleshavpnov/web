@@ -7,9 +7,13 @@
  *
  * 404 от гейта неотличим от «нет такого роута» намеренно (см. tma-auth.ts на боте).
  */
+import { z } from 'zod'
+
 import { initData } from '@/lib/telegram.ts'
 import {
 	AccessSchema,
+	AdviceSchema,
+	CheckoutSchema,
 	OverviewSchema,
 	PlansSchema,
 	ReferralsSchema,
@@ -18,6 +22,10 @@ import {
 	UsageSchema,
 	WhatsnewSchema,
 	type Access,
+	type Advice,
+	type Audience,
+	type CabinetEvent,
+	type DeviceNeed,
 	type Overview,
 	type Plans,
 	type Referrals,
@@ -74,6 +82,25 @@ export const fetchPlans = (): Promise<Plans> => request('/plans', PlansSchema)
 
 export const fetchUsage = (days: number): Promise<Usage> =>
 	request(`/usage?days=${days}`, UsageSchema)
+
+/** Подбор тарифа по ответам визарда: правило живёт на боте, фронт только спрашивает. */
+export const fetchAdvice = (need: DeviceNeed, audience: Audience): Promise<Advice> =>
+	request(`/advice?need=${need}&audience=${audience}`, AdviceSchema)
+
+/**
+ * Шаг воронки. Ошибки глотаем: аналитика не должна ломать покупку — если событие не
+ * записалось, человек всё равно обязан дойти до оплаты.
+ */
+export function trackEvent(name: CabinetEvent, value?: string): void {
+	void request('/events', z.object({ ok: z.boolean() }), {
+		method: 'POST',
+		body: value === undefined ? { name } : { name, value },
+	}).catch(() => {})
+}
+
+/** Фиксирует намерение и отдаёт ссылку оплаты (обычную или подарочную — решает бот). */
+export const startCheckout = (planCode: string, audience: Audience): Promise<{ buyUrl: string }> =>
+	request('/checkout', CheckoutSchema, { method: 'POST', body: { planCode, audience } })
 
 export const fetchReferrals = (): Promise<Referrals> => request('/referrals', ReferralsSchema)
 
