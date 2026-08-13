@@ -8,7 +8,7 @@
  */
 import { reatomComponent } from '@reatom/react'
 import { useEffect, useState } from 'react'
-import { CheckIcon, CopyIcon, Share2Icon } from 'lucide-react'
+import { CheckIcon, CopyIcon, InfoIcon, Share2Icon } from 'lucide-react'
 import QRCode from 'qrcode'
 import { toast } from 'sonner'
 
@@ -121,14 +121,22 @@ export const Referrals = reatomComponent(() => {
 								/>
 							)}
 
-							<p className="truncate rounded-lg bg-muted px-3 py-2 text-center font-mono text-xs text-muted-foreground">
+							{/* Ссылка — главное на экране, поэтому она и выглядит как главное:
+							    высота кнопки, брендовая рамка и обычный цвет текста. Приглушённой
+							    строкой мелким шрифтом она читалась как техническая подпись. */}
+							{/* break-all, а не truncate: центрированная обрезка съедала начало ссылки
+							    («ps://…»), а ссылку читают глазами перед тем, как продиктовать. */}
+							<p className="flex min-h-14 items-center justify-center rounded-xl bg-brand/10 px-3 py-2 text-center font-mono text-sm break-all ring-1 ring-brand/30">
 								{link}
 							</p>
 
 							{/* Сноска нужна обеим: без неё переключатель не объясняет, зачем второй домен.
 							    Когда зеркала нет, выбора тоже нет — и подпись про «основную» лишняя. */}
 							{refs.linkBackup && (
-								<p className="mt-2 text-xs text-muted-foreground">{LINK_NOTE[kind]}</p>
+								<p className="mt-3 flex items-start gap-2 rounded-lg bg-muted px-3 py-2.5 text-sm">
+									<InfoIcon className="mt-0.5 size-4 shrink-0 text-brand" />
+									<span>{LINK_NOTE[kind]}</span>
+								</p>
 							)}
 
 							<Button className={cn('mt-3 w-full', BRAND_ON)} size="lg" onClick={() => void copy()}>
