@@ -70,9 +70,19 @@ export const UsageSchema = z.object({
 	hysteriaBytes: z.number(),
 	deviceLimit: z.number().nullable(),
 	devices: z.array(
-		z.object({ model: z.string().nullable(), os: z.string().nullable(), lastSeen: z.string() }),
+		z.object({
+			/** Публичный хеш устройства — им адресуем переименование и удаление. */
+			id: z.string(),
+			/** Имя, данное клиентом; null — показываем модель. */
+			name: z.string().nullable(),
+			model: z.string().nullable(),
+			os: z.string().nullable(),
+			lastSeen: z.string(),
+		}),
 	),
 })
+
+export type Device = z.infer<typeof UsageSchema>['devices'][number]
 
 export const AdviceSchema = z.object({
 	/** null — продавать нечего: для этой аудитории не настроено ни одной ссылки оплаты. */

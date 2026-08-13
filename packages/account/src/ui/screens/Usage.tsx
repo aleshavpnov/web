@@ -7,11 +7,10 @@
  */
 import { reatomComponent } from '@reatom/react'
 import { useEffect } from 'react'
-import { SmartphoneIcon } from 'lucide-react'
-
-import { formatAgo, formatBytes, formatDevices, plural } from '@/lib/format.ts'
+import { formatBytes, formatDevices, plural } from '@/lib/format.ts'
 import { usageDaysAtom, usageRes } from '@/state/cabinet.ts'
 import { Async, SECTION_CARD, SectionTitle, Segmented, StatTile } from '@/ui/components/common.tsx'
+import { DeviceList } from '@/ui/components/DeviceList.tsx'
 import { UsageBars } from '@/ui/components/UsageBars.tsx'
 
 const WINDOWS = [
@@ -85,33 +84,7 @@ export const Usage = reatomComponent(() => {
 								<UsageBars points={usage.series} granularity={usage.granularity} />
 							</section>
 
-							<section className={SECTION_CARD}>
-								<SectionTitle>Устройства</SectionTitle>
-								{usage.devices.length === 0 ? (
-									<p className="text-sm text-muted-foreground">
-										За это окно подписку никто не&nbsp;забирал.
-									</p>
-								) : (
-									<ul className="divide-y divide-border/60">
-										{usage.devices.map((d, i) => (
-											<li key={i} className="flex items-center gap-3 py-2">
-												<SmartphoneIcon className="size-4 shrink-0 text-muted-foreground" />
-												<div className="min-w-0 flex-1">
-													<div className="truncate text-sm">
-														{d.model ?? 'Неизвестное устройство'}
-													</div>
-													{d.os && (
-														<div className="truncate text-xs text-muted-foreground">{d.os}</div>
-													)}
-												</div>
-												<span className="shrink-0 text-xs text-muted-foreground">
-													{formatAgo(d.lastSeen)}
-												</span>
-											</li>
-										))}
-									</ul>
-								)}
-							</section>
+							<DeviceList devices={usage.devices} onChanged={() => usageRes.load(days)} />
 						</>
 					)
 				}

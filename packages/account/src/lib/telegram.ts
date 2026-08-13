@@ -89,7 +89,10 @@ export function onColorSchemeChange(handler: () => void): () => void {
  */
 export function confirmAction(message: string): Promise<boolean> {
 	const tg = app()
-	if (tg?.showConfirm) {
+	// Проверяем insideTelegram, а не только наличие метода: SDK подключён на страницу
+	// всегда, и в обычном браузере showConfirm существует, но не отвечает — промис
+	// повисал бы навсегда, и кнопка молча ничего не делала (ловилось только в деве).
+	if (tg && insideTelegram() && tg.showConfirm) {
 		return new Promise((resolve) => tg.showConfirm!(message, resolve))
 	}
 	return Promise.resolve(window.confirm(message))
