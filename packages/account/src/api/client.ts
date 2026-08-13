@@ -18,6 +18,7 @@ import {
 	PlansSchema,
 	ReferralsSchema,
 	SettingsSchema,
+	SummarySchema,
 	SupportOpenSchema,
 	UsageSchema,
 	WhatsnewSchema,
@@ -31,6 +32,7 @@ import {
 	type Referrals,
 	type SettingKey,
 	type Settings,
+	type Summary,
 	type Usage,
 	type Whatsnew,
 } from './schemas.ts'
@@ -101,6 +103,9 @@ export function trackEvent(name: CabinetEvent, value?: string): void {
 /** Фиксирует намерение и отдаёт ссылку оплаты (обычную или подарочную — решает бот). */
 export const startCheckout = (planCode: string, audience: Audience): Promise<{ buyUrl: string }> =>
 	request('/checkout', CheckoutSchema, { method: 'POST', body: { planCode, audience } })
+
+/** Плитки главной: расход, устройства и приглашённые одним запросом. */
+export const fetchSummary = (): Promise<Summary> => request('/summary', SummarySchema)
 
 export const fetchReferrals = (): Promise<Referrals> => request('/referrals', ReferralsSchema)
 
