@@ -34,15 +34,17 @@ export const AccessSchema = z.object({
 	canUseRouter: z.boolean(),
 })
 
-const PlanSchema = z.object({
+/** Тариф без ссылки оплаты: витрина отдаёт её отдельно, подбор — в своём ответе. */
+const PlanBaseSchema = z.object({
 	code: z.string(),
 	name: z.string(),
 	emoji: z.string(),
 	priceLabel: z.string(),
 	deviceLimit: z.number(),
 	durationDays: z.number(),
-	buyUrl: z.string(),
 })
+
+const PlanSchema = PlanBaseSchema.extend({ buyUrl: z.string() })
 
 export const PlansSchema = z.object({
 	plans: z.array(PlanSchema),
@@ -72,6 +74,14 @@ export const UsageSchema = z.object({
 	),
 })
 
+export const AdviceSchema = z.object({
+	/** null — продавать нечего: для этой аудитории не настроено ни одной ссылки оплаты. */
+	plan: PlanBaseSchema.nullable(),
+	buyUrl: z.string().nullable(),
+})
+
+export const CheckoutSchema = z.object({ buyUrl: z.string() })
+
 export const ReferralsSchema = z.object({
 	code: z.string(),
 	link: z.string(),
@@ -93,11 +103,29 @@ export const SettingsSchema = z.object({
 
 export const SupportOpenSchema = z.object({ ok: z.boolean(), botLink: z.string() })
 
+/**
+ * События воронки. Список повторяет белый список бота (`CABINET_EVENTS` в cabinet-api.ts):
+ * чужое имя он не примет, и молчаливо потерять шаг из-за опечатки нельзя.
+ */
+export type CabinetEvent =
+	| 'wizard_open'
+	| 'wizard_audience'
+	| 'wizard_devices'
+	| 'wizard_result'
+	| 'wizard_checkout'
+	| 'plans_list_open'
+
+/** Ответ на шаг «сколько устройств» — тот же словарь, что понимает бот. */
+export type DeviceNeed = 'one' | 'few' | 'family'
+/** Ответ на шаг «кому». */
+export type Audience = 'self' | 'gift'
+
 export type Sub = z.infer<typeof SubSchema>
 export type Overview = z.infer<typeof OverviewSchema>
 export type Access = z.infer<typeof AccessSchema>
 export type Plan = z.infer<typeof PlanSchema>
 export type Plans = z.infer<typeof PlansSchema>
+export type Advice = z.infer<typeof AdviceSchema>
 export type Usage = z.infer<typeof UsageSchema>
 export type Referrals = z.infer<typeof ReferralsSchema>
 export type Whatsnew = z.infer<typeof WhatsnewSchema>
