@@ -1,10 +1,12 @@
 import { reatomComponent } from '@reatom/react'
 import { useEffect } from 'react'
+import { ArrowLeftIcon } from 'lucide-react'
 
 import { Toaster } from '@/components/ui/sonner.tsx'
 import { colorScheme, insideTelegram, onColorSchemeChange, setBackButton } from '@/lib/telegram.ts'
 import { themeAtom } from '@/state/cabinet.ts'
 import { navigate, screenAtom, SCREEN_TITLE } from '@/state/screen.ts'
+import { canGoBack, stepAtom, wizardBack } from '@/state/wizard.ts'
 import { Nav } from '@/ui/components/Nav.tsx'
 import { Connect } from '@/ui/screens/Connect.tsx'
 import { Home } from '@/ui/screens/Home.tsx'
@@ -15,6 +17,16 @@ import { Usage } from '@/ui/screens/Usage.tsx'
 
 export const App = reatomComponent(() => {
 	const screen = screenAtom()
+	const step = stepAtom()
+
+	// Куда ведёт «назад»: шаг подбора, если он есть, иначе главная. На главной — никуда.
+	const backTarget: 'step' | 'home' | null =
+		screen === 'plans' && canGoBack(step) ? 'step' : screen === 'home' ? null : 'home'
+
+	function goBack() {
+		if (backTarget === 'step') wizardBack()
+		else if (backTarget === 'home') navigate('home')
+	}
 
 	// Тему диктует Telegram (в браузере — системная): держим класс на <html> в синхроне.
 	useEffect(() => {
@@ -27,10 +39,18 @@ export const App = reatomComponent(() => {
 		return onColorSchemeChange(apply)
 	}, [])
 
-	// Системная кнопка «назад» ведёт на главный экран: вкладки — плоские, вложенности нет.
+	// Системная кнопка Telegram и стрелка в шапке ведут себя одинаково: сначала шаг назад
+	// внутри подбора тарифа, и только когда возвращаться внутри экрана некуда — на главную.
+	// Иначе кнопка «назад» на третьем шаге выбрасывала бы с экрана целиком.
 	useEffect(() => {
-		return setBackButton(screen === 'home' ? null : () => navigate('home'))
-	}, [screen])
+		if (screen === 'home') return setBackButton(null)
+		return setBackButton(() => {
+			if (screen === 'plans' && wizardBack()) return
+			navigate('home')
+		})
+		// step в зависимостях: обработчик читает шаг в момент установки, и без пересборки
+		// системная кнопка застряла бы на состоянии первого рендера.
+	}, [screen, step])
 
 	// Новый экран начинается сверху: документ тот же (меняется только хеш), и с длинной
 	// страницы трафика переход уводил бы в середину следующей.
@@ -47,7 +67,19 @@ export const App = reatomComponent(() => {
 				</p>
 			)}
 
-			<header className="pt-4 pb-1">
+			<header className="flex items-center gap-1 pt-4 pb-1">
+				{/* Стрелка в шапке дублирует системную кнопку Telegram: та есть не везде
+				    (десктоп, браузер) и находится вне поля зрения, когда листаешь экран. */}
+				{backTarget && (
+					<button
+						type="button"
+						aria-label="Назад"
+						onClick={goBack}
+						className="-ml-2 flex size-11 shrink-0 items-center justify-center rounded-lg text-brand hover:bg-muted"
+					>
+						<ArrowLeftIcon className="size-5" />
+					</button>
+				)}
 				<h1 className="text-lg font-bold">{SCREEN_TITLE[screen]}</h1>
 			</header>
 

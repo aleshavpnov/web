@@ -9,8 +9,18 @@
  * Ссылку оплаты выбирает бот: подарочный товар — другой продукт, и промахнуться тут значит
  * продать не то.
  */
+import { reatomComponent } from '@reatom/react'
 import { useEffect, useState } from 'react'
-import { GiftIcon, LaptopIcon, LoaderCircleIcon, SmartphoneIcon, UsersIcon } from 'lucide-react'
+import {
+	ArrowLeftIcon,
+	CreditCardIcon,
+	GiftIcon,
+	LaptopIcon,
+	LoaderCircleIcon,
+	RotateCcwIcon,
+	SmartphoneIcon,
+	UsersIcon,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { ApiError, fetchAdvice, startCheckout, trackEvent } from '@/api/client.ts'
@@ -19,11 +29,17 @@ import { Button } from '@/components/ui/button.tsx'
 import { formatDevices } from '@/lib/format.ts'
 import { hapticError, hapticSuccess, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
+import {
+	adviceAtom,
+	audienceAtom,
+	needAtom,
+	stepAtom,
+	wizardBack,
+	wizardReset,
+	WIZARD_STEPS,
+	type WizardStep,
+} from '@/state/wizard.ts'
 import { BRAND_ON, SECTION_CARD } from '@/ui/components/common.tsx'
-
-type Step = 'audience' | 'devices' | 'result'
-
-const STEP_ORDER: Step[] = ['audience', 'devices', 'result']
 
 const AUDIENCE_OPTIONS: Array<{
 	value: Audience
@@ -85,12 +101,12 @@ function ChoiceCard({
 }
 
 /** Полоска прогресса: сколько шагов пройдено и сколько осталось. */
-function Progress({ step }: { step: Step }) {
-	const index = STEP_ORDER.indexOf(step)
+function Progress({ step }: { step: WizardStep }) {
+	const index = WIZARD_STEPS.indexOf(step)
 	return (
 		<div className="mb-4">
 			<div className="mb-2 flex gap-1.5">
-				{STEP_ORDER.map((s, i) => (
+				{WIZARD_STEPS.map((s, i) => (
 					<span
 						key={s}
 						className={cn(
@@ -101,7 +117,7 @@ function Progress({ step }: { step: Step }) {
 				))}
 			</div>
 			<p className="text-xs text-muted-foreground">
-				Шаг {index + 1} из {STEP_ORDER.length}
+				Шаг {index + 1} из {WIZARD_STEPS.length}
 			</p>
 		</div>
 	)
@@ -174,20 +190,26 @@ function Result({
 			</div>
 
 			<Button className={cn('w-full', BRAND_ON)} size="lg" disabled={busy} onClick={onBuy}>
+				{audience === 'gift' ? (
+					<GiftIcon className="size-4" />
+				) : (
+					<CreditCardIcon className="size-4" />
+				)}
 				{busy ? 'Открываем оплату…' : audience === 'gift' ? 'Оплатить подарок' : 'Оформить'}
 			</Button>
 			<Button variant="ghost" className="w-full" onClick={onRestart}>
+				<RotateCcwIcon className="size-4" />
 				Ответить заново
 			</Button>
 		</div>
 	)
 }
 
-export function Wizard() {
-	const [step, setStep] = useState<Step>('audience')
-	const [audience, setAudience] = useState<Audience | null>(null)
-	const [need, setNeed] = useState<DeviceNeed | null>(null)
-	const [advice, setAdvice] = useState<Advice | null>(null)
+export const Wizard = reatomComponent(() => {
+	const step = stepAtom()
+	const audience = audienceAtom()
+	const need = needAtom()
+	const advice = adviceAtom()
 	const [loading, setLoading] = useState(false)
 	const [busy, setBusy] = useState(false)
 
@@ -197,22 +219,22 @@ export function Wizard() {
 
 	function chooseAudience(value: Audience) {
 		hapticSuccess()
-		setAudience(value)
+		audienceAtom.set(value)
 		trackEvent('wizard_audience', value)
-		setStep('devices')
+		stepAtom.set('devices')
 	}
 
 	function chooseDevices(value: DeviceNeed) {
 		hapticSuccess()
-		setNeed(value)
+		needAtom.set(value)
 		trackEvent('wizard_devices', value)
-		setStep('result')
+		stepAtom.set('result')
 		if (!audience) return
 		setLoading(true)
-		setAdvice(null)
+		adviceAtom.set(null)
 		fetchAdvice(value, audience)
 			.then((res) => {
-				setAdvice(res)
+				adviceAtom.set(res)
 				trackEvent('wizard_result', res.plan?.code ?? 'none')
 			})
 			.catch((e: unknown) => {
@@ -236,13 +258,6 @@ export function Wizard() {
 		} finally {
 			setBusy(false)
 		}
-	}
-
-	function restart() {
-		setStep('audience')
-		setAudience(null)
-		setNeed(null)
-		setAdvice(null)
 	}
 
 	return (
@@ -284,7 +299,8 @@ export function Wizard() {
 								onClick={() => chooseDevices(o.value)}
 							/>
 						))}
-						<Button variant="ghost" className="w-full" onClick={() => setStep('audience')}>
+						<Button variant="ghost" className="w-full" onClick={() => wizardBack()}>
+							<ArrowLeftIcon className="size-4" />
 							Назад
 						</Button>
 					</div>
@@ -297,10 +313,10 @@ export function Wizard() {
 						loading={loading}
 						busy={busy}
 						onBuy={() => void buy()}
-						onRestart={restart}
+						onRestart={() => wizardReset()}
 					/>
 				)}
 			</div>
 		</section>
 	)
-}
+}, 'Wizard')
