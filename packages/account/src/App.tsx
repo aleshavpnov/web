@@ -1,6 +1,6 @@
 import { reatomComponent } from '@reatom/react'
 import { useEffect } from 'react'
-import { ArrowLeftIcon } from 'lucide-react'
+import { ArrowLeftIcon, HouseIcon } from 'lucide-react'
 
 import { Toaster } from '@/components/ui/sonner.tsx'
 import { colorScheme, insideTelegram, onColorSchemeChange, setBackButton } from '@/lib/telegram.ts'
@@ -67,10 +67,17 @@ export const App = reatomComponent(() => {
 				</p>
 			)}
 
+			{/*
+			 * Слева от заголовка всегда одно и то же место: стрелка «назад» там, где есть
+			 * куда возвращаться, и иконка экрана на главной. Раньше на главной слот
+			 * отсутствовал — заголовок съезжал влево и менял высоту шапки, отчего экран
+			 * дёргался при каждом возврате.
+			 *
+			 * Стрелка дублирует системную кнопку Telegram: та есть не везде (десктоп,
+			 * браузер) и уходит из поля зрения, когда листаешь экран.
+			 */}
 			<header className="flex items-center gap-1 pt-4 pb-1">
-				{/* Стрелка в шапке дублирует системную кнопку Telegram: та есть не везде
-				    (десктоп, браузер) и находится вне поля зрения, когда листаешь экран. */}
-				{backTarget && (
+				{backTarget ? (
 					<button
 						type="button"
 						aria-label="Назад"
@@ -79,6 +86,10 @@ export const App = reatomComponent(() => {
 					>
 						<ArrowLeftIcon className="size-5" />
 					</button>
+				) : (
+					<span aria-hidden className="-ml-2 flex size-11 shrink-0 items-center justify-center">
+						<HouseIcon className="size-5 text-brand" />
+					</span>
 				)}
 				<h1 className="text-lg font-bold">{SCREEN_TITLE[screen]}</h1>
 			</header>
