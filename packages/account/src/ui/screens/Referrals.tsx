@@ -121,9 +121,7 @@ export const Referrals = reatomComponent(() => {
 								/>
 							)}
 
-							<Qr link={link} />
-
-							<p className="mt-3 truncate rounded-lg bg-muted px-3 py-2 text-center font-mono text-xs text-muted-foreground">
+							<p className="truncate rounded-lg bg-muted px-3 py-2 text-center font-mono text-xs text-muted-foreground">
 								{link}
 							</p>
 
@@ -149,6 +147,12 @@ export const Referrals = reatomComponent(() => {
 								<Share2Icon className="size-4" />
 								Поделиться в Telegram
 							</Button>
+
+							{/* QR ниже кнопок: переслать ссылку хочется чаще, чем показать код с экрана,
+							    и первым под руку должно попадать частое. */}
+							<div className="mt-4">
+								<Qr link={link} />
+							</div>
 						</section>
 
 						<div className="grid grid-cols-3 gap-3">
