@@ -94,10 +94,13 @@ export const SummarySchema = z.object({
 export const ReferralsSchema = z.object({
 	code: z.string(),
 	link: z.string(),
+	/** Ссылка на whitelist-достижимом зеркале; null — SUB_BACKUP_DOMAIN не настроен. */
+	linkBackup: z.string().nullable(),
 	rewardDays: z.number(),
 	clicks: z.number(),
 	joined: z.number(),
 	paid: z.number(),
+	invited: z.array(z.object({ tgId: z.number(), label: z.string(), rewarded: z.boolean() })),
 })
 
 export const WhatsnewSchema = z.object({

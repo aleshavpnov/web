@@ -104,6 +104,19 @@ export function trackEvent(name: CabinetEvent, value?: string): void {
 export const startCheckout = (planCode: string, audience: Audience): Promise<{ buyUrl: string }> =>
 	request('/checkout', CheckoutSchema, { method: 'POST', body: { planCode, audience } })
 
+/**
+ * Аватар приглашённого. Не `<img src>`: гейт кабинета читает только заголовок
+ * `Authorization`, а тег картинки его не шлёт — поэтому качаем сами и отдаём Blob.
+ * `null` — фото нет (204), приватность закрыта или бот не достучался до Telegram.
+ */
+export async function fetchAvatar(tgId: number): Promise<Blob | null> {
+	const res = await fetch(`${BASE}/avatars/${tgId}`, {
+		headers: { authorization: `tma ${initData()}` },
+	})
+	if (res.status === 204 || !res.ok) return null
+	return res.blob()
+}
+
 /** Плитки главной: расход, устройства и приглашённые одним запросом. */
 export const fetchSummary = (): Promise<Summary> => request('/summary', SummarySchema)
 
