@@ -6,17 +6,18 @@
  */
 import { reatomComponent } from '@reatom/react'
 import { useEffect, useState } from 'react'
-import { ChevronDownIcon, LifeBuoyIcon } from 'lucide-react'
+import { ChevronDownIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { openSupport, setSetting } from '@/api/client.ts'
+import { setSetting } from '@/api/client.ts'
 import type { SettingKey } from '@/api/schemas.ts'
-import { Button } from '@/components/ui/button.tsx'
+import { Switch } from '@/components/ui/switch.tsx'
 import { formatDate } from '@/lib/format.ts'
-import { closeMiniApp, hapticError, openLink } from '@/lib/telegram.ts'
+import { hapticError } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { overviewRes, settingsRes, whatsnewRes } from '@/state/cabinet.ts'
 import { Async, SECTION_CARD, SectionTitle } from '@/ui/components/common.tsx'
+import { SupportCard } from '@/ui/components/SupportCard.tsx'
 
 const TOGGLES: Array<{ key: SettingKey; label: string; hint: string }> = [
 	{
@@ -57,23 +58,18 @@ const SettingsCard = reatomComponent(() => {
 					<ul className="divide-y divide-border/60">
 						{TOGGLES.map(({ key, label, hint }) => (
 							<li key={key} className="flex items-center justify-between gap-3 py-3">
-								<div className="min-w-0">
+								<label htmlFor={`toggle-${key}`} className="min-w-0 cursor-pointer">
 									<div className="text-sm">{label}</div>
 									<div className="text-xs text-muted-foreground">{hint}</div>
-								</div>
-								<Button
-									variant={settings[key] ? 'default' : 'outline'}
+								</label>
+								{/* Тумблер, а не кнопка с подписью: состояние читается по положению, и тап
+								    по нему не выглядит как «отправить». */}
+								<Switch
+									id={`toggle-${key}`}
+									checked={settings[key]}
 									disabled={busy === key}
-									className={cn(
-										// Фиксированная ширина: «Включены» и «Выключены» разной длины, и без
-										// неё кнопка дёргается прямо под пальцем при каждом переключении.
-										'w-32 shrink-0',
-										settings[key] && 'bg-brand text-brand-foreground hover:bg-brand/85',
-									)}
-									onClick={() => void toggle(key, !settings[key])}
-								>
-									{settings[key] ? 'Включены' : 'Выключены'}
-								</Button>
+									onCheckedChange={(next) => void toggle(key, next)}
+								/>
 							</li>
 						))}
 					</ul>
@@ -133,39 +129,6 @@ const WhatsnewCard = reatomComponent(() => {
 		</Async>
 	)
 }, 'WhatsnewCard')
-
-function SupportCard() {
-	const [busy, setBusy] = useState(false)
-
-	async function write() {
-		setBusy(true)
-		try {
-			const { botLink } = await openSupport()
-			openLink(botLink)
-			// Закрываем кабинет следом: клиент уже в чате, и вернувшись «назад» он попал бы
-			// на пустой экран поверх диалога.
-			closeMiniApp()
-		} catch (e) {
-			hapticError()
-			toast.error(e instanceof Error ? e.message : 'Не удалось открыть поддержку')
-		} finally {
-			setBusy(false)
-		}
-	}
-
-	return (
-		<section className={SECTION_CARD}>
-			<SectionTitle className="mb-1">Нужна помощь?</SectionTitle>
-			<p className="mb-3 text-sm text-muted-foreground">
-				Напишите нам в&nbsp;чат бота — ответим там же. Можно прикладывать скриншоты.
-			</p>
-			<Button variant="outline" className="w-full" disabled={busy} onClick={() => void write()}>
-				<LifeBuoyIcon className="size-4" />
-				{busy ? 'Открываем чат…' : 'Написать в поддержку'}
-			</Button>
-		</section>
-	)
-}
 
 export const More = reatomComponent(() => {
 	const supportAvailable = overviewRes.dataAtom()?.support.available ?? false

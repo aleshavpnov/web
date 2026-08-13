@@ -1,6 +1,6 @@
 /** Мелкие переиспользуемые куски интерфейса кабинета. */
 import { useEffect, useState, type ReactNode } from 'react'
-import { AlertTriangleIcon, CheckIcon, CopyIcon } from 'lucide-react'
+import { AlertTriangleIcon, CheckIcon, ChevronRightIcon, CopyIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Skeleton } from '@/components/ui/skeleton.tsx'
@@ -118,22 +118,46 @@ export function SectionTitle({ children, className }: { children: ReactNode; cla
 	)
 }
 
-/** Плитка со значением: крупное число и подпись. */
+/**
+ * Плитка со значением: крупное число и подпись. С `onClick` становится кнопкой — плитки
+ * главной так ведут в свои разделы, и шеврон в углу говорит, что нажатие куда-то ведёт.
+ */
 export function StatTile({
 	label,
 	value,
 	hint,
+	Icon,
+	onClick,
 }: {
 	label: string
 	value: ReactNode
 	hint?: ReactNode
+	Icon?: typeof CheckIcon
+	onClick?: () => void
 }) {
-	return (
-		<div className={SECTION_CARD}>
-			<div className="text-xs text-muted-foreground">{label}</div>
+	const body = (
+		<>
+			<div className="flex items-center justify-between gap-2">
+				<span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+					{Icon && <Icon className="size-3.5 shrink-0" />}
+					<span className="truncate">{label}</span>
+				</span>
+				{onClick && <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" />}
+			</div>
 			<div className="mt-1 text-2xl leading-tight font-semibold">{value}</div>
 			{hint !== undefined && <div className="mt-0.5 text-xs text-muted-foreground">{hint}</div>}
-		</div>
+		</>
+	)
+
+	if (!onClick) return <div className={SECTION_CARD}>{body}</div>
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			className={cn(SECTION_CARD, 'w-full text-left transition-colors hover:bg-muted/50')}
+		>
+			{body}
+		</button>
 	)
 }
 

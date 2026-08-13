@@ -7,20 +7,32 @@
 import { reatomComponent } from '@reatom/react'
 import { useEffect } from 'react'
 import {
+	ActivityIcon,
 	CalendarClockIcon,
 	CreditCardIcon,
 	GiftIcon,
 	PlugZapIcon,
 	ShieldCheckIcon,
+	SmartphoneIcon,
+	UsersIcon,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button.tsx'
-import { formatDate, formatDevices, formatRemaining, daysLeft } from '@/lib/format.ts'
+import { Skeleton } from '@/components/ui/skeleton.tsx'
+import { formatBytes, formatDate, formatDevices, formatRemaining, daysLeft } from '@/lib/format.ts'
 import { cn } from '@/lib/utils.ts'
-import { overviewRes } from '@/state/cabinet.ts'
+import { overviewRes, summaryRes } from '@/state/cabinet.ts'
 import { navigate } from '@/state/screen.ts'
 import type { Overview } from '@/api/schemas.ts'
-import { Async, BRAND_ON, Row, SECTION_CARD, SectionTitle } from '@/ui/components/common.tsx'
+import {
+	Async,
+	BRAND_ON,
+	Row,
+	SECTION_CARD,
+	SectionTitle,
+	StatTile,
+} from '@/ui/components/common.tsx'
+import { SupportCard } from '@/ui/components/SupportCard.tsx'
 
 /** Ниже скольких дней срок подписки подсвечивается предупреждением. */
 const SOON_DAYS = 5
@@ -108,6 +120,80 @@ function NoAccessCard({ data }: { data: Overview }) {
 	)
 }
 
+/** Сколько осталось доступа — коротко, для плитки: «12 дн.», «бессрочно» или «нет». */
+function accessLeft(overview: Overview): string {
+	if (overview.kind === 'vip') {
+		return overview.vip?.expiresAt ? `${daysLeft(overview.vip.expiresAt)} дн.` : 'бессрочно'
+	}
+	if (overview.kind === 'paid' && overview.sub) {
+		const left = daysLeft(overview.sub.expiresAt)
+		return left > 0 ? `${left} дн.` : 'истёк'
+	}
+	return 'нет'
+}
+
+/**
+ * Плитки-виджеты: расход, устройства, приглашённые, срок. Каждая ведёт в свой раздел —
+ * главная отвечает на «как дела», подробности живут на вкладках.
+ *
+ * Считаются отдельным запросом (`/summary`): агрегат по снимкам трафика тяжелее карточки
+ * подписки, и заставлять её ждать незачем — плитки появляются следом.
+ */
+const Widgets = reatomComponent<{ overview: Overview }>(({ overview }) => {
+	const summary = summaryRes.dataAtom()
+
+	useEffect(() => {
+		void summaryRes.load()
+	}, [])
+
+	if (summaryRes.errorAtom()) return null
+	if (!summary) {
+		return (
+			<div className="grid grid-cols-2 gap-3">
+				<Skeleton className="h-24" />
+				<Skeleton className="h-24" />
+			</div>
+		)
+	}
+
+	return (
+		<div className="grid grid-cols-2 gap-3">
+			<StatTile
+				label={`Трафик за ${summary.windowDays} дн.`}
+				Icon={ActivityIcon}
+				value={summary.usedBytes === null ? '—' : formatBytes(summary.usedBytes)}
+				hint="подробнее"
+				onClick={() => navigate('usage')}
+			/>
+			<StatTile
+				label="Устройства"
+				Icon={SmartphoneIcon}
+				value={summary.devices ?? '—'}
+				hint={
+					summary.deviceLimit === null ? 'без ограничения' : `из ${summary.deviceLimit} по тарифу`
+				}
+				onClick={() => navigate('usage')}
+			/>
+			<StatTile
+				label="Друзья"
+				Icon={UsersIcon}
+				value={summary.referrals.joined}
+				hint={`оплатили ${summary.referrals.paid}`}
+				onClick={() => navigate('refs')}
+			/>
+			{/* Четвёртая плитка — срок: то же число, что в карточке выше, но рядом с остальными
+			    цифрами и с переходом к тарифам. У VIP срока обычно нет — тогда «бессрочно». */}
+			<StatTile
+				label="Доступ"
+				Icon={CalendarClockIcon}
+				value={accessLeft(overview)}
+				hint={overview.kind === 'paid' ? 'продлить или сменить' : 'выбрать тариф'}
+				onClick={() => navigate('plans')}
+			/>
+		</div>
+	)
+}, 'Widgets')
+
 export const Home = reatomComponent(() => {
 	const data = overviewRes.dataAtom()
 
@@ -151,6 +237,10 @@ export const Home = reatomComponent(() => {
 							</Button>
 						</div>
 
+						{/* Плитки — только тем, у кого есть доступ: без него в них одни прочерки,
+						    а на экране и так стоит призыв выбрать тариф. */}
+						{hasAccess && <Widgets overview={overview} />}
+
 						{overview.pendingGifts > 0 && (
 							<section className={SECTION_CARD}>
 								<SectionTitle className="mb-1">Неактивированные подарки</SectionTitle>
@@ -164,6 +254,8 @@ export const Home = reatomComponent(() => {
 								</Button>
 							</section>
 						)}
+
+						{overview.support.available && <SupportCard />}
 					</>
 				)
 			}}

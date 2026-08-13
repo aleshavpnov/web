@@ -7,6 +7,7 @@ import {
 	fetchPlans,
 	fetchReferrals,
 	fetchSettings,
+	fetchSummary,
 	fetchUsage,
 	fetchWhatsnew,
 } from '@/api/client.ts'
@@ -20,6 +21,7 @@ export const accessRes = resource('access', fetchAccess)
 export const plansRes = resource('plans', fetchPlans)
 export const usageRes = resource('usage', fetchUsage)
 export const referralsRes = resource('referrals', fetchReferrals)
+export const summaryRes = resource('summary', fetchSummary)
 export const whatsnewRes = resource('whatsnew', fetchWhatsnew)
 export const settingsRes = resource('settings', fetchSettings)
 

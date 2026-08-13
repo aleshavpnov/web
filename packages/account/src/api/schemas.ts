@@ -82,6 +82,15 @@ export const AdviceSchema = z.object({
 
 export const CheckoutSchema = z.object({ buyUrl: z.string() })
 
+export const SummarySchema = z.object({
+	windowDays: z.number(),
+	/** null — доступа нет: плитка скажет «нет данных», а не нарисует ноль. */
+	usedBytes: z.number().nullable(),
+	devices: z.number().nullable(),
+	deviceLimit: z.number().nullable(),
+	referrals: z.object({ joined: z.number(), paid: z.number() }),
+})
+
 export const ReferralsSchema = z.object({
 	code: z.string(),
 	link: z.string(),
@@ -127,6 +136,7 @@ export type Plan = z.infer<typeof PlanSchema>
 export type Plans = z.infer<typeof PlansSchema>
 export type Advice = z.infer<typeof AdviceSchema>
 export type Usage = z.infer<typeof UsageSchema>
+export type Summary = z.infer<typeof SummarySchema>
 export type Referrals = z.infer<typeof ReferralsSchema>
 export type Whatsnew = z.infer<typeof WhatsnewSchema>
 export type Settings = z.infer<typeof SettingsSchema>
