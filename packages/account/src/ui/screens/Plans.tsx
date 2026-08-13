@@ -15,7 +15,14 @@ import { formatDevices } from '@/lib/format.ts'
 import { openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { plansRes } from '@/state/cabinet.ts'
-import { Async, BRAND_ON, CopyValue, SECTION_CARD, SectionTitle } from '@/ui/components/common.tsx'
+import {
+	Async,
+	BRAND_ON,
+	CopyValue,
+	SECTION_CARD,
+	SectionHeading,
+	SectionTitle,
+} from '@/ui/components/common.tsx'
 import { Wizard } from '@/ui/screens/purchase/Wizard.tsx'
 
 function PlanRow({
@@ -88,10 +95,13 @@ export const Plans = reatomComponent(() => {
 
 					{listOpen && (
 						<>
-							<p className="text-sm text-muted-foreground">
-								Серверы, скорость и&nbsp;трафик во&nbsp;всех тарифах одинаковые — отличается только
-								число устройств.
-							</p>
+							<div>
+								<SectionHeading className="mt-2 mb-1">Тарифы</SectionHeading>
+								<p className="text-sm text-muted-foreground">
+									Серверы, скорость и&nbsp;трафик во&nbsp;всех тарифах одинаковые — отличается
+									только число устройств.
+								</p>
+							</div>
 
 							<div className="space-y-3">
 								{data.plans.map((plan) => (
@@ -151,7 +161,7 @@ export const Plans = reatomComponent(() => {
 					    «в подарок» самого подбора, и две витрины подряд только путают. */}
 					{listOpen && data.gifts.length > 0 && (
 						<section>
-							<SectionTitle>Подарить подписку</SectionTitle>
+							<SectionHeading>Подарить подписку</SectionHeading>
 							<div className="space-y-3">
 								{data.gifts.map((plan) => (
 									<div key={plan.code} className={SECTION_CARD}>
