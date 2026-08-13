@@ -33,6 +33,16 @@ const COPIED_MS = 1400
 
 type LinkKind = 'main' | 'backup'
 
+/**
+ * Зачем нужна каждая ссылка. Подпись стоит у обеих, а не только у запасной: иначе выбор
+ * выглядит как «основная и какая-то ещё», и человек не понимает, когда брать вторую.
+ */
+const LINK_NOTE: Record<LinkKind, string> = {
+	main: 'Обычная ссылка на сайт. Подойдёт большинству — с неё же друг получит пробный доступ.',
+	backup:
+		'Зеркало на другом домене. Дайте её, если у друга основной сайт не открывается — так бывает у части операторов и при ограничениях мобильного интернета.',
+}
+
 /** QR во всю ширину карточки: код рисуем крупно, чтобы читался с чужого телефона. */
 function Qr({ link }: { link: string }) {
 	const [qr, setQr] = useState<string | null>(null)
@@ -117,10 +127,10 @@ export const Referrals = reatomComponent(() => {
 								{link}
 							</p>
 
-							{kind === 'backup' && (
-								<p className="mt-2 text-xs text-muted-foreground">
-									Запасной домен открывается там, где основной заблокирован у&nbsp;оператора.
-								</p>
+							{/* Сноска нужна обеим: без неё переключатель не объясняет, зачем второй домен.
+							    Когда зеркала нет, выбора тоже нет — и подпись про «основную» лишняя. */}
+							{refs.linkBackup && (
+								<p className="mt-2 text-xs text-muted-foreground">{LINK_NOTE[kind]}</p>
 							)}
 
 							<Button className={cn('mt-3 w-full', BRAND_ON)} size="lg" onClick={() => void copy()}>
