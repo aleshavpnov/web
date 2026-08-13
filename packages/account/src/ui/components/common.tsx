@@ -110,12 +110,30 @@ export function Row({ label, children }: { label: string; children: ReactNode })
 	)
 }
 
+/** Подпись внутри карточки: приглушённая, потому что главное в карточке — её содержимое. */
 export function SectionTitle({ children, className }: { children: ReactNode; className?: string }) {
 	return (
 		<h2 className={cn('mb-2 text-sm font-semibold text-muted-foreground', className)}>
 			{children}
 		</h2>
 	)
+}
+
+/**
+ * Заголовок раздела экрана — над группой карточек, а не внутри одной.
+ *
+ * Отличается от {@link SectionTitle} намеренно: приглушённая подпись, стоящая между
+ * карточками, теряется среди них и читается как часть предыдущей. Здесь нужен контраст
+ * основного текста и воздух сверху — чтобы было видно, что начался новый раздел.
+ */
+export function SectionHeading({
+	children,
+	className,
+}: {
+	children: ReactNode
+	className?: string
+}) {
+	return <h2 className={cn('mt-6 mb-3 text-base font-semibold', className)}>{children}</h2>
 }
 
 /**
