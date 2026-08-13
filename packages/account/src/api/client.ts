@@ -117,6 +117,23 @@ export async function fetchAvatar(tgId: number): Promise<Blob | null> {
 	return res.blob()
 }
 
+/** Своё имя устройству; пустая строка снимает имя и возвращает модель. */
+export const renameDevice = (id: string, name: string): Promise<{ ok: boolean }> =>
+	request(`/devices/${id}/name`, z.object({ ok: z.boolean() }), {
+		method: 'POST',
+		body: { name },
+	})
+
+/** Убирает устройство из списка. Доступ не отзывает — для этого есть перевыпуск ссылки. */
+export const forgetDevice = (id: string): Promise<{ ok: boolean }> =>
+	request(`/devices/${id}/forget`, z.object({ ok: z.boolean() }), { method: 'POST' })
+
+/** Новая ссылка-подписка: старая умирает, все устройства отваливаются. */
+export const rotateAccess = (): Promise<Access> =>
+	request('/access/rotate', AccessSchema, {
+		method: 'POST',
+	})
+
 /** Плитки главной: расход, устройства и приглашённые одним запросом. */
 export const fetchSummary = (): Promise<Summary> => request('/summary', SummarySchema)
 
