@@ -7,9 +7,25 @@
  */
 import { action, atom } from '@reatom/core'
 
-export type ScreenName = 'home' | 'connect' | 'plans' | 'usage' | 'refs' | 'more'
+export type ScreenName = 'home' | 'connect' | 'plans' | 'tariffs' | 'usage' | 'refs' | 'more'
 
-const SCREENS: readonly ScreenName[] = ['home', 'connect', 'plans', 'usage', 'refs', 'more']
+const SCREENS: readonly ScreenName[] = [
+	'home',
+	'connect',
+	'plans',
+	'tariffs',
+	'usage',
+	'refs',
+	'more',
+]
+
+/**
+ * Экраны без своей вкладки: подстраницы. Возврат с них ведёт не на главную, а на родителя —
+ * иначе «назад» из витрины тарифов выбрасывало бы из подписки целиком.
+ */
+export const SCREEN_PARENT: Partial<Record<ScreenName, ScreenName>> = {
+	tariffs: 'plans',
+}
 
 export function screenFromHash(hash: string): ScreenName {
 	const name = hash.replace(/^#\/?/, '').split('/')[0]
@@ -24,7 +40,8 @@ export function hashFromScreen(screen: ScreenName): string {
 export const SCREEN_TITLE: Record<ScreenName, string> = {
 	home: 'Личный кабинет',
 	connect: 'Подключение',
-	plans: 'Подписка и тарифы',
+	plans: 'Подписка',
+	tariffs: 'Тарифы',
 	usage: 'Трафик',
 	refs: 'Друзья',
 	more: 'Ещё',

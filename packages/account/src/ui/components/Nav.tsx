@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils.ts'
-import { navigate, screenAtom, type ScreenName } from '@/state/screen.ts'
+import { navigate, screenAtom, SCREEN_PARENT, type ScreenName } from '@/state/screen.ts'
 
 const TABS: Array<{ name: ScreenName; label: string; Icon: typeof HomeIcon }> = [
 	{ name: 'home', label: 'Главная', Icon: HomeIcon },
@@ -27,7 +27,10 @@ const TABS: Array<{ name: ScreenName; label: string; Icon: typeof HomeIcon }> = 
 ]
 
 export const Nav = reatomComponent(() => {
-	const current = screenAtom()
+	const screen = screenAtom()
+	// Подстраница подсвечивает вкладку родителя: на «Тарифах» своей вкладки нет, и без этого
+	// нижнее меню выглядело бы так, будто мы вообще вне кабинета.
+	const current = SCREEN_PARENT[screen] ?? screen
 
 	return (
 		<nav className="sticky bottom-0 z-10 -mx-4 mt-6 flex border-t border-border bg-background/95 px-1 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur">

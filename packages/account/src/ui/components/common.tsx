@@ -120,23 +120,6 @@ export function SectionTitle({ children, className }: { children: ReactNode; cla
 }
 
 /**
- * Заголовок раздела экрана — над группой карточек, а не внутри одной.
- *
- * Отличается от {@link SectionTitle} намеренно: приглушённая подпись, стоящая между
- * карточками, теряется среди них и читается как часть предыдущей. Здесь нужен контраст
- * основного текста и воздух сверху — чтобы было видно, что начался новый раздел.
- */
-export function SectionHeading({
-	children,
-	className,
-}: {
-	children: ReactNode
-	className?: string
-}) {
-	return <h2 className={cn('mt-6 mb-3 text-base font-semibold', className)}>{children}</h2>
-}
-
-/**
  * Плитка со значением: крупное число и подпись. С `onClick` становится кнопкой — плитки
  * главной так ведут в свои разделы, и шеврон в углу говорит, что нажатие куда-то ведёт.
  */
