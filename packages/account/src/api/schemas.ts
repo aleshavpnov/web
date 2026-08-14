@@ -24,6 +24,8 @@ export const OverviewSchema = z.object({
 	trial: z.object({ available: z.boolean(), days: z.number() }),
 	pendingGifts: z.number(),
 	support: z.object({ available: z.boolean() }),
+	/** t.me-ссылка на веб-админку; null — обычному клиенту её не показываем. */
+	adminMiniAppUrl: z.string().nullable(),
 	botUsername: z.string(),
 })
 

@@ -6,14 +6,15 @@
  */
 import { reatomComponent } from '@reatom/react'
 import { useEffect, useState } from 'react'
-import { ChevronDownIcon } from 'lucide-react'
+import { ChevronDownIcon, ShieldIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { setSetting } from '@/api/client.ts'
 import type { SettingKey } from '@/api/schemas.ts'
+import { Button } from '@/components/ui/button.tsx'
 import { Switch } from '@/components/ui/switch.tsx'
 import { formatDate } from '@/lib/format.ts'
-import { hapticError } from '@/lib/telegram.ts'
+import { hapticError, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { overviewRes, settingsRes, whatsnewRes } from '@/state/cabinet.ts'
 import { Async, SECTION_CARD, SectionTitle } from '@/ui/components/common.tsx'
@@ -130,14 +131,32 @@ const WhatsnewCard = reatomComponent(() => {
 	)
 }, 'WhatsnewCard')
 
+/**
+ * Вход в веб-админку — только тем, кому её отдаёт API (`adminMiniAppUrl`). Открываем через
+ * `openTelegramLink`: админка живёт как Mini App и без Telegram-обёртки не авторизуется.
+ */
+function AdminCard({ url }: { url: string }) {
+	return (
+		<section className={SECTION_CARD}>
+			<SectionTitle>Администрирование</SectionTitle>
+			<Button variant="outline" className="w-full" onClick={() => openLink(url)}>
+				<ShieldIcon className="size-4" />
+				Веб-админка
+			</Button>
+		</section>
+	)
+}
+
 export const More = reatomComponent(() => {
-	const supportAvailable = overviewRes.dataAtom()?.support.available ?? false
+	const overview = overviewRes.dataAtom()
+	const supportAvailable = overview?.support.available ?? false
+	const adminUrl = overview?.adminMiniAppUrl ?? null
 
 	useEffect(() => {
 		void settingsRes.load()
 		void whatsnewRes.load()
 		// Кабинет могли открыть сразу на этой вкладке (перезагрузка вебвью помнит хеш) —
-		// тогда overview ещё не загружался, а от него зависит доступность поддержки.
+		// тогда overview ещё не загружался, а от него зависят и поддержка, и админка.
 		if (overviewRes.dataAtom() === null) void overviewRes.load()
 	}, [])
 
@@ -145,6 +164,7 @@ export const More = reatomComponent(() => {
 		<div className="space-y-4">
 			<SettingsCard />
 			{supportAvailable && <SupportCard />}
+			{adminUrl && <AdminCard url={adminUrl} />}
 			<WhatsnewCard />
 		</div>
 	)
