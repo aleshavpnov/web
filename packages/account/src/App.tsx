@@ -5,7 +5,13 @@ import { ArrowLeftIcon, HouseIcon } from 'lucide-react'
 import { Toaster } from '@/components/ui/sonner.tsx'
 import { colorScheme, insideTelegram, onColorSchemeChange, setBackButton } from '@/lib/telegram.ts'
 import { themeAtom } from '@/state/cabinet.ts'
-import { navigate, screenAtom, SCREEN_TITLE } from '@/state/screen.ts'
+import {
+	navigate,
+	screenAtom,
+	SCREEN_PARENT,
+	SCREEN_TITLE,
+	type ScreenName,
+} from '@/state/screen.ts'
 import { canGoBack, stepAtom, wizardBack } from '@/state/wizard.ts'
 import { Nav } from '@/ui/components/Nav.tsx'
 import { Connect } from '@/ui/screens/Connect.tsx'
@@ -13,19 +19,25 @@ import { Home } from '@/ui/screens/Home.tsx'
 import { More } from '@/ui/screens/More.tsx'
 import { Plans } from '@/ui/screens/Plans.tsx'
 import { Referrals } from '@/ui/screens/Referrals.tsx'
+import { Tariffs } from '@/ui/screens/Tariffs.tsx'
 import { Usage } from '@/ui/screens/Usage.tsx'
 
 export const App = reatomComponent(() => {
 	const screen = screenAtom()
 	const step = stepAtom()
 
-	// Куда ведёт «назад»: шаг подбора, если он есть, иначе главная. На главной — никуда.
-	const backTarget: 'step' | 'home' | null =
-		screen === 'plans' && canGoBack(step) ? 'step' : screen === 'home' ? null : 'home'
+	// Куда ведёт «назад»: шаг подбора, если он есть; с подстраницы — к её родителю; иначе на
+	// главную. На главной возвращаться некуда.
+	const backTarget: 'step' | ScreenName | null =
+		screen === 'plans' && canGoBack(step)
+			? 'step'
+			: screen === 'home'
+				? null
+				: (SCREEN_PARENT[screen] ?? 'home')
 
 	function goBack() {
 		if (backTarget === 'step') wizardBack()
-		else if (backTarget === 'home') navigate('home')
+		else if (backTarget) navigate(backTarget)
 	}
 
 	// Тему диктует Telegram (в браузере — системная): держим класс на <html> в синхроне.
@@ -46,7 +58,7 @@ export const App = reatomComponent(() => {
 		if (screen === 'home') return setBackButton(null)
 		return setBackButton(() => {
 			if (screen === 'plans' && wizardBack()) return
-			navigate('home')
+			navigate(SCREEN_PARENT[screen] ?? 'home')
 		})
 		// step в зависимостях: обработчик читает шаг в момент установки, и без пересборки
 		// системная кнопка застряла бы на состоянии первого рендера.
@@ -99,6 +111,8 @@ export const App = reatomComponent(() => {
 					<Connect />
 				) : screen === 'plans' ? (
 					<Plans />
+				) : screen === 'tariffs' ? (
+					<Tariffs />
 				) : screen === 'usage' ? (
 					<Usage />
 				) : screen === 'refs' ? (
