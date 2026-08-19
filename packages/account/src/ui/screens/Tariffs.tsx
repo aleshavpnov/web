@@ -46,12 +46,15 @@ function PlanRow({
 	plan,
 	current,
 	action,
+	subscriptionFee,
 	busy,
 	onOneTime,
 }: {
 	plan: PlanOffer
 	current: boolean
 	action: string
+	/** Комиссия подписки Tribute строкой в кнопке — как и у разовых способов. */
+	subscriptionFee?: string | undefined
 	busy: boolean
 	onOneTime: (planCode: string, method: number) => void
 }) {
@@ -72,9 +75,17 @@ function PlanRow({
 			</div>
 			<div className="mt-3 flex gap-2">
 				{plan.buyUrl && (
-					<Button className={cn('flex-1', BRAND_ON)} onClick={() => openLink(plan.buyUrl!)}>
-						<CreditCardIcon className="size-4" />
-						{action}
+					<Button
+						className={cn('h-auto flex-1 justify-start py-3 text-left', BRAND_ON)}
+						onClick={() => openLink(plan.buyUrl!)}
+					>
+						<CreditCardIcon className="size-5 shrink-0" />
+						<span className="flex min-w-0 flex-col">
+							<span className="font-medium">{action}</span>
+							{subscriptionFee && (
+								<span className="text-xs font-normal opacity-75">{subscriptionFee}</span>
+							)}
+						</span>
 					</Button>
 				)}
 				{plan.giftUrl && (
@@ -95,20 +106,21 @@ function PlanRow({
 			{plan.oneTimeMethods.length > 0 && (
 				<div className="mt-2 space-y-2">
 					{plan.oneTimeMethods.map((m) => (
-						<div key={m.code}>
-							<Button
-								variant="outline"
-								className="w-full justify-start text-left"
-								disabled={busy}
-								onClick={() => onOneTime(plan.code, m.code)}
-							>
-								<CreditCardIcon className="size-4" />
-								{m.label} — разово
-							</Button>
-							{feeNote(m.feePercent) && (
-								<p className="mt-1 px-1 text-xs text-muted-foreground">{feeNote(m.feePercent)}</p>
-							)}
-						</div>
+						<Button
+							key={m.code}
+							variant="outline"
+							className="h-auto w-full justify-start py-3 text-left"
+							disabled={busy}
+							onClick={() => onOneTime(plan.code, m.code)}
+						>
+							<CreditCardIcon className="size-5 shrink-0" />
+							<span className="flex min-w-0 flex-col">
+								<span className="font-medium">{m.label} — разово</span>
+								{feeNote(m.feePercent) && (
+									<span className="text-xs font-normal opacity-75">{feeNote(m.feePercent)}</span>
+								)}
+							</span>
+						</Button>
 					))}
 				</div>
 			)}
@@ -158,6 +170,7 @@ export const Tariffs = reatomComponent(() => {
 								key={offer.code}
 								plan={offer}
 								current={data.current?.planCode === offer.code}
+								subscriptionFee={feeNote(data.subscriptionFeePercent)}
 								busy={busy}
 								onOneTime={(planCode, method) => void payOnce(planCode, method)}
 								action={

@@ -131,6 +131,7 @@ function Progress({ step }: { step: WizardStep }) {
  */
 function PayOption({
 	label,
+	fee,
 	note,
 	icon: Icon,
 	primary = false,
@@ -138,6 +139,9 @@ function PayOption({
 	onClick,
 }: {
 	label: string
+	/** Комиссия — второй строкой ВНУТРИ кнопки: её читают в момент выбора способа. */
+	fee?: string | undefined
+	/** Сноска под кнопкой — про автопродление: это свойство подписки, а не цена. */
 	note?: string | undefined
 	icon: typeof GiftIcon
 	primary?: boolean
@@ -146,15 +150,18 @@ function PayOption({
 }) {
 	return (
 		<div>
+			{/* h-auto: кнопка растёт под две строки, иначе текст комиссии обрезается по высоте. */}
 			<Button
-				className={cn('w-full justify-start text-left', primary && BRAND_ON)}
+				className={cn('h-auto w-full justify-start py-3 text-left', primary && BRAND_ON)}
 				variant={primary ? 'default' : 'outline'}
-				size="lg"
 				disabled={disabled}
 				onClick={onClick}
 			>
-				<Icon className="size-4" />
-				{label}
+				<Icon className="size-5 shrink-0" />
+				<span className="flex min-w-0 flex-col">
+					<span className="text-base font-medium">{label}</span>
+					{fee && <span className="text-xs font-normal opacity-75">{fee}</span>}
+				</span>
 			</Button>
 			{note && <p className="mt-1 px-1 text-xs text-muted-foreground">{note}</p>}
 		</div>
@@ -240,6 +247,7 @@ function Result({
 								? 'Tribute'
 								: 'Оформить'
 				}
+				fee={audience === 'gift' ? undefined : feeNote(advice.subscriptionFeePercent)}
 				note={
 					audience === 'gift'
 						? undefined
@@ -259,7 +267,7 @@ function Result({
 				<PayOption
 					key={m.code}
 					label={m.label}
-					note={feeNote(m.feePercent)}
+					fee={feeNote(m.feePercent)}
 					icon={CreditCardIcon}
 					disabled={busy}
 					onClick={() => onBuy(m.code)}
