@@ -12,9 +12,11 @@ import { toast } from 'sonner'
 import { ApiError, startCheckout } from '@/api/client.ts'
 import type { Plan } from '@/api/schemas.ts'
 import { feeNote, formatDevices } from '@/lib/format.ts'
-import { hapticError, openLink } from '@/lib/telegram.ts'
+import { hapticError, hapticSuccess, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { plansRes } from '@/state/cabinet.ts'
+import { watchPayment } from '@/state/payment-watch.ts'
+import { navigate } from '@/state/screen.ts'
 import { Async, PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
 import {
 	GIFT_ICON,
@@ -53,6 +55,7 @@ function PlanRow({
 	subscriptionFee,
 	busy,
 	onOneTime,
+	onSubscribe,
 }: {
 	plan: PlanOffer
 	current: boolean
@@ -61,6 +64,8 @@ function PlanRow({
 	subscriptionFee?: string | undefined
 	busy: boolean
 	onOneTime: (planCode: string, method: number) => void
+	/** Уход в Tribute — тоже покупка, и её результат кабинет должен дождаться. */
+	onSubscribe: (url: string) => void
 }) {
 	return (
 		<div className={cn(SECTION_CARD, current && 'ring-2 ring-brand')}>
@@ -84,7 +89,7 @@ function PlanRow({
 						fee={subscriptionFee}
 						icon={SUBSCRIPTION_ICON}
 						primary
-						onClick={() => openLink(plan.buyUrl!)}
+						onClick={() => onSubscribe(plan.buyUrl!)}
 					/>
 				)}
 				{plan.giftUrl && (
@@ -120,11 +125,24 @@ export const Tariffs = reatomComponent(() => {
 
 	const [busy, setBusy] = useState(false)
 
+	/**
+	 * Человек ушёл платить в другое окно, а витрина осталась открытой. Ждём подтверждения и
+	 * уводим на главную — там карточка подписки с новым сроком (см. state/payment-watch).
+	 */
+	function awaitPayment() {
+		watchPayment(() => {
+			hapticSuccess()
+			toast.success('Оплата прошла — доступ активен')
+			navigate('home')
+		})
+	}
+
 	async function payOnce(planCode: string, method: number) {
 		setBusy(true)
 		try {
 			const { buyUrl } = await startCheckout(planCode, 'self', method)
 			openLink(buyUrl)
+			awaitPayment()
 		} catch (e) {
 			hapticError()
 			toast.error(e instanceof ApiError ? e.message : 'Не удалось открыть оплату')
@@ -156,6 +174,10 @@ export const Tariffs = reatomComponent(() => {
 								subscriptionFee={feeNote(data.subscriptionFeePercent)}
 								busy={busy}
 								onOneTime={(planCode, method) => void payOnce(planCode, method)}
+								onSubscribe={(url) => {
+									openLink(url)
+									awaitPayment()
+								}}
 								action={
 									data.current
 										? data.current.planCode === offer.code
