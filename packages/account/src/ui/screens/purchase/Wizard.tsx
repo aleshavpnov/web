@@ -10,10 +10,9 @@
  * продать не то.
  */
 import { reatomComponent } from '@reatom/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
 	ArrowLeftIcon,
-	CreditCardIcon,
 	GiftIcon,
 	LaptopIcon,
 	LoaderCircleIcon,
@@ -39,7 +38,14 @@ import {
 	WIZARD_STEPS,
 	type WizardStep,
 } from '@/state/wizard.ts'
-import { BRAND_ON, PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
+import { PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
+import {
+	GIFT_ICON,
+	PayOption,
+	payMethodIcon,
+	SUBSCRIPTION_ICON,
+	type PayIcon,
+} from '@/ui/components/PayOption.tsx'
 
 const AUDIENCE_OPTIONS: Array<{
 	value: Audience
@@ -129,42 +135,13 @@ function Progress({ step }: { step: WizardStep }) {
  * Текст в кнопке прижат влево, а не по центру: способов несколько, и подписи читаются
  * столбцом только с общей левой границей — по центру глаз прыгает на каждой строке.
  */
-function PayOption({
-	label,
-	fee,
-	note,
-	icon: Icon,
-	primary = false,
-	disabled,
-	onClick,
-}: {
-	label: string
-	/** Комиссия — второй строкой ВНУТРИ кнопки: её читают в момент выбора способа. */
-	fee?: string | undefined
-	/** Сноска под кнопкой — про автопродление: это свойство подписки, а не цена. */
-	note?: string | undefined
-	icon: typeof GiftIcon
-	primary?: boolean
-	disabled: boolean
-	onClick: () => void
-}) {
+/** Сноска под кнопкой: иконка слева, текст справа — как и в самой кнопке. */
+function OptionNote({ icon: Icon, children }: { icon: PayIcon; children: ReactNode }) {
 	return (
-		<div>
-			{/* h-auto: кнопка растёт под две строки, иначе текст комиссии обрезается по высоте. */}
-			<Button
-				className={cn('h-auto w-full justify-start py-3 text-left', primary && BRAND_ON)}
-				variant={primary ? 'default' : 'outline'}
-				disabled={disabled}
-				onClick={onClick}
-			>
-				<Icon className="size-5 shrink-0" />
-				<span className="flex min-w-0 flex-col">
-					<span className="text-base font-medium">{label}</span>
-					{fee && <span className="text-xs font-normal opacity-75">{fee}</span>}
-				</span>
-			</Button>
-			{note && <p className="mt-1 px-1 text-xs text-muted-foreground">{note}</p>}
-		</div>
+		<p className="mt-1 flex items-start gap-1.5 px-1 text-xs text-muted-foreground">
+			<Icon className="mt-0.5 size-3.5 shrink-0" />
+			<span>{children}</span>
+		</p>
 	)
 }
 
@@ -248,18 +225,17 @@ function Result({
 								: 'Оформить'
 				}
 				fee={audience === 'gift' ? undefined : feeNote(advice.subscriptionFeePercent)}
-				note={
-					audience === 'gift'
-						? undefined
-						: advice.oneTimeMethods.length > 0
-							? 'Доступно автопродление: следующий месяц спишется сам, отменить можно в любой момент.'
-							: undefined
-				}
-				icon={audience === 'gift' ? GiftIcon : CreditCardIcon}
+				icon={audience === 'gift' ? GIFT_ICON : SUBSCRIPTION_ICON}
 				primary
 				disabled={busy}
 				onClick={() => onBuy()}
-			/>
+			>
+				{audience !== 'gift' && advice.oneTimeMethods.length > 0 && (
+					<OptionNote icon={SUBSCRIPTION_ICON}>
+						Доступно автопродление: следующий месяц спишется сам, отменить можно в любой момент.
+					</OptionNote>
+				)}
+			</PayOption>
 
 			{/* Разовая оплата: отдельными кнопками, чтобы разница с подпиской была видна до
 			    нажатия, а не выяснялась на форме провайдера. */}
@@ -268,7 +244,7 @@ function Result({
 					key={m.code}
 					label={m.label}
 					fee={feeNote(m.feePercent)}
-					icon={CreditCardIcon}
+					icon={payMethodIcon(m.code)}
 					disabled={busy}
 					onClick={() => onBuy(m.code)}
 				/>

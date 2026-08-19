@@ -7,17 +7,21 @@
  */
 import { reatomComponent } from '@reatom/react'
 import { useEffect, useState } from 'react'
-import { CreditCardIcon, GiftIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { ApiError, startCheckout } from '@/api/client.ts'
 import type { Plan } from '@/api/schemas.ts'
-import { Button } from '@/components/ui/button.tsx'
 import { feeNote, formatDevices } from '@/lib/format.ts'
 import { hapticError, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { plansRes } from '@/state/cabinet.ts'
-import { Async, BRAND_ON, PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
+import { Async, PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
+import {
+	GIFT_ICON,
+	PayOption,
+	payMethodIcon,
+	SUBSCRIPTION_ICON,
+} from '@/ui/components/PayOption.tsx'
 
 /** Тариф витрины: одна карточка, две возможные покупки. */
 type PlanOffer = Omit<Plan, 'buyUrl'> & { buyUrl: string | null; giftUrl: string | null }
@@ -73,32 +77,18 @@ function PlanRow({
 				</div>
 				{current && <span className="shrink-0 text-xs text-brand">ваш тариф</span>}
 			</div>
-			<div className="mt-3 flex gap-2">
+			<div className="mt-3 space-y-2">
 				{plan.buyUrl && (
-					<Button
-						className={cn('h-auto flex-1 justify-start py-3 text-left', BRAND_ON)}
+					<PayOption
+						label={action}
+						fee={subscriptionFee}
+						icon={SUBSCRIPTION_ICON}
+						primary
 						onClick={() => openLink(plan.buyUrl!)}
-					>
-						<CreditCardIcon className="size-5 shrink-0" />
-						<span className="flex min-w-0 flex-col">
-							<span className="font-medium">{action}</span>
-							{subscriptionFee && (
-								<span className="text-xs font-normal opacity-75">{subscriptionFee}</span>
-							)}
-						</span>
-					</Button>
+					/>
 				)}
 				{plan.giftUrl && (
-					// Без обычной ссылки подарок остаётся единственной покупкой — тогда он и
-					// занимает всю ширину, а не жмётся половинкой к пустоте.
-					<Button
-						variant="outline"
-						className={cn(plan.buyUrl ? 'flex-1' : 'w-full')}
-						onClick={() => openLink(plan.giftUrl!)}
-					>
-						<GiftIcon className="size-4" />
-						Подарить
-					</Button>
+					<PayOption label="Подарить" icon={GIFT_ICON} onClick={() => openLink(plan.giftUrl!)} />
 				)}
 			</div>
 			{/* Разовая оплата: у неё нет готовой ссылки — форму создаёт бот по нажатию. Сумму на
@@ -106,21 +96,14 @@ function PlanRow({
 			{plan.oneTimeMethods.length > 0 && (
 				<div className="mt-2 space-y-2">
 					{plan.oneTimeMethods.map((m) => (
-						<Button
+						<PayOption
 							key={m.code}
-							variant="outline"
-							className="h-auto w-full justify-start py-3 text-left"
+							label={`${m.label} — разово`}
+							fee={feeNote(m.feePercent)}
+							icon={payMethodIcon(m.code)}
 							disabled={busy}
 							onClick={() => onOneTime(plan.code, m.code)}
-						>
-							<CreditCardIcon className="size-5 shrink-0" />
-							<span className="flex min-w-0 flex-col">
-								<span className="font-medium">{m.label} — разово</span>
-								{feeNote(m.feePercent) && (
-									<span className="text-xs font-normal opacity-75">{feeNote(m.feePercent)}</span>
-								)}
-							</span>
-						</Button>
+						/>
 					))}
 				</div>
 			)}
