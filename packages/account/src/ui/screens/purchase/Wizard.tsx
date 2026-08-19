@@ -44,7 +44,6 @@ import {
 	PayOption,
 	payMethodIcon,
 	SUBSCRIPTION_ICON,
-	type PayIcon,
 } from '@/ui/components/PayOption.tsx'
 
 const AUDIENCE_OPTIONS: Array<{
@@ -106,25 +105,23 @@ function ChoiceCard({
 	)
 }
 
-/** Полоска прогресса: сколько шагов пройдено и сколько осталось. */
+/**
+ * Полоска прогресса: сколько шагов пройдено и сколько осталось. Без подписи «Шаг N из 3» —
+ * заполненные сегменты говорят то же самое, а строка под ними только шумела.
+ */
 function Progress({ step }: { step: WizardStep }) {
 	const index = WIZARD_STEPS.indexOf(step)
 	return (
-		<div className="mb-4">
-			<div className="mb-2 flex gap-1.5">
-				{WIZARD_STEPS.map((s, i) => (
-					<span
-						key={s}
-						className={cn(
-							'h-1 flex-1 rounded-full transition-colors duration-300',
-							i <= index ? 'bg-brand' : 'bg-muted',
-						)}
-					/>
-				))}
-			</div>
-			<p className="text-xs text-muted-foreground">
-				Шаг {index + 1} из {WIZARD_STEPS.length}
-			</p>
+		<div className="mb-4 flex gap-1.5">
+			{WIZARD_STEPS.map((s, i) => (
+				<span
+					key={s}
+					className={cn(
+						'h-1 flex-1 rounded-full transition-colors duration-300',
+						i <= index ? 'bg-brand' : 'bg-muted',
+					)}
+				/>
+			))}
 		</div>
 	)
 }
@@ -136,11 +133,12 @@ function Progress({ step }: { step: WizardStep }) {
  * столбцом только с общей левой границей — по центру глаз прыгает на каждой строке.
  */
 /** Сноска под кнопкой: иконка слева, текст справа — как и в самой кнопке. */
-function OptionNote({ icon: Icon, children }: { icon: PayIcon; children: ReactNode }) {
+function OptionNote({ children }: { children: ReactNode }) {
+	// Плашка в цвет кнопки, а не серая строка: это преимущество способа, а не мелкий шрифт
+	// под ним. Приглушённой подписи здесь не хватало — её просто пролистывали.
 	return (
-		<p className="mt-1 flex items-start gap-1.5 px-1 text-xs text-muted-foreground">
-			<Icon className="mt-0.5 size-3.5 shrink-0" />
-			<span>{children}</span>
+		<p className="mt-1.5 rounded-lg bg-brand/10 px-3 py-2 text-xs leading-snug text-brand">
+			{children}
 		</p>
 	)
 }
@@ -205,10 +203,19 @@ function Result({
 					text={`${formatDevices(plan.deviceLimit)}${plan.priceLabel ? ` · ${plan.priceLabel}` : ''}`}
 				/>
 
-				<ul className="mt-3 space-y-1 text-sm text-muted-foreground">
-					<li>Серверы, скорость и трафик — как во всех тарифах</li>
-					<li>Доступ включается сразу после оплаты</li>
-					{audience === 'gift' && <li>Ссылку-сертификат перешлёте получателю сами</li>}
+				{/* Что человек получает за деньги — конкретикой, а не общими словами: скорость и
+				    трафик, где это работает и когда включится. Число устройств не повторяем —
+				    оно строкой выше. */}
+				{/* space-y-2 + leading-snug: пункты по две строки без воздуха между ними
+				    слипались в абзац, и список переставал читаться списком. */}
+				<ul className="mt-4 space-y-2 text-sm leading-snug text-muted-foreground">
+					<li>Скорость и трафик не ограничиваем</li>
+					<li>Телефон, компьютер, телевизор, роутер — по одной ссылке</li>
+					{audience === 'gift' ? (
+						<li>Сертификат придёт в чат — перешлёте его получателю</li>
+					) : (
+						<li>Ключ доступа придёт в чат через минуту после оплаты</li>
+					)}
 				</ul>
 			</div>
 
@@ -231,7 +238,7 @@ function Result({
 				onClick={() => onBuy()}
 			>
 				{audience !== 'gift' && advice.oneTimeMethods.length > 0 && (
-					<OptionNote icon={SUBSCRIPTION_ICON}>
+					<OptionNote>
 						Доступно автопродление: следующий месяц спишется сам, отменить можно в любой момент.
 					</OptionNote>
 				)}

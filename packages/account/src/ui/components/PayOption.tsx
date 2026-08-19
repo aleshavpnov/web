@@ -68,18 +68,21 @@ export function PayOption({
 }) {
 	return (
 		<div className={className}>
-			{/* h-auto — кнопка растёт под две строки; items-start + mt у иконки держат её
-			    на одной линии с заголовком. */}
+			{/* h-auto — кнопка растёт под две строки. Иконка ростом с обе строки и по центру
+			    относительно них: мелкая, прижатая к заголовку, читалась как случайный значок,
+			    а не как метка способа оплаты. gap-3 — иначе крупная иконка липнет к тексту. */}
 			<Button
 				className={cn(
-					'h-auto w-full items-start justify-start py-3 text-left',
+					'h-auto w-full items-center justify-start gap-3 py-3 text-left',
 					primary && BRAND_ON,
 				)}
 				variant={primary ? 'default' : 'outline'}
 				disabled={disabled}
 				onClick={onClick}
 			>
-				<Icon className="mt-0.5 size-5 shrink-0" />
+				{/* Свой size- отменяет дефолтные size-4, которые button раздаёт вложенным svg.
+				    Штрих тоньше обычного: у крупной иконки дефолтные 2px выглядят грубо. */}
+				<Icon className="size-8 shrink-0" strokeWidth={1.75} />
 				<span className="flex min-w-0 flex-col">
 					<span className="text-lg font-semibold">{label}</span>
 					{fee && <span className="text-xs font-normal opacity-75">{fee}</span>}
