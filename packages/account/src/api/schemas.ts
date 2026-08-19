@@ -72,6 +72,8 @@ export const PlansSchema = z.object({
 	current: z.object({ planCode: z.string(), planName: z.string() }).nullable(),
 	pendingGifts: z.array(z.object({ planName: z.string(), deepLink: z.string() })),
 	manageUrl: z.string().nullable(),
+	/** Комиссия подписки Tribute. null — не задана, о ней молчим. */
+	subscriptionFeePercent: z.number().nullable().default(null),
 })
 
 export const UsageSchema = z.object({
@@ -109,6 +111,7 @@ export const AdviceSchema = z.object({
 	plan: PlanBaseSchema.nullable(),
 	buyUrl: z.string().nullable(),
 	oneTimeMethods: z.array(OneTimeMethodSchema).default([]),
+	subscriptionFeePercent: z.number().nullable().default(null),
 })
 
 export const CheckoutSchema = z.object({
