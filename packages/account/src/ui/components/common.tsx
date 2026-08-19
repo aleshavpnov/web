@@ -110,6 +110,30 @@ export function Row({ label, children }: { label: string; children: ReactNode })
 	)
 }
 
+/**
+ * Строка тарифа с выделенными числами: «<b>10</b> устройств · <b>449</b> ₽/мес».
+ *
+ * Выбирают тариф по двум цифрам — сколько устройств и сколько денег, — а в приглушённой
+ * строке подписи они тонули наравне со словами. Разметку не заводим: числа находим в уже
+ * готовой строке, чтобы источником текста остались `formatDevices` и `priceLabel`.
+ */
+export function PlanFigures({ text, className }: { text: string; className?: string }) {
+	return (
+		<span className={className}>
+			{text.split(/(\d+(?:[.,]\d+)?)/).map((part, i) =>
+				/^\d/.test(part) ? (
+					// eslint-disable-next-line react/no-array-index-key -- части одной статичной строки
+					<b key={i} className="font-semibold text-foreground">
+						{part}
+					</b>
+				) : (
+					part
+				),
+			)}
+		</span>
+	)
+}
+
 /** Подпись внутри карточки: приглушённая, потому что главное в карточке — её содержимое. */
 export function SectionTitle({ children, className }: { children: ReactNode; className?: string }) {
 	return (

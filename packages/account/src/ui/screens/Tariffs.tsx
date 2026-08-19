@@ -13,11 +13,11 @@ import { toast } from 'sonner'
 import { ApiError, startCheckout } from '@/api/client.ts'
 import type { Plan } from '@/api/schemas.ts'
 import { Button } from '@/components/ui/button.tsx'
-import { formatDevices } from '@/lib/format.ts'
+import { feeNote, formatDevices } from '@/lib/format.ts'
 import { hapticError, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { plansRes } from '@/state/cabinet.ts'
-import { Async, BRAND_ON, SECTION_CARD } from '@/ui/components/common.tsx'
+import { Async, BRAND_ON, PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
 
 /** Тариф витрины: одна карточка, две возможные покупки. */
 type PlanOffer = Omit<Plan, 'buyUrl'> & { buyUrl: string | null; giftUrl: string | null }
@@ -63,10 +63,10 @@ function PlanRow({
 						{plan.emoji ? `${plan.emoji} ` : ''}
 						{plan.name}
 					</div>
-					<div className="mt-0.5 text-xs text-muted-foreground">
-						{formatDevices(plan.deviceLimit)}
-						{plan.priceLabel ? ` · ${plan.priceLabel}` : ''}
-					</div>
+					<PlanFigures
+						className="mt-0.5 block text-sm text-muted-foreground"
+						text={`${formatDevices(plan.deviceLimit)}${plan.priceLabel ? ` · ${plan.priceLabel}` : ''}`}
+					/>
 				</div>
 				{current && <span className="shrink-0 text-xs text-brand">ваш тариф</span>}
 			</div>
@@ -90,19 +90,25 @@ function PlanRow({
 					</Button>
 				)}
 			</div>
-			{/* Разовая оплата: у неё нет готовой ссылки — форму создаёт бот по нажатию. */}
+			{/* Разовая оплата: у неё нет готовой ссылки — форму создаёт бот по нажатию. Сумму на
+			    кнопке не пишем: с комиссией провайдера на форме она будет другой. */}
 			{plan.oneTimeMethods.length > 0 && (
-				<div className="mt-2 flex gap-2">
+				<div className="mt-2 space-y-2">
 					{plan.oneTimeMethods.map((m) => (
-						<Button
-							key={m.code}
-							variant="outline"
-							className="flex-1"
-							disabled={busy}
-							onClick={() => onOneTime(plan.code, m.code)}
-						>
-							{m.label} · {m.amount} ₽
-						</Button>
+						<div key={m.code}>
+							<Button
+								variant="outline"
+								className="w-full justify-start text-left"
+								disabled={busy}
+								onClick={() => onOneTime(plan.code, m.code)}
+							>
+								<CreditCardIcon className="size-4" />
+								{m.label} — разово
+							</Button>
+							{feeNote(m.feePercent) && (
+								<p className="mt-1 px-1 text-xs text-muted-foreground">{feeNote(m.feePercent)}</p>
+							)}
+						</div>
 					))}
 				</div>
 			)}

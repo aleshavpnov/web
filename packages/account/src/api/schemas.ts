@@ -54,6 +54,8 @@ const OneTimeMethodSchema = z.object({
 	code: z.number(),
 	label: z.string(),
 	amount: z.number(),
+	/** Комиссия эквайера сверх цены тарифа. null — процент не задан, о комиссии молчим. */
+	feePercent: z.number().nullable().default(null),
 })
 
 const PlanSchema = PlanBaseSchema.extend({
