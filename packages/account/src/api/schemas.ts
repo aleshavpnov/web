@@ -46,7 +46,23 @@ const PlanBaseSchema = z.object({
 	durationDays: z.number(),
 })
 
-const PlanSchema = PlanBaseSchema.extend({ buyUrl: z.string() })
+/**
+ * Способ разовой оплаты (СБП, карта): в отличие от подписки, ссылку на форму бот создаёт
+ * в момент нажатия — поэтому здесь только код метода и сумма, а не готовый URL.
+ */
+const OneTimeMethodSchema = z.object({
+	code: z.number(),
+	label: z.string(),
+	amount: z.number(),
+})
+
+const PlanSchema = PlanBaseSchema.extend({
+	buyUrl: z.string(),
+	/** Пусто — тариф продаётся только подпиской с автопродлением. */
+	oneTimeMethods: z.array(OneTimeMethodSchema).default([]),
+})
+
+export type OneTimeMethod = z.infer<typeof OneTimeMethodSchema>
 
 export const PlansSchema = z.object({
 	plans: z.array(PlanSchema),
@@ -90,9 +106,13 @@ export const AdviceSchema = z.object({
 	/** null — продавать нечего: для этой аудитории не настроено ни одной ссылки оплаты. */
 	plan: PlanBaseSchema.nullable(),
 	buyUrl: z.string().nullable(),
+	oneTimeMethods: z.array(OneTimeMethodSchema).default([]),
 })
 
-export const CheckoutSchema = z.object({ buyUrl: z.string() })
+export const CheckoutSchema = z.object({
+	buyUrl: z.string(),
+	provider: z.enum(['tribute', 'platega']).default('tribute'),
+})
 
 export const SummarySchema = z.object({
 	windowDays: z.number(),

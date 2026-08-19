@@ -100,9 +100,22 @@ export function trackEvent(name: CabinetEvent, value?: string): void {
 	}).catch(() => {})
 }
 
-/** Фиксирует намерение и отдаёт ссылку оплаты (обычную или подарочную — решает бот). */
-export const startCheckout = (planCode: string, audience: Audience): Promise<{ buyUrl: string }> =>
-	request('/checkout', CheckoutSchema, { method: 'POST', body: { planCode, audience } })
+/**
+ * Фиксирует намерение и отдаёт ссылку оплаты. Какую именно — решает бот: подписку Tribute,
+ * подарочный товар или свежесозданную форму разовой оплаты (`method` — код способа Platega).
+ */
+export const startCheckout = (
+	planCode: string,
+	audience: Audience,
+	oneTimeMethod?: number,
+): Promise<{ buyUrl: string; provider: 'tribute' | 'platega' }> =>
+	request('/checkout', CheckoutSchema, {
+		method: 'POST',
+		body:
+			oneTimeMethod === undefined
+				? { planCode, audience }
+				: { planCode, audience, provider: 'platega', method: oneTimeMethod },
+	})
 
 /**
  * Аватар приглашённого. Не `<img src>`: гейт кабинета читает только заголовок

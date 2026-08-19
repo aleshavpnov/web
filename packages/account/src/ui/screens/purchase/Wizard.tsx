@@ -136,7 +136,8 @@ function Result({
 	audience: Audience
 	loading: boolean
 	busy: boolean
-	onBuy: () => void
+	/** Без аргумента — подписка Tribute, с кодом метода — разовая оплата (СБП/карта). */
+	onBuy: (oneTimeMethod?: number) => void
 	onRestart: () => void
 }) {
 	if (loading || !advice) {
@@ -189,14 +190,36 @@ function Result({
 				</ul>
 			</div>
 
-			<Button className={cn('w-full', BRAND_ON)} size="lg" disabled={busy} onClick={onBuy}>
+			<Button className={cn('w-full', BRAND_ON)} size="lg" disabled={busy} onClick={() => onBuy()}>
 				{audience === 'gift' ? (
 					<GiftIcon className="size-4" />
 				) : (
 					<CreditCardIcon className="size-4" />
 				)}
-				{busy ? 'Открываем оплату…' : audience === 'gift' ? 'Оплатить подарок' : 'Оформить'}
+				{busy
+					? 'Открываем оплату…'
+					: audience === 'gift'
+						? 'Оплатить подарок'
+						: advice.oneTimeMethods.length > 0
+							? 'Подписка с автопродлением'
+							: 'Оформить'}
 			</Button>
+
+			{/* Разовая оплата: отдельными кнопками, чтобы разница с подпиской была видна до
+			    нажатия, а не выяснялась на форме провайдера. */}
+			{advice.oneTimeMethods.map((m) => (
+				<Button
+					key={m.code}
+					variant="outline"
+					className="w-full"
+					size="lg"
+					disabled={busy}
+					onClick={() => onBuy(m.code)}
+				>
+					<CreditCardIcon className="size-4" />
+					{m.label} — {m.amount} ₽ разово
+				</Button>
+			))}
 			<Button variant="ghost" className="w-full" onClick={onRestart}>
 				<RotateCcwIcon className="size-4" />
 				Ответить заново
@@ -244,13 +267,14 @@ export const Wizard = reatomComponent(() => {
 			.finally(() => setLoading(false))
 	}
 
-	async function buy() {
+	async function buy(oneTimeMethod?: number) {
 		if (!advice?.plan || !audience) return
 		setBusy(true)
 		try {
 			// Ссылку берём у бота, а не из подбора: заодно он запомнит намерение и вернёт
-			// человека, если оплата не дойдёт до конца.
-			const { buyUrl } = await startCheckout(advice.plan.code, audience)
+			// человека, если оплата не дойдёт до конца. Для разовой оплаты ссылки заранее и
+			// не существует — форму провайдер создаёт на этот платёж.
+			const { buyUrl } = await startCheckout(advice.plan.code, audience, oneTimeMethod)
 			openLink(buyUrl)
 		} catch (e) {
 			hapticError()
@@ -312,7 +336,7 @@ export const Wizard = reatomComponent(() => {
 						audience={audience}
 						loading={loading}
 						busy={busy}
-						onBuy={() => void buy()}
+						onBuy={(method) => void buy(method)}
 						onRestart={() => wizardReset()}
 					/>
 				)}
