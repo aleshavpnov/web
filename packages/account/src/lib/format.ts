@@ -92,3 +92,14 @@ export function formatRemaining(iso: string): string {
 export function formatDevices(limit: number): string {
 	return `${limit} ${plural(limit, 'устройство', 'устройства', 'устройств')}`
 }
+
+/**
+ * Сноска про комиссию эквайера под кнопкой способа оплаты. Комиссия начисляется сверх цены
+ * тарифа, поэтому на форме провайдера сумма будет больше — человек должен узнать об этом
+ * до перехода, а не после. `null` (процент не задан в env) — сноски нет: молчание честнее
+ * выдуманной цифры.
+ */
+export function feeNote(percent: number | null | undefined): string | undefined {
+	if (percent == null) return undefined
+	return `Комиссия платёжной системы ${percent}% — она добавится к сумме на форме оплаты.`
+}

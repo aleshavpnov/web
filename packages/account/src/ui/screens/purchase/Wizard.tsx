@@ -26,7 +26,7 @@ import { toast } from 'sonner'
 import { ApiError, fetchAdvice, startCheckout, trackEvent } from '@/api/client.ts'
 import type { Advice, Audience, DeviceNeed } from '@/api/schemas.ts'
 import { Button } from '@/components/ui/button.tsx'
-import { formatDevices } from '@/lib/format.ts'
+import { feeNote, formatDevices } from '@/lib/format.ts'
 import { hapticError, hapticSuccess, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import {
@@ -39,7 +39,7 @@ import {
 	WIZARD_STEPS,
 	type WizardStep,
 } from '@/state/wizard.ts'
-import { BRAND_ON, SECTION_CARD } from '@/ui/components/common.tsx'
+import { BRAND_ON, PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
 
 const AUDIENCE_OPTIONS: Array<{
 	value: Audience
@@ -123,6 +123,44 @@ function Progress({ step }: { step: WizardStep }) {
 	)
 }
 
+/**
+ * Способ оплаты: кнопка и сноска под ней.
+ *
+ * Текст в кнопке прижат влево, а не по центру: способов несколько, и подписи читаются
+ * столбцом только с общей левой границей — по центру глаз прыгает на каждой строке.
+ */
+function PayOption({
+	label,
+	note,
+	icon: Icon,
+	primary = false,
+	disabled,
+	onClick,
+}: {
+	label: string
+	note?: string | undefined
+	icon: typeof GiftIcon
+	primary?: boolean
+	disabled: boolean
+	onClick: () => void
+}) {
+	return (
+		<div>
+			<Button
+				className={cn('w-full justify-start text-left', primary && BRAND_ON)}
+				variant={primary ? 'default' : 'outline'}
+				size="lg"
+				disabled={disabled}
+				onClick={onClick}
+			>
+				<Icon className="size-4" />
+				{label}
+			</Button>
+			{note && <p className="mt-1 px-1 text-xs text-muted-foreground">{note}</p>}
+		</div>
+	)
+}
+
 /** Итог: рекомендованный тариф и кнопка оплаты. */
 function Result({
 	advice,
@@ -178,10 +216,10 @@ function Result({
 					{plan.emoji ? `${plan.emoji} ` : ''}
 					{plan.name}
 				</div>
-				<div className="mt-1 text-sm text-muted-foreground">
-					{formatDevices(plan.deviceLimit)}
-					{plan.priceLabel ? ` · ${plan.priceLabel}` : ''}
-				</div>
+				<PlanFigures
+					className="mt-1 block text-base text-muted-foreground"
+					text={`${formatDevices(plan.deviceLimit)}${plan.priceLabel ? ` · ${plan.priceLabel}` : ''}`}
+				/>
 
 				<ul className="mt-3 space-y-1 text-sm text-muted-foreground">
 					<li>Серверы, скорость и трафик — как во всех тарифах</li>
@@ -190,35 +228,42 @@ function Result({
 				</ul>
 			</div>
 
-			<Button className={cn('w-full', BRAND_ON)} size="lg" disabled={busy} onClick={() => onBuy()}>
-				{audience === 'gift' ? (
-					<GiftIcon className="size-4" />
-				) : (
-					<CreditCardIcon className="size-4" />
-				)}
-				{busy
-					? 'Открываем оплату…'
-					: audience === 'gift'
-						? 'Оплатить подарок'
+			{/* Способы оплаты идут списком «кнопка + сноска»: сумма на кнопке вводила бы в
+			    заблуждение — на форме провайдера она будет другой из-за его комиссии. */}
+			<PayOption
+				label={
+					busy
+						? 'Открываем оплату…'
+						: audience === 'gift'
+							? 'Оплатить подарок'
+							: advice.oneTimeMethods.length > 0
+								? 'Tribute'
+								: 'Оформить'
+				}
+				note={
+					audience === 'gift'
+						? undefined
 						: advice.oneTimeMethods.length > 0
-							? 'Подписка с автопродлением'
-							: 'Оформить'}
-			</Button>
+							? 'Доступно автопродление: следующий месяц спишется сам, отменить можно в любой момент.'
+							: undefined
+				}
+				icon={audience === 'gift' ? GiftIcon : CreditCardIcon}
+				primary
+				disabled={busy}
+				onClick={() => onBuy()}
+			/>
 
 			{/* Разовая оплата: отдельными кнопками, чтобы разница с подпиской была видна до
 			    нажатия, а не выяснялась на форме провайдера. */}
 			{advice.oneTimeMethods.map((m) => (
-				<Button
+				<PayOption
 					key={m.code}
-					variant="outline"
-					className="w-full"
-					size="lg"
+					label={m.label}
+					note={feeNote(m.feePercent)}
+					icon={CreditCardIcon}
 					disabled={busy}
 					onClick={() => onBuy(m.code)}
-				>
-					<CreditCardIcon className="size-4" />
-					{m.label} — {m.amount} ₽ разово
-				</Button>
+				/>
 			))}
 			<Button variant="ghost" className="w-full" onClick={onRestart}>
 				<RotateCcwIcon className="size-4" />
