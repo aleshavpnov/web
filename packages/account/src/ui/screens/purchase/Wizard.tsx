@@ -28,6 +28,8 @@ import { Button } from '@/components/ui/button.tsx'
 import { feeNote, formatDevices } from '@/lib/format.ts'
 import { hapticError, hapticSuccess, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
+import { watchPayment } from '@/state/payment-watch.ts'
+import { navigate } from '@/state/screen.ts'
 import {
 	adviceAtom,
 	audienceAtom,
@@ -312,6 +314,15 @@ export const Wizard = reatomComponent(() => {
 			// не существует — форму провайдер создаёт на этот платёж.
 			const { buyUrl } = await startCheckout(advice.plan.code, audience, oneTimeMethod)
 			openLink(buyUrl)
+			// Подарок доступ покупателю не меняет — там ждать нечего, сертификат придёт в чат.
+			if (audience !== 'gift') {
+				watchPayment(() => {
+					hapticSuccess()
+					toast.success('Оплата прошла — доступ активен')
+					wizardReset()
+					navigate('home')
+				})
+			}
 		} catch (e) {
 			hapticError()
 			toast.error(e instanceof ApiError ? e.message : 'Не удалось открыть оплату')
