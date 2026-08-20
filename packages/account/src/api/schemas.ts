@@ -150,7 +150,11 @@ export const SettingsSchema = z.object({
 	broadcast: z.boolean(),
 })
 
-export const SupportOpenSchema = z.object({ ok: z.boolean(), botLink: z.string() })
+/**
+ * Ответ роутов, которые доводят дело до конца в чате бота, а не в кабинете: переписка
+ * с поддержкой, файл конфига. Кабинет по такому ответу открывает чат и закрывается.
+ */
+export const BotHandoffSchema = z.object({ ok: z.boolean(), botLink: z.string() })
 
 /**
  * События воронки. Список повторяет белый список бота (`CABINET_EVENTS` в cabinet-api.ts):
@@ -181,3 +185,4 @@ export type Referrals = z.infer<typeof ReferralsSchema>
 export type Whatsnew = z.infer<typeof WhatsnewSchema>
 export type Settings = z.infer<typeof SettingsSchema>
 export type SettingKey = keyof Settings
+export type BotHandoff = z.infer<typeof BotHandoffSchema>

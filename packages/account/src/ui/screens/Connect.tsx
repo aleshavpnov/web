@@ -20,8 +20,9 @@ import {
 	type ClientId,
 } from '@shared/connect/index.ts'
 
-import { ApiError, fetchKeeneticConf } from '@/api/client.ts'
+import { sendKeeneticConf } from '@/api/client.ts'
 import { Button } from '@/components/ui/button.tsx'
+import { closeMiniApp, hapticError, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { accessRes } from '@/state/cabinet.ts'
 import { navigate } from '@/state/screen.ts'
@@ -95,25 +96,26 @@ function SubscriptionLink({ url, backup }: { url: string; backup: string | null 
 	)
 }
 
-/** Персональный конфиг для роутера — доступен на тарифах от 10 устройств. */
+/**
+ * Персональный конфиг для роутера — доступен на тарифах от 10 устройств.
+ *
+ * Файл приходит документом в чат бота, а не в загрузки: вебвью Mini App не отдаёт
+ * blob-ссылку загрузчику ни на одном клиенте, и кнопка «скачать» молча не делала ничего.
+ * Дальше — как у поддержки: открываем чат и закрываемся, чтобы не оставлять кабинет
+ * поверх диалога, в котором лежит файл.
+ */
 function RouterCard() {
 	const [busy, setBusy] = useState(false)
 
-	async function download() {
+	async function send() {
 		setBusy(true)
 		try {
-			const conf = await fetchKeeneticConf()
-			// Файл собираем на месте: скачивание идёт из-под подписи initData, и «просто
-			// ссылку» на этот роут браузеру не отдать (заголовок он не пошлёт).
-			const url = URL.createObjectURL(new Blob([conf], { type: 'text/plain' }))
-			const a = document.createElement('a')
-			a.href = url
-			a.download = 'keenetic.conf'
-			a.click()
-			URL.revokeObjectURL(url)
-			toast.success('Конфиг скачан')
+			const { botLink } = await sendKeeneticConf()
+			openLink(botLink)
+			closeMiniApp()
 		} catch (e) {
-			toast.error(e instanceof ApiError ? e.message : 'Не удалось получить конфиг')
+			hapticError()
+			toast.error(e instanceof Error ? e.message : 'Не удалось получить конфиг')
 		} finally {
 			setBusy(false)
 		}
@@ -124,10 +126,11 @@ function RouterCard() {
 			<SectionTitle className="mb-1">Роутер Keenetic</SectionTitle>
 			<p className="mb-3 text-sm text-muted-foreground">
 				Раздаёт доступ на&nbsp;всю домашнюю сеть — приложение на&nbsp;устройствах не&nbsp;нужно.
+				Файл настроек и&nbsp;шаги импорта пришлём в&nbsp;чат бота.
 			</p>
-			<Button variant="outline" className="w-full" disabled={busy} onClick={() => void download()}>
+			<Button variant="outline" className="w-full" disabled={busy} onClick={() => void send()}>
 				<RouterIcon className="size-4" />
-				{busy ? 'Готовим конфиг…' : 'Скачать keenetic.conf'}
+				{busy ? 'Отправляем…' : 'Прислать конфиг в чат'}
 			</Button>
 		</section>
 	)
