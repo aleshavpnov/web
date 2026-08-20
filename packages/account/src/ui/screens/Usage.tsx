@@ -11,6 +11,7 @@ import { formatBytes, formatDevices, plural } from '@/lib/format.ts'
 import { usageDaysAtom, usageRes } from '@/state/cabinet.ts'
 import { Async, SECTION_CARD, SectionTitle, Segmented, StatTile } from '@/ui/components/common.tsx'
 import { DeviceList } from '@/ui/components/DeviceList.tsx'
+import { MoreDevicesCard } from '@/ui/components/MoreDevicesCard.tsx'
 import { UsageBars } from '@/ui/components/UsageBars.tsx'
 
 const WINDOWS = [
@@ -85,6 +86,12 @@ export const Usage = reatomComponent(() => {
 							</section>
 
 							<DeviceList devices={usage.devices} onChanged={() => usageRes.load(days)} />
+
+							{/* Показываем всем, у кого лимит вообще есть, а не только упёршимся в него:
+							    счёт устройств — нижняя граница (hwid шлёт только Happ), и порог по нему
+							    прятал бы карточку как раз от тех, кому она нужна. У безлимитных
+							    (подписки до тарифной линейки, vip) просить нечего. */}
+							{usage.deviceLimit !== null && <MoreDevicesCard />}
 						</>
 					)
 				}
