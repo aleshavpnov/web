@@ -13,18 +13,19 @@ import { initData } from '@/lib/telegram.ts'
 import {
 	AccessSchema,
 	AdviceSchema,
+	BotHandoffSchema,
 	CheckoutSchema,
 	OverviewSchema,
 	PlansSchema,
 	ReferralsSchema,
 	SettingsSchema,
 	SummarySchema,
-	SupportOpenSchema,
 	UsageSchema,
 	WhatsnewSchema,
 	type Access,
 	type Advice,
 	type Audience,
+	type BotHandoff,
 	type CabinetEvent,
 	type DeviceNeed,
 	type Overview,
@@ -160,24 +161,12 @@ export const setSetting = (key: SettingKey, on: boolean): Promise<Settings> =>
 	request('/settings', SettingsSchema, { method: 'POST', body: { key, on } })
 
 /** Включает режим переписки в боте; дальше диалог идёт в чате, кабинет закрывается. */
-export const openSupport = (): Promise<{ ok: boolean; botLink: string }> =>
-	request('/support/open', SupportOpenSchema, { method: 'POST' })
+export const openSupport = (): Promise<BotHandoff> =>
+	request('/support/open', BotHandoffSchema, { method: 'POST' })
 
 /**
- * Конфиг роутера. Не JSON: бот отдаёт готовый файл `keenetic.conf`, и скачивать его
- * фронт должен как текст — поэтому мимо `request`.
+ * Просит бота прислать `keenetic.conf` документом в чат. Самим файлом ответ не приходит:
+ * скачать его из вебвью Mini App всё равно нельзя (см. RouterCard).
  */
-export async function fetchKeeneticConf(): Promise<string> {
-	const res = await fetch(`${BASE}/keenetic/config`, {
-		method: 'POST',
-		headers: { authorization: `tma ${initData()}` },
-	})
-	if (!res.ok) {
-		const detail = await res
-			.json()
-			.then((b: unknown) => (b as { error?: string })?.error)
-			.catch(() => undefined)
-		throw new ApiError(detail ?? `Запрос не прошёл (${res.status})`, res.status)
-	}
-	return res.text()
-}
+export const sendKeeneticConf = (): Promise<BotHandoff> =>
+	request('/keenetic/config', BotHandoffSchema, { method: 'POST' })
