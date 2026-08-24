@@ -1,6 +1,7 @@
 /** Мелкие переиспользуемые куски интерфейса кабинета. */
 import { useEffect, useState, type ReactNode } from 'react'
 import { AlertTriangleIcon, CheckIcon, ChevronRightIcon, CopyIcon } from 'lucide-react'
+import QRCode from 'qrcode'
 import { toast } from 'sonner'
 
 import { Skeleton } from '@/components/ui/skeleton.tsx'
@@ -239,5 +240,34 @@ export function CopyValue({
 				<CopyIcon className="size-4 shrink-0 opacity-60" />
 			)}
 		</button>
+	)
+}
+
+/** Ссылка длиннее этого режется многоточием: целиком она всё равно не читается. */
+const URL_VISIBLE_LEN = 42
+
+export function shorten(url: string): string {
+	return url.length > URL_VISIBLE_LEN ? `${url.slice(0, URL_VISIBLE_LEN)}…` : url
+}
+
+/** QR во всю ширину карточки: код рисуем крупно, чтобы читался с чужого телефона. */
+export function Qr({ value, alt }: { value: string; alt: string }) {
+	const [qr, setQr] = useState<string | null>(null)
+
+	useEffect(() => {
+		let alive = true
+		// width 1024 — с запасом под ширину экрана на ретине: масштабируем вниз, не вверх.
+		QRCode.toDataURL(value, { margin: 1, width: 1024 })
+			.then((data) => alive && setQr(data))
+			.catch(() => alive && setQr(null))
+		return () => {
+			alive = false
+		}
+	}, [value])
+
+	return (
+		<div className="aspect-square w-full overflow-hidden rounded-xl bg-white p-3">
+			{qr && <img src={qr} alt={alt} className="size-full" />}
+		</div>
 	)
 }
