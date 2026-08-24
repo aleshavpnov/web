@@ -13,6 +13,7 @@ import {
 	type ScreenName,
 } from '@/state/screen.ts'
 import { canGoBack, stepAtom, wizardBack } from '@/state/wizard.ts'
+import { LoadingBar } from '@/ui/components/LoadingBar.tsx'
 import { Nav } from '@/ui/components/Nav.tsx'
 import { Connect } from '@/ui/screens/Connect.tsx'
 import { Home } from '@/ui/screens/Home.tsx'
@@ -72,6 +73,8 @@ export const App = reatomComponent(() => {
 
 	return (
 		<div className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4">
+			<LoadingBar />
+
 			{!insideTelegram() && (
 				<p className="mt-4 mb-3 rounded-lg bg-viz-warning/15 px-3 py-2 text-xs">
 					Открыто вне Telegram: подписи initData нет. Работает только с дев-обходом на боте (

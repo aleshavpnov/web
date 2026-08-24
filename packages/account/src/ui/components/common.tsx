@@ -37,8 +37,9 @@ export function Async<T>({
 			</div>
 		)
 	}
-	// Данные держим на экране во время рефетча — иначе экран моргает скелетоном при
-	// каждом переключении окна.
+	// Скелетон — только когда показывать нечего. Прошлый ответ во время рефетча остаётся
+	// на экране в полную силу: гасить готовое не за что, а что идёт обновление,
+	// говорит полоска сверху (LoadingBar).
 	if (data === null) {
 		return loading ? (
 			(skeleton ?? <Skeleton className="h-24 w-full" />)
@@ -46,11 +47,7 @@ export function Async<T>({
 			<div className="py-6 text-sm text-muted-foreground">Нет данных</div>
 		)
 	}
-	return (
-		<div className={cn(className, loading && 'opacity-60 transition-opacity')}>
-			{children(data)}
-		</div>
-	)
+	return <div className={className}>{children(data)}</div>
 }
 
 /** Карточка секции: тот же фон, скругление и обводка у всех блоков с содержимым. */
