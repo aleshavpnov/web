@@ -1,5 +1,5 @@
 /** Мелкие переиспользуемые куски интерфейса кабинета. */
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { AlertTriangleIcon, CheckIcon, ChevronRightIcon, CopyIcon } from 'lucide-react'
 import QRCode from 'qrcode'
 import { toast } from 'sonner'
@@ -253,6 +253,7 @@ export function shorten(url: string): string {
 /** QR во всю ширину карточки: код рисуем крупно, чтобы читался с чужого телефона. */
 export function Qr({ value, alt }: { value: string; alt: string }) {
 	const [qr, setQr] = useState<string | null>(null)
+	const box = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		let alive = true
@@ -265,8 +266,18 @@ export function Qr({ value, alt }: { value: string; alt: string }) {
 		}
 	}, [value])
 
+	// Код раскрывают кнопкой внизу карточки, и он открывается за краем экрана.
+	// nearest — довести до края и не двигать, когда QR уже виден целиком;
+	// место под панель вкладок держит scroll-mb (scrollIntoView учитывает его).
+	useEffect(() => {
+		box.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+	}, [])
+
 	return (
-		<div className="aspect-square w-full overflow-hidden rounded-xl bg-white p-3">
+		<div
+			ref={box}
+			className="aspect-square w-full scroll-mb-32 overflow-hidden rounded-xl bg-white p-3"
+		>
 			{qr && <img src={qr} alt={alt} className="size-full" />}
 		</div>
 	)
