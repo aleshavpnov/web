@@ -6,8 +6,7 @@
  */
 import { reatomComponent } from '@reatom/react'
 import { useEffect, useState } from 'react'
-import { DownloadIcon, QrCodeIcon, RouterIcon } from 'lucide-react'
-import QRCode from 'qrcode'
+import { DownloadIcon, InfoIcon, QrCodeIcon, RouterIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import {
 	AddSubscriptionSteps,
@@ -26,70 +25,77 @@ import { closeMiniApp, hapticError, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { accessRes } from '@/state/cabinet.ts'
 import { navigate } from '@/state/screen.ts'
-import { Async, BRAND_ON, CopyValue, SECTION_CARD, SectionTitle } from '@/ui/components/common.tsx'
+import {
+	Async,
+	BRAND_ON,
+	CopyValue,
+	Qr,
+	SECTION_CARD,
+	SectionTitle,
+	Segmented,
+	shorten,
+} from '@/ui/components/common.tsx'
 
-/** Ссылка длиннее этого режется многоточием: целиком она всё равно не читается. */
-const URL_VISIBLE_LEN = 42
+type LinkKind = 'main' | 'backup'
 
-function shorten(url: string): string {
-	return url.length > URL_VISIBLE_LEN ? `${url.slice(0, URL_VISIBLE_LEN)}…` : url
+/**
+ * Зачем нужна каждая ссылка. Подпись стоит у обеих, а не только у запасной: иначе выбор
+ * выглядит как «основная и какая-то ещё», и человек не понимает, когда брать вторую.
+ */
+const LINK_NOTE: Record<LinkKind, string> = {
+	main: 'Обычная ссылка-подписка. Подойдёт большинству — начинайте с неё.',
+	backup:
+		'Тот же доступ на другом домене. Возьмите её, если основная перестала открываться у вашего оператора.',
 }
 
 /** Ссылка-подписка: копирование одним тапом + QR для соседнего устройства. */
 function SubscriptionLink({ url, backup }: { url: string; backup: string | null }) {
-	const [qr, setQr] = useState<string | null>(null)
+	const [kind, setKind] = useState<LinkKind>('main')
 	const [showQr, setShowQr] = useState(false)
-
-	useEffect(() => {
-		if (!showQr) return
-		let alive = true
-		// width 320 = 2x от отображаемых 160px, чтобы не мылился на ретине
-		QRCode.toDataURL(url, { margin: 1, width: 320 })
-			.then((data) => alive && setQr(data))
-			.catch(() => alive && setQr(null))
-		return () => {
-			alive = false
-		}
-	}, [showQr, url])
+	const link = kind === 'backup' && backup ? backup : url
 
 	return (
 		<section className={SECTION_CARD}>
-			<SectionTitle className="mb-3">Ваша ссылка-подписка</SectionTitle>
+			<SectionTitle className="mb-3">Ссылка-подписка</SectionTitle>
+
+			{/* Переключатель доменов появляется только когда зеркало настроено:
+			    иначе это выбор из одного варианта. */}
+			{backup && (
+				<>
+					<Segmented
+						className="mb-3"
+						value={kind}
+						onValueChange={setKind}
+						options={[
+							{ value: 'main', label: 'Основная' },
+							{ value: 'backup', label: 'Запасная' },
+						]}
+					/>
+					<p className="mb-3 flex items-start gap-2 rounded-lg bg-muted px-3 py-2.5 text-sm">
+						<InfoIcon className="mt-0.5 size-4 shrink-0 text-brand" />
+						<span>{LINK_NOTE[kind]}</span>
+					</p>
+				</>
+			)}
+
 			<CopyValue
-				value={url}
+				value={link}
 				className="w-full justify-between rounded-lg bg-muted px-3 py-2.5 font-mono text-sm"
 			>
-				<span className="truncate">{shorten(url)}</span>
+				<span className="truncate">{shorten(link)}</span>
 			</CopyValue>
 
-			<div className="mt-3 flex gap-2">
-				<Button variant="outline" className="flex-1" onClick={() => setShowQr((v) => !v)}>
-					<QrCodeIcon className="size-4" />
-					{showQr ? 'Скрыть QR' : 'Показать QR'}
-				</Button>
-			</div>
+			<Button variant="outline" className="mt-3 w-full" onClick={() => setShowQr((v) => !v)}>
+				<QrCodeIcon className="size-4" />
+				{showQr ? 'Скрыть QR' : 'Показать QR'}
+			</Button>
 
-			{showQr && qr && (
+			{showQr && (
 				<div className="mt-3 flex flex-col items-center gap-2">
-					<img src={qr} alt="QR-код ссылки-подписки" className="size-40 rounded-lg bg-white p-2" />
+					<Qr value={link} alt="QR-код ссылки-подписки" />
 					<p className="text-center text-xs text-muted-foreground">
 						Отсканируйте с&nbsp;другого устройства — приложение добавит подписку само.
 					</p>
-				</div>
-			)}
-
-			{backup && (
-				<div className="mt-4">
-					<SectionTitle className="mb-1">Запасная ссылка</SectionTitle>
-					<p className="mb-2 text-xs text-muted-foreground">
-						Пригодится, если основная перестала открываться у&nbsp;вашего оператора.
-					</p>
-					<CopyValue
-						value={backup}
-						className="w-full justify-between rounded-lg bg-muted px-3 py-2 font-mono text-xs text-muted-foreground"
-					>
-						<span className="truncate">{shorten(backup)}</span>
-					</CopyValue>
 				</div>
 			)}
 		</section>

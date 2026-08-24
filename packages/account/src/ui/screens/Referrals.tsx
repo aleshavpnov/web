@@ -1,35 +1,29 @@
 /**
  * Экран «Друзья»: реферальная ссылка с QR, счётчики и список приглашённых.
  *
- * QR во всю ширину — его показывают с экрана телефона другому телефону, и мелкий код
- * с расстояния не считывается. Ссылка живёт в двух доменах: у части операторов основной
- * не открывается, и другу надо дать ту, что откроется у него (тот же приём, что с
- * запасной ссылкой-подпиской на экране «Подключение»).
+ * Карточка ссылки устроена как на «Подключении»: тогглер доменов, строка с копированием
+ * по тапу и QR под кнопкой. Ссылка живёт в двух доменах: у части операторов основной
+ * не открывается, и другу надо дать ту, что откроется у него.
  */
 import { reatomComponent } from '@reatom/react'
 import { useEffect, useState } from 'react'
-import { CheckIcon, CopyIcon, InfoIcon, Share2Icon } from 'lucide-react'
-import QRCode from 'qrcode'
-import { toast } from 'sonner'
+import { InfoIcon, QrCodeIcon, Share2Icon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button.tsx'
-import { copyText } from '@/lib/clipboard.ts'
 import { plural } from '@/lib/format.ts'
 import { openLink } from '@/lib/telegram.ts'
-import { cn } from '@/lib/utils.ts'
 import { referralsRes } from '@/state/cabinet.ts'
 import { Avatar } from '@/ui/components/Avatar.tsx'
 import {
 	Async,
-	BRAND_ON,
+	CopyValue,
+	Qr,
 	SECTION_CARD,
 	SectionTitle,
 	Segmented,
+	shorten,
 	StatTile,
 } from '@/ui/components/common.tsx'
-
-/** Сколько держится галочка на кнопке после копирования. */
-const COPIED_MS = 1400
 
 type LinkKind = 'main' | 'backup'
 
@@ -43,41 +37,13 @@ const LINK_NOTE: Record<LinkKind, string> = {
 		'Зеркало на другом домене. Дайте её, если у друга основной сайт не открывается — так бывает у части операторов и при ограничениях мобильного интернета.',
 }
 
-/** QR во всю ширину карточки: код рисуем крупно, чтобы читался с чужого телефона. */
-function Qr({ link }: { link: string }) {
-	const [qr, setQr] = useState<string | null>(null)
-
-	useEffect(() => {
-		let alive = true
-		// width 1024 — с запасом под ширину экрана на ретине: масштабируем вниз, не вверх.
-		QRCode.toDataURL(link, { margin: 1, width: 1024 })
-			.then((data) => alive && setQr(data))
-			.catch(() => alive && setQr(null))
-		return () => {
-			alive = false
-		}
-	}, [link])
-
-	return (
-		<div className="aspect-square w-full overflow-hidden rounded-xl bg-white p-3">
-			{qr && <img src={qr} alt="QR-код реферальной ссылки" className="size-full" />}
-		</div>
-	)
-}
-
 export const Referrals = reatomComponent(() => {
 	const [kind, setKind] = useState<LinkKind>('main')
-	const [copied, setCopied] = useState(false)
+	const [showQr, setShowQr] = useState(false)
 
 	useEffect(() => {
 		void referralsRes.load()
 	}, [])
-
-	useEffect(() => {
-		if (!copied) return
-		const timer = setTimeout(() => setCopied(false), COPIED_MS)
-		return () => clearTimeout(timer)
-	}, [copied])
 
 	return (
 		<Async
@@ -89,15 +55,6 @@ export const Referrals = reatomComponent(() => {
 			{(refs) => {
 				const link = kind === 'backup' && refs.linkBackup ? refs.linkBackup : refs.link
 
-				async function copy() {
-					if (await copyText(link)) {
-						setCopied(true)
-						toast.success('Ссылка скопирована')
-					} else {
-						toast.error('Не удалось скопировать')
-					}
-				}
-
 				return (
 					<>
 						<section className={SECTION_CARD}>
@@ -107,45 +64,37 @@ export const Referrals = reatomComponent(() => {
 								{refs.rewardDays} {plural(refs.rewardDays, 'день', 'дня', 'дней')}.
 							</p>
 
-							{/* Переключатель доменов появляется только когда зеркало настроено:
-							    иначе это выбор из одного варианта. */}
+							{/* Переключатель и сноска — только когда зеркало настроено: иначе это выбор
+							    из одного варианта. Сноска стоит до ссылки: сначала человек понимает,
+							    какую берёт. */}
 							{refs.linkBackup && (
-								<Segmented
-									className="mb-3"
-									value={kind}
-									onValueChange={setKind}
-									options={[
-										{ value: 'main', label: 'Основная' },
-										{ value: 'backup', label: 'Запасная' },
-									]}
-								/>
+								<>
+									<Segmented
+										className="mb-3"
+										value={kind}
+										onValueChange={setKind}
+										options={[
+											{ value: 'main', label: 'Основная' },
+											{ value: 'backup', label: 'Запасная' },
+										]}
+									/>
+									<p className="mb-3 flex items-start gap-2 rounded-lg bg-muted px-3 py-2.5 text-sm">
+										<InfoIcon className="mt-0.5 size-4 shrink-0 text-brand" />
+										<span>{LINK_NOTE[kind]}</span>
+									</p>
+								</>
 							)}
 
-							{/* Ссылка — главное на экране, поэтому она и выглядит как главное:
-							    высота кнопки, брендовая рамка и обычный цвет текста. Приглушённой
-							    строкой мелким шрифтом она читалась как техническая подпись. */}
-							{/* break-all, а не truncate: центрированная обрезка съедала начало ссылки
-							    («ps://…»), а ссылку читают глазами перед тем, как продиктовать. */}
-							<p className="flex min-h-14 items-center justify-center rounded-xl bg-brand/10 px-3 py-2 text-center font-mono text-sm break-all ring-1 ring-brand/30">
-								{link}
-							</p>
+							<CopyValue
+								value={link}
+								className="w-full justify-between rounded-lg bg-muted px-3 py-2.5 font-mono text-sm"
+							>
+								<span className="truncate">{shorten(link)}</span>
+							</CopyValue>
 
-							{/* Сноска нужна обеим: без неё переключатель не объясняет, зачем второй домен.
-							    Когда зеркала нет, выбора тоже нет — и подпись про «основную» лишняя. */}
-							{refs.linkBackup && (
-								<p className="mt-3 flex items-start gap-2 rounded-lg bg-muted px-3 py-2.5 text-sm">
-									<InfoIcon className="mt-0.5 size-4 shrink-0 text-brand" />
-									<span>{LINK_NOTE[kind]}</span>
-								</p>
-							)}
-
-							<Button className={cn('mt-3 w-full', BRAND_ON)} size="lg" onClick={() => void copy()}>
-								{copied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
-								{copied ? 'Скопировано' : 'Скопировать ссылку'}
-							</Button>
 							<Button
 								variant="outline"
-								className="mt-2 w-full"
+								className="mt-3 w-full"
 								onClick={() =>
 									openLink(
 										`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Пользуюсь этим VPN — работает без танцев с бубном')}`,
@@ -156,11 +105,21 @@ export const Referrals = reatomComponent(() => {
 								Поделиться в Telegram
 							</Button>
 
-							{/* QR ниже кнопок: переслать ссылку хочется чаще, чем показать код с экрана,
-							    и первым под руку должно попадать частое. */}
-							<div className="mt-4">
-								<Qr link={link} />
-							</div>
+							{/* QR под кнопкой: переслать ссылку хотят чаще, чем показать код с экрана. */}
+							<Button
+								variant="outline"
+								className="mt-2 w-full"
+								onClick={() => setShowQr((v) => !v)}
+							>
+								<QrCodeIcon className="size-4" />
+								{showQr ? 'Скрыть QR' : 'Показать QR'}
+							</Button>
+
+							{showQr && (
+								<div className="mt-3">
+									<Qr value={link} alt="QR-код реферальной ссылки" />
+								</div>
+							)}
 						</section>
 
 						<div className="grid grid-cols-3 gap-3">
