@@ -1,6 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { hashFromScreen, screenFromHash, SCREEN_TITLE, type ScreenName } from './screen.ts'
+import {
+	hashFromScreen,
+	navigate,
+	screenAtom,
+	screenFromHash,
+	SCREEN_TITLE,
+	type ScreenName,
+} from './screen.ts'
 
 const ALL: ScreenName[] = ['home', 'connect', 'plans', 'usage', 'refs', 'more']
 
@@ -15,6 +22,38 @@ describe('screenFromHash', () => {
 				hash.startsWith('#/connect') ? 'connect' : 'home',
 			)
 		}
+	})
+})
+
+describe('navigate', () => {
+	it('меняет адрес через History API, без fragment-навигации', async () => {
+		// Присваивание location.hash — настоящая навигация вебвью: Telegram Desktop зажигает
+		// на ней свой индикатор загрузки и не гасит его (события завершения для навигации
+		// внутри документа не приходит). Признак такого присваивания в jsdom — событие
+		// hashchange, которого у pushState нет.
+		const pushState = vi.spyOn(window.history, 'pushState')
+		const onHashChange = vi.fn<() => void>()
+		window.addEventListener('hashchange', onHashChange)
+
+		navigate('connect')
+
+		expect(window.location.hash).toBe('#/connect')
+		expect(pushState).toHaveBeenCalled()
+		await new Promise((resolve) => setTimeout(resolve, 0))
+		expect(onHashChange).not.toHaveBeenCalled()
+
+		window.removeEventListener('hashchange', onHashChange)
+		pushState.mockRestore()
+	})
+
+	it('шаг назад по истории возвращает на предыдущий экран', async () => {
+		navigate('home')
+		navigate('usage')
+		expect(screenAtom()).toBe('usage')
+
+		window.history.back()
+
+		await vi.waitFor(() => expect(screenAtom()).toBe('home'))
 	})
 })
 
