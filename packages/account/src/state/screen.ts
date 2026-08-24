@@ -1,9 +1,14 @@
 /**
  * Навигация по hash (`#/connect`, `#/plans`).
  *
- * Не pushState: приложение раздаётся из-под префикса `/me/`, и hash работает одинаково при
- * любом префиксе и без правил rewrite на прокси. Плюс перезагрузка вебвью Telegram
+ * Адрес в хеше, а не в пути: приложение раздаётся из-под префикса `/me/`, и хеш работает
+ * одинаково при любом префиксе и без rewrite на прокси. Плюс перезагрузка вебвью Telegram
  * возвращает на тот же экран.
+ *
+ * Но пишется он через History API. Присваивание `location.hash` — настоящая навигация
+ * вебвью, и Telegram Desktop зажигает на ней индикатор загрузки навсегда: гасит он его по
+ * событию завершения, а внутри документа такого события нет. `WebApp.ready()` не спасает —
+ * десктоп эту команду не обрабатывает.
  */
 import { action, atom } from '@reatom/core'
 
@@ -52,7 +57,12 @@ export const screenAtom = atom<ScreenName>(screenFromHash(window.location.hash),
 export const navigate = action((screen: ScreenName) => {
 	screenAtom.set(screen)
 	const hash = hashFromScreen(screen)
-	if (window.location.hash !== hash) window.location.hash = hash
+	if (window.location.hash !== hash) window.history.pushState(null, '', hash)
 }, 'navigate')
 
-window.addEventListener('hashchange', () => screenAtom.set(screenFromHash(window.location.hash)))
+const syncFromUrl = () => screenAtom.set(screenFromHash(window.location.hash))
+
+// popstate — потому что pushState не даёт hashchange; hashchange оставлен на случай смены
+// адреса снаружи. Оба слушателя ставят одно и то же значение, двойной вызов безвреден.
+window.addEventListener('popstate', syncFromUrl)
+window.addEventListener('hashchange', syncFromUrl)
