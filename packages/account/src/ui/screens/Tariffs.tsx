@@ -9,6 +9,8 @@ import { reatomComponent } from '@reatom/react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
+import { Bone, ListBone } from '@shared/skeleton/index.ts'
+
 import { ApiError, startCheckout } from '@/api/client.ts'
 import type { Plan } from '@/api/schemas.ts'
 import { feeNote, formatDevices } from '@/lib/format.ts'
@@ -116,6 +118,37 @@ function PlanRow({
 	)
 }
 
+/**
+ * Скелетон витрины: три карточки тарифа, у каждой название, строка с устройствами и ценой
+ * и две кнопки покупки — ростом с `PayOption`, а не с обычной кнопки.
+ */
+const SKELETON = (
+	<div className="space-y-4">
+		<div className="space-y-1.5">
+			<Bone className="h-3.5 w-full" />
+			<Bone className="h-3.5 w-2/3" />
+		</div>
+		<ListBone
+			className="space-y-3"
+			count={3}
+			row={
+				<div className={SECTION_CARD}>
+					<div className="flex h-6 items-center">
+						<Bone className="h-4 w-32" />
+					</div>
+					<div className="mt-0.5 flex h-5 items-center">
+						<Bone className="h-3.5 w-44" />
+					</div>
+					<div className="mt-3 space-y-2">
+						<Bone className="h-14 w-full" />
+						<Bone className="h-14 w-full" />
+					</div>
+				</div>
+			}
+		/>
+	</div>
+)
+
 export const Tariffs = reatomComponent(() => {
 	// Экран открывают и напрямую по хешу (перезагрузка вебвью), поэтому данные тянет он сам,
 	// а не рассчитывает на загрузку соседним экраном.
@@ -157,6 +190,7 @@ export const Tariffs = reatomComponent(() => {
 			loading={plansRes.loadingAtom()}
 			error={plansRes.errorAtom()}
 			className="space-y-4"
+			skeleton={SKELETON}
 		>
 			{(data) => (
 				<>

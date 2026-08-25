@@ -17,8 +17,9 @@ import {
 	UsersIcon,
 } from 'lucide-react'
 
+import { Bone, ButtonBone, TextBone, TileBone } from '@shared/skeleton/index.ts'
+
 import { Button } from '@/components/ui/button.tsx'
-import { Skeleton } from '@/components/ui/skeleton.tsx'
 import { formatBytes, formatDate, formatDevices, formatRemaining, daysLeft } from '@/lib/format.ts'
 import { cn } from '@/lib/utils.ts'
 import { overviewRes, summaryRes } from '@/state/cabinet.ts'
@@ -133,6 +134,51 @@ function accessLeft(overview: Overview): string {
 }
 
 /**
+ * Плитки на своих местах: те же четыре, с теми же иконками. Раньше их было две — и в
+ * момент, когда приходил `summary`, всё под ними уезжало вниз на высоту ряда.
+ */
+const WIDGETS_SKELETON = (
+	<div className="grid grid-cols-2 gap-3">
+		<TileBone className={SECTION_CARD} Icon={ActivityIcon} value="w-20" hint="w-16" />
+		<TileBone className={SECTION_CARD} Icon={SmartphoneIcon} value="w-8" hint="w-28" />
+		<TileBone className={SECTION_CARD} Icon={UsersIcon} value="w-8" hint="w-24" />
+		<TileBone className={SECTION_CARD} Icon={CalendarClockIcon} value="w-16" hint="w-32" />
+	</div>
+)
+
+/**
+ * Скелетон экрана: карточка подписки, кнопки, плитки. Плитки живут в своём запросе и
+ * приходят позже, но место под них держим сразу — иначе экран дважды меняет высоту.
+ */
+const SKELETON = (
+	<div className="space-y-4">
+		<section className={SECTION_CARD}>
+			<div className="flex items-start justify-between gap-3">
+				<div>
+					<TextBone line="h-4" className="h-3 w-20" />
+					{/* h-7 — рост строки с названием тарифа (`text-xl`). */}
+					<div className="mt-0.5 flex h-7 items-center">
+						<Bone className="h-5 w-40" />
+					</div>
+				</div>
+				<TextBone line="h-4" className="h-3 w-24" />
+			</div>
+			<div className="mt-3 flex h-5 items-center gap-2">
+				<CalendarClockIcon className="size-4 shrink-0 text-muted-foreground/40" />
+				<Bone className="h-3.5 w-52" />
+			</div>
+		</section>
+
+		<div className="space-y-2">
+			<ButtonBone />
+			<ButtonBone />
+		</div>
+
+		{WIDGETS_SKELETON}
+	</div>
+)
+
+/**
  * Плитки-виджеты: расход, устройства, приглашённые, срок. Каждая ведёт в свой раздел —
  * главная отвечает на «как дела», подробности живут на вкладках.
  *
@@ -147,14 +193,7 @@ const Widgets = reatomComponent<{ overview: Overview }>(({ overview }) => {
 	}, [])
 
 	if (summaryRes.errorAtom()) return null
-	if (!summary) {
-		return (
-			<div className="grid grid-cols-2 gap-3">
-				<Skeleton className="h-24" />
-				<Skeleton className="h-24" />
-			</div>
-		)
-	}
+	if (!summary) return WIDGETS_SKELETON
 
 	return (
 		<div className="grid grid-cols-2 gap-3">
@@ -207,6 +246,7 @@ export const Home = reatomComponent(() => {
 			loading={overviewRes.loadingAtom()}
 			error={overviewRes.errorAtom()}
 			className="space-y-4"
+			skeleton={SKELETON}
 		>
 			{(overview) => {
 				const hasAccess = overview.kind !== 'none'

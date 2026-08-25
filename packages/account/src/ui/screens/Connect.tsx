@@ -18,6 +18,7 @@ import {
 	PlatformDialog,
 	type ClientId,
 } from '@shared/connect/index.ts'
+import { Bone, ButtonBone, ListBone, TextBone } from '@shared/skeleton/index.ts'
 
 import { sendKeeneticConf } from '@/api/client.ts'
 import { Button } from '@/components/ui/button.tsx'
@@ -142,6 +143,46 @@ function RouterCard() {
 	)
 }
 
+/**
+ * Скелетон экрана: карточка ссылки и карточка инструкции. Шаги — четыре строки текста
+ * с местом под номер: инструкция всегда длиннее ссылки, и без неё карточка выглядела бы
+ * вдвое короче будущей.
+ */
+const SKELETON = (
+	<div className="space-y-4">
+		<section className={SECTION_CARD}>
+			<TextBone line="h-5" className="mb-3 h-3.5 w-36" />
+			<Bone className="h-11 w-full rounded-lg" />
+			<ButtonBone className="mt-3 h-11 w-full" />
+		</section>
+
+		<section className={SECTION_CARD}>
+			<div className="mb-3 flex items-center justify-between gap-2">
+				<TextBone line="h-5" className="h-3.5 w-32" />
+				<TextBone line="h-5" className="h-3 w-32" />
+			</div>
+			<Bone className="h-11 w-56 rounded-lg" />
+			<div className="mt-3 mb-3 space-y-1.5">
+				<Bone className="h-3.5 w-full" />
+				<Bone className="h-3.5 w-2/3" />
+			</div>
+			<ListBone
+				className="space-y-3"
+				count={4}
+				row={
+					<div className="flex gap-3">
+						<Bone className="h-5 w-14 shrink-0" />
+						<div className="min-w-0 flex-1 space-y-1.5">
+							<Bone className="h-3.5 w-full" />
+							<Bone className="h-3.5 w-1/2" />
+						</div>
+					</div>
+				}
+			/>
+		</section>
+	</div>
+)
+
 export const Connect = reatomComponent(() => {
 	const [client, setClient] = useState<ClientId>('happ')
 	const [platform, setPlatform] = useState(detectPlatform)
@@ -174,6 +215,7 @@ export const Connect = reatomComponent(() => {
 			loading={accessRes.loadingAtom()}
 			error={error}
 			className="space-y-4"
+			skeleton={SKELETON}
 		>
 			{(access) => (
 				<>
