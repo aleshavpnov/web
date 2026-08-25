@@ -7,6 +7,18 @@
  */
 import { reatomComponent } from '@reatom/react'
 import { useEffect } from 'react'
+import { ActivityIcon, SmartphoneIcon } from 'lucide-react'
+
+import {
+	BarsBone,
+	Bone,
+	ButtonBone,
+	ListBone,
+	RowBone,
+	TextBone,
+	TileBone,
+} from '@shared/skeleton/index.ts'
+
 import { formatBytes, formatDevices, plural } from '@/lib/format.ts'
 import { usageDaysAtom, usageRes } from '@/state/cabinet.ts'
 import { Async, SECTION_CARD, SectionTitle, Segmented, StatTile } from '@/ui/components/common.tsx'
@@ -19,6 +31,49 @@ const WINDOWS = [
 	{ value: '7', label: '7 дней' },
 	{ value: '30', label: '30 дней' },
 ] as const
+
+/**
+ * Скелетон экрана: две плитки, карточка графика, список устройств. Столбики в карточке
+ * ростом ровно с `UsageBars` (140), поэтому график встаёт на своё место без прыжка.
+ */
+const SKELETON = (
+	<div className="space-y-4">
+		<div className="grid grid-cols-2 gap-3">
+			<TileBone className={SECTION_CARD} Icon={ActivityIcon} value="w-20" hint="w-28" />
+			<TileBone className={SECTION_CARD} Icon={SmartphoneIcon} value="w-8" hint="w-24" />
+		</div>
+
+		<section className={SECTION_CARD}>
+			<TextBone line="h-5" className="mb-2 h-3.5 w-36" />
+			<BarsBone count={24} gap="gap-0.5" />
+		</section>
+
+		<section className={SECTION_CARD}>
+			<TextBone line="h-5" className="mb-2 h-3.5 w-28" />
+			{/* Три строки — столько устройств у большинства: телефон, ноутбук и планшет. */}
+			<ListBone
+				className="divide-y divide-border/60"
+				count={3}
+				row={
+					<RowBone
+						className="py-2"
+						leading={<SmartphoneIcon className="size-4 shrink-0 text-muted-foreground/40" />}
+						lines={['w-40', 'w-52']}
+						tail={
+							<div className="flex shrink-0 gap-1">
+								<Bone className="size-9" />
+								<Bone className="size-9" />
+							</div>
+						}
+					/>
+				}
+			/>
+			<div className="mt-4 border-t border-border/60 pt-4">
+				<ButtonBone />
+			</div>
+		</section>
+	</div>
+)
 
 export const Usage = reatomComponent(() => {
 	const days = usageDaysAtom()
@@ -40,6 +95,7 @@ export const Usage = reatomComponent(() => {
 				loading={usageRes.loadingAtom()}
 				error={usageRes.errorAtom()}
 				className="space-y-4"
+				skeleton={SKELETON}
 			>
 				{(usage) =>
 					!usage.available ? (

@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { statusAtom, statusErrorAtom, loadStatus } from '@/state/status.ts'
 import { BackLink } from '@/ui/components/BackLink.tsx'
 import { Layout } from '@/ui/components/Layout.tsx'
-import { Skeleton } from '@/components/ui/skeleton.tsx'
+import { Bone, TrackBone } from '@shared/skeleton/index.ts'
 import type { StatusNode, StatusIncident, StatusPayload } from '@/api/schemas.ts'
 
 function overallBg(status: StatusPayload['overall']) {
@@ -104,25 +104,26 @@ function NodeCard({ node }: { node: StatusNode }) {
 }
 
 // Mirrors NodeCard's layout so the loading state reserves the same height
-// (header 20 / bars block 42 / stats 16, inside p-5 + space-y-4).
+// (header 20 / bars block 42 / stats 16, inside p-5 + space-y-4). The uptime strip is
+// drawn cell by cell — a single bar read as a paragraph, not as 90 days of history.
 function NodeCardSkeleton() {
 	return (
 		<div className="border border-border rounded-xl p-5 space-y-4">
 			<div className="flex h-5 items-center justify-between">
 				<div className="flex items-center gap-2">
-					<Skeleton className="size-2 rounded-full" />
-					<Skeleton className="h-4 w-24" />
+					<Bone className="size-2 rounded-full" />
+					<Bone className="h-4 w-24" />
 				</div>
-				<Skeleton className="h-3 w-16" />
+				<Bone className="h-3 w-16" />
 			</div>
 			<div className="space-y-1.5">
-				<Skeleton className="h-5 w-full" />
+				<TrackBone className="h-5 items-end" />
 				<div className="flex h-4 items-center">
-					<Skeleton className="h-3 w-12" />
+					<Bone className="h-3 w-12" />
 				</div>
 			</div>
 			<div className="flex h-4 items-center">
-				<Skeleton className="h-3 w-44" />
+				<Bone className="h-3 w-44" />
 			</div>
 		</div>
 	)
@@ -132,15 +133,15 @@ function StatusSkeleton() {
 	return (
 		<>
 			<div className="border border-border rounded-xl px-5 h-[54px] flex items-center justify-between">
-				<Skeleton className="h-4 w-44" />
-				<Skeleton className="h-3 w-12" />
+				<Bone className="h-4 w-44" />
+				<Bone className="h-3 w-12" />
 			</div>
 			<div className="space-y-3">
 				<NodeCardSkeleton />
 				<NodeCardSkeleton />
 			</div>
 			{/* Reserves the height of the incidents line ("Инцидентов нет") below */}
-			<Skeleton className="h-5 w-64" />
+			<Bone className="h-5 w-64" />
 		</>
 	)
 }

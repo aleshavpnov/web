@@ -3,9 +3,10 @@
 	"private": true,
 	"version": "3.5.0",
 	"type": "module",
-	"description": "Общие React-компоненты фронтов aleshavpnov: инструкция подключения (лендинг + кабинет).",
+	"description": "Общие React-компоненты фронтов aleshavpnov: инструкция подключения (лендинг + кабинет) и кости скелетонов.",
 	"exports": {
-		"./connect": "./src/connect/index.ts"
+		"./connect": "./src/connect/index.ts",
+		"./skeleton": "./src/skeleton/index.ts"
 	},
 	"scripts": {
 		"typecheck": "tsc -b --noEmit"

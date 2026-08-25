@@ -4,7 +4,7 @@ import { navigate } from '@/state/screen.ts'
 import { statusAtom, statusErrorAtom } from '@/state/status.ts'
 import { Layout } from '@/ui/components/Layout.tsx'
 // import { VpnStatusBadge } from '@/ui/components/VpnStatusBadge.tsx' // временно скрыто на время ревью платёжной системы
-import { Skeleton } from '@/components/ui/skeleton.tsx'
+import { Bone } from '@shared/skeleton/index.ts'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip.tsx'
 import { ctaClass } from '@/ui/cta.ts'
 import { formatMbps } from '@/lib/format.ts'
@@ -51,16 +51,16 @@ const MiniStatus = reatomComponent(() => {
 			<div className="border border-border/60 rounded-xl p-4 space-y-3">
 				<div className="flex h-5 items-center justify-between">
 					<div className="flex items-center gap-2">
-						<Skeleton className="size-2 rounded-full" />
-						<Skeleton className="h-4 w-32" />
+						<Bone className="size-2 rounded-full" />
+						<Bone className="h-4 w-32" />
 					</div>
-					<Skeleton className="h-3 w-16" />
+					<Bone className="h-3 w-16" />
 				</div>
 				<div className="space-y-1.5 border-t border-border/40 pt-3">
 					{['a', 'b'].map((k) => (
 						<div key={k} className="flex h-4 items-center justify-between">
-							<Skeleton className="h-3 w-24" />
-							<Skeleton className="h-3 w-10" />
+							<Bone className="h-3 w-24" />
+							<Bone className="h-3 w-10" />
 						</div>
 					))}
 				</div>

@@ -9,6 +9,16 @@ import { reatomComponent } from '@reatom/react'
 import { useEffect, useState } from 'react'
 import { InfoIcon, QrCodeIcon, Share2Icon } from 'lucide-react'
 
+import {
+	AvatarBone,
+	Bone,
+	ButtonBone,
+	ListBone,
+	RowBone,
+	TextBone,
+	TileBone,
+} from '@shared/skeleton/index.ts'
+
 import { Button } from '@/components/ui/button.tsx'
 import { plural } from '@/lib/format.ts'
 import { openLink } from '@/lib/telegram.ts'
@@ -37,6 +47,42 @@ const LINK_NOTE: Record<LinkKind, string> = {
 		'Зеркало на другом домене. Дайте её, если у друга основной сайт не открывается — так бывает у части операторов и при ограничениях мобильного интернета.',
 }
 
+/**
+ * Скелетон экрана: карточка ссылки, три счётчика, список друзей с кругами аватаров.
+ * Переключатель доменов не рисуем: он есть не у всех, и пустая полоска обещала бы выбор,
+ * которого может не быть.
+ */
+const SKELETON = (
+	<div className="space-y-4">
+		<section className={SECTION_CARD}>
+			<TextBone line="h-5" className="mb-1 h-3.5 w-28" />
+			<div className="mb-3 space-y-1.5">
+				<Bone className="h-3.5 w-full" />
+				<Bone className="h-3.5 w-3/4" />
+			</div>
+			{/* Строка со ссылкой — та же высота, что у кнопки: по ней и целятся пальцем. */}
+			<Bone className="h-11 w-full rounded-lg" />
+			<ButtonBone className="mt-3 h-11 w-full" />
+			<ButtonBone className="mt-2 h-11 w-full" />
+		</section>
+
+		<div className="grid grid-cols-3 gap-3">
+			<TileBone className={SECTION_CARD} label="w-16" value="w-8" hint="" />
+			<TileBone className={SECTION_CARD} label="w-14" value="w-8" hint="" />
+			<TileBone className={SECTION_CARD} label="w-16" value="w-8" hint="" />
+		</div>
+
+		<section className={SECTION_CARD}>
+			<TextBone line="h-5" className="mb-2 h-3.5 w-32" />
+			<ListBone
+				className="divide-y divide-border/60"
+				count={3}
+				row={<RowBone className="py-2" leading={<AvatarBone />} lines={['w-36']} />}
+			/>
+		</section>
+	</div>
+)
+
 export const Referrals = reatomComponent(() => {
 	const [kind, setKind] = useState<LinkKind>('main')
 	const [showQr, setShowQr] = useState(false)
@@ -51,6 +97,7 @@ export const Referrals = reatomComponent(() => {
 			loading={referralsRes.loadingAtom()}
 			error={referralsRes.errorAtom()}
 			className="space-y-4"
+			skeleton={SKELETON}
 		>
 			{(refs) => {
 				const link = kind === 'backup' && refs.linkBackup ? refs.linkBackup : refs.link

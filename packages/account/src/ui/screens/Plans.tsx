@@ -11,13 +11,52 @@ import { reatomComponent } from '@reatom/react'
 import { useEffect } from 'react'
 import { ExternalLinkIcon, ListIcon, SettingsIcon } from 'lucide-react'
 
+import { Bone, ButtonBone, ListBone } from '@shared/skeleton/index.ts'
+
 import { trackEvent } from '@/api/client.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { openLink } from '@/lib/telegram.ts'
+import { cn } from '@/lib/utils.ts'
 import { plansRes } from '@/state/cabinet.ts'
 import { navigate } from '@/state/screen.ts'
 import { Async, CopyValue, SECTION_CARD, SectionTitle } from '@/ui/components/common.tsx'
 import { Wizard } from '@/ui/screens/purchase/Wizard.tsx'
+
+/**
+ * Скелетон экрана: полоска шагов визарда, вопрос и карточки ответов. Первый шаг всегда
+ * один и тот же — «кому подписка» с тремя вариантами, поэтому форма известна заранее.
+ */
+const SKELETON = (
+	<div className="space-y-4">
+		<section>
+			<div className="mb-4 flex gap-1.5">
+				<Bone className="h-1 flex-1 rounded-full" />
+				<Bone className="h-1 flex-1 rounded-full" />
+				<Bone className="h-1 flex-1 rounded-full" />
+			</div>
+			<div className="space-y-3">
+				<div className="flex h-7 items-center">
+					<Bone className="h-5 w-48" />
+				</div>
+				<ListBone
+					className="space-y-3"
+					count={3}
+					row={
+						<div className={cn(SECTION_CARD, 'flex items-center gap-3')}>
+							<Bone className="size-6 shrink-0 rounded-full" />
+							<div className="min-w-0 flex-1 space-y-1.5">
+								<Bone className="h-4 w-28" />
+								<Bone className="h-3 w-44" />
+							</div>
+						</div>
+					}
+				/>
+			</div>
+		</section>
+
+		<ButtonBone />
+	</div>
+)
 
 export const Plans = reatomComponent(() => {
 	useEffect(() => {
@@ -35,6 +74,7 @@ export const Plans = reatomComponent(() => {
 			loading={plansRes.loadingAtom()}
 			error={plansRes.errorAtom()}
 			className="space-y-4"
+			skeleton={SKELETON}
 		>
 			{(data) => (
 				<>

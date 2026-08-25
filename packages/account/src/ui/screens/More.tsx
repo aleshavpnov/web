@@ -9,6 +9,8 @@ import { useEffect, useState } from 'react'
 import { ChevronDownIcon, ShieldIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { Bone, ListBone, RowBone, SwitchBone, TextBone } from '@shared/skeleton/index.ts'
+
 import { setSetting } from '@/api/client.ts'
 import type { SettingKey } from '@/api/schemas.ts'
 import { Button } from '@/components/ui/button.tsx'
@@ -29,6 +31,33 @@ const TOGGLES: Array<{ key: SettingKey; label: string; hint: string }> = [
 	{ key: 'news', label: 'Анонсы обновлений', hint: 'Что нового в сервисе' },
 	{ key: 'broadcast', label: 'Рассылки', hint: 'Редкие письма от команды' },
 ]
+
+/** Тумблеров ровно столько, сколько в `TOGGLES`: их набор известен без запроса. */
+const SETTINGS_SKELETON = (
+	<section className={SECTION_CARD}>
+		<TextBone line="h-5" className="mb-2 h-3.5 w-32" />
+		<ListBone
+			className="divide-y divide-border/60"
+			count={TOGGLES.length}
+			row={<RowBone className="py-3" lines={['w-44', 'w-56']} tail={<SwitchBone />} />}
+		/>
+	</section>
+)
+
+const WHATSNEW_SKELETON = (
+	<section className={SECTION_CARD}>
+		<TextBone line="h-5" className="mb-2 h-3.5 w-28" />
+		<div className="flex h-5 items-baseline justify-between gap-2">
+			<Bone className="h-3.5 w-14" />
+			<Bone className="h-3 w-20" />
+		</div>
+		<div className="mt-1 space-y-1.5">
+			<Bone className="h-3.5 w-full" />
+			<Bone className="h-3.5 w-full" />
+			<Bone className="h-3.5 w-2/3" />
+		</div>
+	</section>
+)
 
 // reatomComponent обязателен: карточка сама читает атомы ресурса, а без обёртки
 // компонент не подписан на них и остаётся с тем, что было на первом рендере (null).
@@ -52,6 +81,7 @@ const SettingsCard = reatomComponent(() => {
 			data={settingsRes.dataAtom()}
 			loading={settingsRes.loadingAtom()}
 			error={settingsRes.errorAtom()}
+			skeleton={SETTINGS_SKELETON}
 		>
 			{(settings) => (
 				<section className={SECTION_CARD}>
@@ -88,6 +118,7 @@ const WhatsnewCard = reatomComponent(() => {
 			data={whatsnewRes.dataAtom()}
 			loading={whatsnewRes.loadingAtom()}
 			error={whatsnewRes.errorAtom()}
+			skeleton={WHATSNEW_SKELETON}
 		>
 			{(data) =>
 				data.items.length === 0 ? (
