@@ -1,4 +1,4 @@
-/** Форматирование чисел и дат для экранов кабинета. Часовой пояс — Москва, как в боте. */
+/** Форматирование чисел и дат для экранов кабинета. Часовой пояс — устройства, как и в боте. */
 const GB = 1024 ** 3
 const MB = 1024 ** 2
 
@@ -13,19 +13,16 @@ const dateOnly = new Intl.DateTimeFormat('ru-RU', {
 	day: '2-digit',
 	month: '2-digit',
 	year: 'numeric',
-	timeZone: 'Europe/Moscow',
 })
 
 const dayMonth = new Intl.DateTimeFormat('ru-RU', {
 	day: '2-digit',
 	month: '2-digit',
-	timeZone: 'Europe/Moscow',
 })
 
 const timeOnly = new Intl.DateTimeFormat('ru-RU', {
 	hour: '2-digit',
 	minute: '2-digit',
-	timeZone: 'Europe/Moscow',
 })
 
 /** ISO → «07.08.2026». Пустая/битая строка → «—». */

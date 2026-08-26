@@ -51,16 +51,28 @@ export class ApiError extends Error {
 	}
 }
 
+// Пояс устройства. Едет заголовком x-tz с каждым запросом: бот запоминает его
+// per-user и показывает даты подписки в этом поясе, а не в своём серверном.
+function deviceTimezone(): string | undefined {
+	try {
+		return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined
+	} catch {
+		return undefined
+	}
+}
+
 async function request<T>(
 	path: string,
 	schema: { parse: (v: unknown) => T },
 	init?: { method: 'POST'; body?: unknown },
 ): Promise<T> {
+	const tz = deviceTimezone()
 	const res = await fetch(`${BASE}${path}`, {
 		method: init?.method ?? 'GET',
 		headers: {
 			accept: 'application/json',
 			authorization: `tma ${initData()}`,
+			...(tz === undefined ? {} : { 'x-tz': tz }),
 			...(init?.body === undefined ? {} : { 'content-type': 'application/json' }),
 		},
 		body: init?.body === undefined ? undefined : JSON.stringify(init.body),
