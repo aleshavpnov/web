@@ -286,7 +286,7 @@ export const Home = reatomComponent(() => {
 								<SectionTitle className="mb-1">Неактивированные подарки</SectionTitle>
 								<p className="text-sm text-muted-foreground">
 									У вас {overview.pendingGifts} оплаченный сертификат — ссылки для получателя лежат
-									на вкладке «Подписка».
+									на вкладке «Тарифы».
 								</p>
 								<Button variant="outline" className="mt-3 w-full" onClick={() => navigate('plans')}>
 									<GiftIcon className="size-4" />

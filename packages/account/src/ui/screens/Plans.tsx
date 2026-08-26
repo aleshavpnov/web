@@ -1,24 +1,31 @@
 /**
- * Экран «Подписка»: подбор тарифа, управление оплатой и подарочные сертификаты.
+ * Экран «Тарифы»: подбор тарифа, управление оплатой и подарочные сертификаты.
  *
  * Деньги живут в Tribute — кабинет только уводит туда ссылкой. Своей формы оплаты нет и
  * быть не должно: карту клиента мы не видим и видеть не хотим.
  *
- * Полная витрина вынесена на отдельный экран «Тарифы»: здесь ведём диалогом, а список для
- * тех, кто уже решил.
+ * Полная витрина вынесена на отдельный экран «Все тарифы»: здесь ведём диалогом, а список
+ * для тех, кто уже решил. Ссылки на витрину и Tribute собраны в секцию «Дополнительно»
+ * внизу — раньше они стояли кнопками вперемешку с оплатой и спорили с ней за внимание.
  */
 import { reatomComponent } from '@reatom/react'
 import { useEffect } from 'react'
-import { ExternalLinkIcon, ListIcon, SettingsIcon } from 'lucide-react'
+import {
+	ChevronRightIcon,
+	ExternalLinkIcon,
+	ListIcon,
+	RotateCcwIcon,
+	SettingsIcon,
+} from 'lucide-react'
 
 import { Bone, ButtonBone, ListBone } from '@shared/skeleton/index.ts'
 
 import { trackEvent } from '@/api/client.ts'
-import { Button } from '@/components/ui/button.tsx'
 import { openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { plansRes } from '@/state/cabinet.ts'
 import { navigate } from '@/state/screen.ts'
+import { stepAtom, wizardReset } from '@/state/wizard.ts'
 import { Async, CopyValue, SECTION_CARD, SectionTitle } from '@/ui/components/common.tsx'
 import { Wizard } from '@/ui/screens/purchase/Wizard.tsx'
 
@@ -58,7 +65,36 @@ const SKELETON = (
 	</div>
 )
 
+/** Пункт секции «Дополнительно»: строка-кнопка с иконкой, как настройки на «Ещё». */
+function ExtraRow({
+	label,
+	Icon,
+	external = false,
+	onClick,
+}: {
+	label: string
+	Icon: typeof ListIcon
+	/** Действие уводит из кабинета (Tribute) — вместо шеврона значок внешней ссылки. */
+	external?: boolean
+	onClick: () => void
+}) {
+	const Tail = external ? ExternalLinkIcon : ChevronRightIcon
+	return (
+		<button
+			type="button"
+			onClick={onClick}
+			className="flex min-h-11 w-full items-center gap-3 py-3 text-left text-sm transition-colors hover:text-brand"
+		>
+			<Icon className="size-4 shrink-0 text-muted-foreground" />
+			<span className="min-w-0 flex-1">{label}</span>
+			<Tail className="size-4 shrink-0 text-muted-foreground" />
+		</button>
+	)
+}
+
 export const Plans = reatomComponent(() => {
+	const step = stepAtom()
+
 	useEffect(() => {
 		void plansRes.load()
 	}, [])
@@ -80,18 +116,27 @@ export const Plans = reatomComponent(() => {
 				<>
 					<Wizard />
 
-					<Button variant="outline" className="w-full" onClick={openList}>
-						<ListIcon className="size-4" />
-						Показать все тарифы
-					</Button>
-
-					{data.manageUrl && (
-						<Button variant="outline" className="w-full" onClick={() => openLink(data.manageUrl!)}>
-							<SettingsIcon className="size-4" />
-							Управлять подпиской в Tribute
-							<ExternalLinkIcon className="size-3.5 opacity-60" />
-						</Button>
-					)}
+					<section className={cn(SECTION_CARD, 'py-2')}>
+						<SectionTitle className="mt-2 mb-0">Дополнительно</SectionTitle>
+						<div className="divide-y divide-border/60">
+							{step === 'result' && (
+								<ExtraRow
+									label="Ответить заново"
+									Icon={RotateCcwIcon}
+									onClick={() => wizardReset()}
+								/>
+							)}
+							<ExtraRow label="Все тарифы" Icon={ListIcon} onClick={openList} />
+							{data.manageUrl && (
+								<ExtraRow
+									label="Управлять подпиской в Tribute"
+									Icon={SettingsIcon}
+									external
+									onClick={() => openLink(data.manageUrl!)}
+								/>
+							)}
+						</div>
+					</section>
 
 					{data.pendingGifts.length > 0 && (
 						<section className={SECTION_CARD}>

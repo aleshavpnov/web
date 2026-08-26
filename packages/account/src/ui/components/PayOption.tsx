@@ -45,6 +45,17 @@ export function payMethodIcon(code: number): PayIcon {
 export const SUBSCRIPTION_ICON = RepeatIcon
 export const GIFT_ICON = GiftIcon
 
+/** Сноска под кнопкой способа: иконка слева, текст справа — как и в самой кнопке. */
+export function OptionNote({ children }: { children: ReactNode }) {
+	// Плашка в цвет кнопки, а не серая строка: это преимущество способа, а не мелкий шрифт
+	// под ним. Приглушённой подписи здесь не хватало — её просто пролистывали.
+	return (
+		<p className="mt-1.5 rounded-lg bg-brand/10 px-3 py-2 text-xs leading-snug text-brand">
+			{children}
+		</p>
+	)
+}
+
 export function PayOption({
 	label,
 	fee,

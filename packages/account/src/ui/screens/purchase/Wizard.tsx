@@ -10,13 +10,12 @@
  * продать не то.
  */
 import { reatomComponent } from '@reatom/react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import {
 	ArrowLeftIcon,
 	GiftIcon,
 	LaptopIcon,
 	LoaderCircleIcon,
-	RotateCcwIcon,
 	SmartphoneIcon,
 	UsersIcon,
 } from 'lucide-react'
@@ -43,6 +42,7 @@ import {
 import { PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
 import {
 	GIFT_ICON,
+	OptionNote,
 	PayOption,
 	payMethodIcon,
 	SUBSCRIPTION_ICON,
@@ -125,23 +125,6 @@ function Progress({ step }: { step: WizardStep }) {
 				/>
 			))}
 		</div>
-	)
-}
-
-/**
- * Способ оплаты: кнопка и сноска под ней.
- *
- * Текст в кнопке прижат влево, а не по центру: способов несколько, и подписи читаются
- * столбцом только с общей левой границей — по центру глаз прыгает на каждой строке.
- */
-/** Сноска под кнопкой: иконка слева, текст справа — как и в самой кнопке. */
-function OptionNote({ children }: { children: ReactNode }) {
-	// Плашка в цвет кнопки, а не серая строка: это преимущество способа, а не мелкий шрифт
-	// под ним. Приглушённой подписи здесь не хватало — её просто пролистывали.
-	return (
-		<p className="mt-1.5 rounded-lg bg-brand/10 px-3 py-2 text-xs leading-snug text-brand">
-			{children}
-		</p>
 	)
 }
 
@@ -258,10 +241,6 @@ function Result({
 					onClick={() => onBuy(m.code)}
 				/>
 			))}
-			<Button variant="ghost" className="w-full" onClick={onRestart}>
-				<RotateCcwIcon className="size-4" />
-				Ответить заново
-			</Button>
 		</div>
 	)
 }

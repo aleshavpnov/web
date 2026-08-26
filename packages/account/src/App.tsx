@@ -21,6 +21,7 @@ import { More } from '@/ui/screens/More.tsx'
 import { Plans } from '@/ui/screens/Plans.tsx'
 import { Referrals } from '@/ui/screens/Referrals.tsx'
 import { Tariffs } from '@/ui/screens/Tariffs.tsx'
+import { PlanPurchase } from '@/ui/screens/purchase/PlanPurchase.tsx'
 import { Usage } from '@/ui/screens/Usage.tsx'
 
 export const App = reatomComponent(() => {
@@ -116,6 +117,8 @@ export const App = reatomComponent(() => {
 					<Plans />
 				) : screen === 'tariffs' ? (
 					<Tariffs />
+				) : screen === 'buy' ? (
+					<PlanPurchase />
 				) : screen === 'usage' ? (
 					<Usage />
 				) : screen === 'refs' ? (

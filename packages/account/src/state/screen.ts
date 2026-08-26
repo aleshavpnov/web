@@ -12,13 +12,22 @@
  */
 import { action, atom } from '@reatom/core'
 
-export type ScreenName = 'home' | 'connect' | 'plans' | 'tariffs' | 'usage' | 'refs' | 'more'
+export type ScreenName =
+	| 'home'
+	| 'connect'
+	| 'plans'
+	| 'tariffs'
+	| 'buy'
+	| 'usage'
+	| 'refs'
+	| 'more'
 
 const SCREENS: readonly ScreenName[] = [
 	'home',
 	'connect',
 	'plans',
 	'tariffs',
+	'buy',
 	'usage',
 	'refs',
 	'more',
@@ -26,10 +35,11 @@ const SCREENS: readonly ScreenName[] = [
 
 /**
  * Экраны без своей вкладки: подстраницы. Возврат с них ведёт не на главную, а на родителя —
- * иначе «назад» из витрины тарифов выбрасывало бы из подписки целиком.
+ * иначе «назад» из витрины тарифов выбрасывало бы из раздела целиком.
  */
 export const SCREEN_PARENT: Partial<Record<ScreenName, ScreenName>> = {
 	tariffs: 'plans',
+	buy: 'tariffs',
 }
 
 export function screenFromHash(hash: string): ScreenName {
@@ -37,16 +47,26 @@ export function screenFromHash(hash: string): ScreenName {
 	return SCREENS.find((s) => s === name) ?? 'home'
 }
 
-export function hashFromScreen(screen: ScreenName): string {
-	return screen === 'home' ? '#/' : `#/${screen}`
+/**
+ * Второй сегмент хеша — параметр экрана (`#/buy/monthly` → «monthly»). Свой параметр
+ * есть только у оформления, остальные экраны сегмент игнорируют.
+ */
+export function paramFromHash(hash: string): string | null {
+	return hash.replace(/^#\/?/, '').split('/')[1] || null
+}
+
+export function hashFromScreen(screen: ScreenName, param?: string | null): string {
+	if (screen === 'home') return '#/'
+	return param ? `#/${screen}/${param}` : `#/${screen}`
 }
 
 /** Заголовок экрана в шапке. Главный экран заголовка не имеет — там карточка подписки. */
 export const SCREEN_TITLE: Record<ScreenName, string> = {
 	home: 'Личный кабинет',
 	connect: 'Подключение',
-	plans: 'Подписка',
-	tariffs: 'Тарифы',
+	plans: 'Тарифы',
+	tariffs: 'Все тарифы',
+	buy: 'Оформление',
 	usage: 'Трафик',
 	refs: 'Друзья',
 	more: 'Ещё',
@@ -54,13 +74,23 @@ export const SCREEN_TITLE: Record<ScreenName, string> = {
 
 export const screenAtom = atom<ScreenName>(screenFromHash(window.location.hash), 'screen')
 
-export const navigate = action((screen: ScreenName) => {
+/** Параметр текущего экрана — код тарифа на «Оформлении»; у остальных экранов null. */
+export const screenParamAtom = atom<string | null>(
+	paramFromHash(window.location.hash),
+	'screenParam',
+)
+
+export const navigate = action((screen: ScreenName, param?: string) => {
 	screenAtom.set(screen)
-	const hash = hashFromScreen(screen)
+	screenParamAtom.set(param ?? null)
+	const hash = hashFromScreen(screen, param)
 	if (window.location.hash !== hash) window.history.pushState(null, '', hash)
 }, 'navigate')
 
-const syncFromUrl = () => screenAtom.set(screenFromHash(window.location.hash))
+const syncFromUrl = () => {
+	screenAtom.set(screenFromHash(window.location.hash))
+	screenParamAtom.set(paramFromHash(window.location.hash))
+}
 
 // popstate — потому что pushState не даёт hashchange; hashchange оставлен на случай смены
 // адреса снаружи. Оба слушателя ставят одно и то же значение, двойной вызов безвреден.
