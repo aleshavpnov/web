@@ -3,16 +3,18 @@ import { describe, expect, it, vi } from 'vitest'
 import {
 	hashFromScreen,
 	navigate,
+	paramFromHash,
 	screenAtom,
 	screenFromHash,
+	screenParamAtom,
 	SCREEN_TITLE,
 	type ScreenName,
 } from './screen.ts'
 
-const ALL: ScreenName[] = ['home', 'connect', 'plans', 'usage', 'refs', 'more']
+const ALL: ScreenName[] = ['home', 'connect', 'plans', 'tariffs', 'buy', 'usage', 'refs', 'more']
 
 describe('screenFromHash', () => {
-	it('разбирает адреса всех вкладок', () => {
+	it('разбирает адреса всех экранов', () => {
 		expect(ALL.map((s) => screenFromHash(hashFromScreen(s)))).toEqual(ALL)
 	})
 
@@ -22,6 +24,28 @@ describe('screenFromHash', () => {
 				hash.startsWith('#/connect') ? 'connect' : 'home',
 			)
 		}
+	})
+})
+
+describe('параметр экрана', () => {
+	it('код тарифа ездит вторым сегментом хеша — перезагрузка вебвью возвращает на тот же тариф', () => {
+		expect(hashFromScreen('buy', 'monthly')).toBe('#/buy/monthly')
+		expect(screenFromHash('#/buy/monthly')).toBe('buy')
+		expect(paramFromHash('#/buy/monthly')).toBe('monthly')
+	})
+
+	it('у экранов без параметра второй сегмент пуст', () => {
+		expect(paramFromHash('#/tariffs')).toBeNull()
+		expect(paramFromHash('#/')).toBeNull()
+	})
+
+	it('navigate с параметром ставит его, без параметра — сбрасывает', () => {
+		navigate('buy', 'monthly')
+		expect(screenParamAtom()).toBe('monthly')
+		expect(window.location.hash).toBe('#/buy/monthly')
+
+		navigate('tariffs')
+		expect(screenParamAtom()).toBeNull()
 	})
 })
 

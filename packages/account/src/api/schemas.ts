@@ -167,6 +167,7 @@ export type CabinetEvent =
 	| 'wizard_result'
 	| 'wizard_checkout'
 	| 'plans_list_open'
+	| 'plan_select'
 
 /** Ответ на шаг «сколько устройств» — тот же словарь, что понимает бот. */
 export type DeviceNeed = 'one' | 'few' | 'family'
