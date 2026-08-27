@@ -14,8 +14,10 @@ afterEach(() => {
 })
 
 describe('formatBytes', () => {
-	it('переключает единицы на границах', () => {
-		expect(formatBytes(512)).toBe('512 Б')
+	it('переключает единицы на границах, ниже мегабайта — КБ, не сырые байты', () => {
+		expect(formatBytes(0)).toBe('0 КБ')
+		expect(formatBytes(512)).toBe('1 КБ')
+		expect(formatBytes(62_437)).toBe('61 КБ')
 		expect(formatBytes(5 * 1024 ** 2)).toBe('5.0 МБ')
 		expect(formatBytes(3 * 1024 ** 3)).toBe('3.00 ГБ')
 	})
