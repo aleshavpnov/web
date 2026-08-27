@@ -2,11 +2,11 @@
 const GB = 1024 ** 3
 const MB = 1024 ** 2
 
-/** Байты в человеческий вид: до гигабайта — МБ, дальше — ГБ. */
+/** Байты в человеческий вид: КБ → МБ → ГБ. Ступени «Б» нет: сырые байты не влезают в строку. */
 export function formatBytes(bytes: number): string {
 	if (bytes >= GB) return `${(bytes / GB).toFixed(2)} ГБ`
 	if (bytes >= MB) return `${(bytes / MB).toFixed(1)} МБ`
-	return `${bytes} Б`
+	return `${Math.round(bytes / 1024)} КБ`
 }
 
 const dateOnly = new Intl.DateTimeFormat('ru-RU', {
