@@ -110,30 +110,39 @@ const MiniStatus = reatomComponent(() => {
 const metricClass =
 	'inline-flex items-center gap-1 mx-1 align-baseline whitespace-nowrap text-emerald-500'
 
-const Tagline = reatomComponent(() => {
+const headlineClass = 'text-4xl sm:text-5xl font-bold leading-tight tracking-tight'
+
+/**
+ * Число метрики, а пока оно не пришло — кость на его месте. Заголовок читается одинаково в
+ * обоих состояниях, поэтому подстановка значения не перекраивает текст.
+ *
+ * `align-baseline` сажает кость нижним краем на базовую линию строки, а высота в `em`
+ * держит её вровень с цифрами на обоих брейкпоинтах заголовка.
+ */
+function MetricValue({ value, width }: { value: string | null; width: string }) {
+	if (value === null) return <Bone className={`inline-block h-[0.7em] align-baseline ${width}`} />
+	return <>{value}</>
+}
+
+const Headline = reatomComponent(() => {
 	const status = statusAtom()
 	// Пик — основное число; на старом кэше без peakBps откатываемся на среднее.
 	const peakBps = status?.traffic?.peakBps ?? status?.traffic?.avgBps ?? null
 	const avgBps = status?.traffic?.avgBps ?? null
 	const pingMs = status?.internet?.latencyMs ?? null
 
-	if (peakBps === null || pingMs === null) {
-		return (
-			<p className="text-base text-muted-foreground max-w-sm leading-relaxed">
-				Тихое и&nbsp;быстрое соединение без&nbsp;ограничений.
-			</p>
-		)
-	}
-
 	return (
-		<p className="text-base text-muted-foreground max-w-sm leading-relaxed">
-			Быстрое соединение без&nbsp;ограничений со&nbsp;скоростью до{' '}
+		<h1 className={headlineClass}>
+			В&nbsp;интернет без&nbsp;ограничений со&nbsp;скоростью до{' '}
 			<Tooltip>
 				<TooltipTrigger
 					className={`${metricClass} cursor-help rounded-sm focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50`}
 				>
-					<Gauge className="size-3.5" />
-					<span className="tabular-nums font-medium">{formatMbps(peakBps)}&nbsp;Мбит/с</span>
+					<Gauge className="size-[0.7em]" />
+					<span className="tabular-nums">
+						<MetricValue value={peakBps === null ? null : formatMbps(peakBps)} width="w-[2.1em]" />
+						&nbsp;Мбит/с
+					</span>
 				</TooltipTrigger>
 				{avgBps !== null && (
 					<TooltipContent>
@@ -143,11 +152,14 @@ const Tagline = reatomComponent(() => {
 			</Tooltip>{' '}
 			и&nbsp;пингом{' '}
 			<span className={metricClass}>
-				<Activity className="size-3.5" />
-				<span className="tabular-nums font-medium">{pingMs}&nbsp;мс</span>
+				<Activity className="size-[0.7em]" />
+				<span className="tabular-nums">
+					<MetricValue value={pingMs === null ? null : String(pingMs)} width="w-[1.3em]" />
+					&nbsp;мс
+				</span>
 			</span>{' '}
 			за&nbsp;сегодня
-		</p>
+		</h1>
 	)
 })
 
@@ -160,10 +172,11 @@ export const Home = reatomComponent(() => {
 						<Lock className="size-3.5" />
 						Частный доступ
 					</p>
-					<h1 className="text-4xl sm:text-5xl font-bold leading-tight tracking-tight">
-						Ваше ради кальное решение проблем
-					</h1>
-					<Tagline />
+					<Headline />
+					<p className="text-base text-muted-foreground max-w-sm leading-relaxed">
+						Ваше ради кальное решение проблем, работает везде и&nbsp;всегда, работает лучше
+						остальных
+					</p>
 					<div>
 						<button className={ctaClass} onClick={() => navigate('access')}>
 							<Zap className="size-4" />
