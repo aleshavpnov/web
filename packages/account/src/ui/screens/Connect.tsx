@@ -50,7 +50,7 @@ import { Spotlight } from '@/ui/components/Spotlight.tsx'
  */
 const SPOTLIGHT_NOTE: Record<SpotlightTarget, string> = {
 	refresh: 'Эту кнопку нажмите в приложении — она заберёт свежий профиль',
-	routes: 'Нажмите сюда: маршруты уведут российские сайты мимо VPN',
+	routes: 'Нажмите сюда — приложение добавит маршруты ROSKOM, и российские сайты пойдут мимо VPN',
 }
 
 function spotlightFromParam(param: string | null): SpotlightTarget | null {
