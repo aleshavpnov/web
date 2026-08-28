@@ -19,6 +19,7 @@ import {
 	RefreshSubscriptionSteps,
 	type ClientConfig,
 	type ClientId,
+	type SpotlightTarget,
 } from '@shared/connect/index.ts'
 import { Bone, ButtonBone, ListBone, TextBone } from '@shared/skeleton/index.ts'
 
@@ -38,6 +39,23 @@ import {
 	Segmented,
 	shorten,
 } from '@/ui/components/common.tsx'
+import { Spotlight } from '@/ui/components/Spotlight.tsx'
+
+/**
+ * Что подсвечиваем, придя по диплинку из подсказки бота, и что при этом пишем. Ключ —
+ * второй сегмент хеша (`#/connect/refresh`), он же значение `data-spotlight` у цели.
+ *
+ * Целей две, потому что диагнозов два (см. services/routing-hint.ts): профиль устарел —
+ * жать обновление у подписки; маршруты не применены вовсе — ставить их «Добавить».
+ */
+const SPOTLIGHT_NOTE: Record<SpotlightTarget, string> = {
+	refresh: 'Эту кнопку нажмите в приложении — она заберёт свежий профиль',
+	routes: 'Нажмите сюда: маршруты уведут российские сайты мимо VPN',
+}
+
+function spotlightFromParam(param: string | null): SpotlightTarget | null {
+	return param === 'refresh' || param === 'routes' ? param : null
+}
 
 type LinkKind = 'main' | 'backup'
 
@@ -233,8 +251,12 @@ export const Connect = reatomComponent(() => {
 	const [platformOpen, setPlatformOpen] = useState(false)
 	const cfg = CLIENTS[client]
 	const error = accessRes.errorAtom()
-	// Пришли по кнопке «Как обновить» из подсказки бота (см. services/notify.ts).
-	const focusRefresh = screenParamAtom() === 'refresh'
+	// Пришли по кнопке из подсказки бота (см. services/notify.ts) — цель в хеше.
+	const deepLink = spotlightFromParam(screenParamAtom())
+	const [spotlight, setSpotlight] = useState(deepLink)
+	// Порядок карточек держится на самом диплинке, а не на подсветке: иначе карточка
+	// уезжала бы вниз в тот момент, когда человек гасит подсказку.
+	const focusRefresh = deepLink === 'refresh'
 
 	useEffect(() => {
 		void accessRes.load()
@@ -314,6 +336,13 @@ export const Connect = reatomComponent(() => {
 						current={platform}
 						onSelect={setPlatform}
 						onClose={() => setPlatformOpen(false)}
+					/>
+
+					{/* Диалог выбора платформы перекрыл бы подсветку — гасим её, пока он открыт. */}
+					<Spotlight
+						target={platformOpen ? null : spotlight}
+						note={spotlight ? SPOTLIGHT_NOTE[spotlight] : ''}
+						onDone={() => setSpotlight(null)}
 					/>
 				</>
 			)}
