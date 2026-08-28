@@ -51,7 +51,7 @@ import { Spotlight } from '@/ui/components/Spotlight.tsx'
 const SPOTLIGHT_NOTE: Record<SpotlightTarget, string> = {
 	refresh: 'Нажмите эту кнопку в приложении — оно заберёт свежий профиль',
 	routes:
-		'Нажмите эту кнопку — приложение добавит маршруты RoscomVPN, и российские сайты пойдут напрямую, мимо VPN',
+		'Нажмите эту кнопку — приложение добавит маршруты, и российские сайты пойдут напрямую, мимо наших серверов',
 }
 
 function spotlightFromParam(param: string | null): SpotlightTarget | null {
@@ -198,8 +198,8 @@ function RefreshCard({ client, focus }: { client: ClientConfig; focus: boolean }
 				Обновить подписку
 			</SectionTitle>
 			<p className="mb-3 text-sm text-muted-foreground">
-				Нужно, когда российские сайты пошли через VPN: свежий профиль уводит их напрямую. Приложение
-				переустанавливать не&nbsp;надо, ссылка остаётся прежней.
+				Нужно, когда российские сайты пошли через наши серверы: свежий профиль уводит их напрямую.
+				Приложение переустанавливать не&nbsp;надо, ссылка остаётся прежней.
 			</p>
 			<RefreshSubscriptionSteps client={client} />
 		</section>
