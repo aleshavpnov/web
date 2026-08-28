@@ -34,6 +34,11 @@ describe('параметр экрана', () => {
 		expect(paramFromHash('#/buy/monthly')).toBe('monthly')
 	})
 
+	it('диплинк бота #/connect/refresh открывает подключение с фокусом на обновлении', () => {
+		expect(screenFromHash('#/connect/refresh')).toBe('connect')
+		expect(paramFromHash('#/connect/refresh')).toBe('refresh')
+	})
+
 	it('у экранов без параметра второй сегмент пуст', () => {
 		expect(paramFromHash('#/tariffs')).toBeNull()
 		expect(paramFromHash('#/')).toBeNull()

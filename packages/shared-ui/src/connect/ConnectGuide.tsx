@@ -7,7 +7,7 @@
  * «Шаг 1/2/3» на своей вёрстке, у кабинета — карточки shadcn.
  */
 import { useEffect, useState, type ReactNode } from 'react'
-import { Check, Copy, Download, Plus, Power, Route } from 'lucide-react'
+import { Check, Copy, Download, Plus, Power, RefreshCw, Route } from 'lucide-react'
 
 import {
 	CLIENTS,
@@ -249,6 +249,38 @@ export function AddSubscriptionSteps({ client }: { client: ClientConfig }) {
 	)
 
 	return <StepList items={items} />
+}
+
+/**
+ * Шаги обновления уже добавленной подписки. Отдельно от {@link AddSubscriptionSteps}:
+ * сюда приходят по подсказке «профиль устарел», где приложение давно стоит и ссылка
+ * добавлена, не хватает только свежих правил.
+ *
+ * Переподключение — обязательный второй шаг, а не вежливость: свежий профиль клиент
+ * забирает при обновлении, но поднятый туннель крутит старые правила, пока его не
+ * перезапустить. Так и вышло 28.08.2026: фетч ежечасный, а RU-домены шли мимо direct.
+ */
+export function RefreshSubscriptionSteps({ client }: { client: ClientConfig }) {
+	return (
+		<StepList
+			items={[
+				<>
+					Откройте {client.name} и&nbsp;нажмите у&nbsp;подписки{' '}
+					<InlineKey className="size-5 rounded border-emerald-500/40 bg-emerald-500/15 text-emerald-500">
+						<RefreshCw className="size-3" />
+					</InlineKey>{' '}
+					— приложение заберёт свежий профиль
+				</>,
+				<>
+					Выключите и&nbsp;снова включите подключение{' '}
+					<InlineKey className="size-5 rounded-full border-emerald-500/40 bg-emerald-500/15 text-emerald-500">
+						<Power className="size-3" />
+					</InlineKey>{' '}
+					— пока туннель поднят, работают старые правила
+				</>,
+			]}
+		/>
+	)
 }
 
 /** Тогглер клиента: переключает все ссылки и название приложения в инструкции. */

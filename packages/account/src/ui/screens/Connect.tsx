@@ -5,8 +5,8 @@
  * после сайта, видит ровно те же шаги, а править их приходится в одном месте.
  */
 import { reatomComponent } from '@reatom/react'
-import { useEffect, useState } from 'react'
-import { DownloadIcon, InfoIcon, QrCodeIcon, RouterIcon } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { DownloadIcon, InfoIcon, QrCodeIcon, RefreshCwIcon, RouterIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import {
 	AddSubscriptionSteps,
@@ -16,6 +16,8 @@ import {
 	detectPlatform,
 	InstallSteps,
 	PlatformDialog,
+	RefreshSubscriptionSteps,
+	type ClientConfig,
 	type ClientId,
 } from '@shared/connect/index.ts'
 import { Bone, ButtonBone, ListBone, TextBone } from '@shared/skeleton/index.ts'
@@ -25,7 +27,7 @@ import { Button } from '@/components/ui/button.tsx'
 import { closeMiniApp, hapticError, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { accessRes } from '@/state/cabinet.ts'
-import { navigate } from '@/state/screen.ts'
+import { navigate, screenParamAtom } from '@/state/screen.ts'
 import {
 	Async,
 	BRAND_ON,
@@ -144,6 +146,48 @@ function RouterCard() {
 }
 
 /**
+ * Карточка «Обновить подписку» — цель диплинка `#/connect/refresh` из подсказки бота про
+ * устаревший профиль. По приходу оттуда карточка подсвечивается и подтягивается к верху
+ * экрана: без этого человек попадал на начало «Подключения» и видел инструкцию по
+ * установке, хотя приложение у него давно стоит.
+ *
+ * Скролл отложен через requestAnimationFrame: на момент эффекта ссылка ещё грузится,
+ * высота карточек меняется, и без кадра ожидания промахивались мимо секции.
+ */
+function RefreshCard({ client, focus }: { client: ClientConfig; focus: boolean }) {
+	const ref = useRef<HTMLElement>(null)
+
+	useEffect(() => {
+		if (!focus) return
+		const id = requestAnimationFrame(() =>
+			ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+		)
+		return () => cancelAnimationFrame(id)
+	}, [focus])
+
+	return (
+		<section
+			ref={ref}
+			className={cn(
+				SECTION_CARD,
+				'scroll-mt-4 transition-shadow',
+				focus && 'ring-2 ring-brand/60 shadow-lg',
+			)}
+		>
+			<SectionTitle className="mb-1 flex items-center gap-2">
+				<RefreshCwIcon className="size-4 text-brand" />
+				Обновить подписку
+			</SectionTitle>
+			<p className="mb-3 text-sm text-muted-foreground">
+				Нужно, когда российские сайты пошли через VPN: свежий профиль уводит их напрямую. Приложение
+				переустанавливать не&nbsp;надо, ссылка остаётся прежней.
+			</p>
+			<RefreshSubscriptionSteps client={client} />
+		</section>
+	)
+}
+
+/**
  * Скелетон экрана: карточка ссылки и карточка инструкции. Шаги — четыре строки текста
  * с местом под номер: инструкция всегда длиннее ссылки, и без неё карточка выглядела бы
  * вдвое короче будущей.
@@ -189,6 +233,8 @@ export const Connect = reatomComponent(() => {
 	const [platformOpen, setPlatformOpen] = useState(false)
 	const cfg = CLIENTS[client]
 	const error = accessRes.errorAtom()
+	// Пришли по кнопке «Как обновить» из подсказки бота (см. services/notify.ts).
+	const focusRefresh = screenParamAtom() === 'refresh'
 
 	useEffect(() => {
 		void accessRes.load()
@@ -219,6 +265,9 @@ export const Connect = reatomComponent(() => {
 		>
 			{(access) => (
 				<>
+					{/* По диплинку карточка обновления идёт первой: за ней и пришли. */}
+					{focusRefresh && <RefreshCard client={cfg} focus />}
+
 					<SubscriptionLink url={access.subscriptionUrl} backup={access.subscriptionUrlBackup} />
 
 					<section className={SECTION_CARD}>
@@ -248,6 +297,10 @@ export const Connect = reatomComponent(() => {
 							<AddSubscriptionSteps client={cfg} />
 						</div>
 					</section>
+
+					{/* Без диплинка карточка стоит после установки: сначала подключиться, потом
+					    обновляться. Дубля нет — сверху она появляется только в фокус-режиме. */}
+					{!focusRefresh && <RefreshCard client={cfg} focus={false} />}
 
 					{access.canUseRouter && <RouterCard />}
 

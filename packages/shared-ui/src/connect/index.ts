@@ -18,5 +18,6 @@ export {
 	Dialog,
 	InstallSteps,
 	PlatformDialog,
+	RefreshSubscriptionSteps,
 	stepBadgeClass,
 } from './ConnectGuide.tsx'
