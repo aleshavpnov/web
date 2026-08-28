@@ -53,10 +53,19 @@ export function ClientLink({ client }: { client: ClientConfig }) {
  * Инлайн-чип, имитирующий кнопку интерфейса Happ/Incy внутри текста инструкции.
  * Размер задаётся в месте вызова: иконочные чипы — size-5, кнопка с подписью — px/py.
  */
-function InlineKey({ children, className }: { children: ReactNode; className?: string }) {
+function InlineKey({
+	children,
+	className,
+	spotlight,
+}: {
+	children: ReactNode
+	className?: string
+	spotlight?: SpotlightTarget
+}) {
 	return (
 		<span
 			className={`inline-flex items-center justify-center gap-1 mx-1 align-middle border ${className}`}
+			{...(spotlight ? { [SPOTLIGHT_ATTR]: spotlight } : {})}
 		>
 			{children}
 		</span>
@@ -110,10 +119,25 @@ function DownloadButton({ href, device }: { href: string; device: string }) {
 	)
 }
 
+/**
+ * Якоря для подсветки: по ним кабинет находит цель, на которую пришёл человек по диплинку
+ * из подсказки бота (см. ui/components/Spotlight.tsx). Атрибут, а не ref через пропсы:
+ * инструкция общая с лендингом, а подсветка нужна только кабинету — тащить туда лишний
+ * проп через три уровня компонентов ради этого не стоит.
+ */
+export const SPOTLIGHT_ATTR = 'data-spotlight'
+export type SpotlightTarget = 'routes' | 'refresh'
+
 /** CTA «Добавить» — открывает routing-страницу клиента, которая ставит маршруты обхода. */
 function RoutingButton({ href }: { href: string }) {
 	return (
-		<a href={href} target="_blank" rel="noopener noreferrer" className={downloadBtnClass}>
+		<a
+			href={href}
+			target="_blank"
+			rel="noopener noreferrer"
+			className={downloadBtnClass}
+			{...{ [SPOTLIGHT_ATTR]: 'routes' satisfies SpotlightTarget }}
+		>
 			<Route className="size-3.5" />
 			Добавить
 		</a>
@@ -266,7 +290,10 @@ export function RefreshSubscriptionSteps({ client }: { client: ClientConfig }) {
 			items={[
 				<>
 					Откройте {client.name} и&nbsp;нажмите у&nbsp;подписки{' '}
-					<InlineKey className="size-5 rounded border-emerald-500/40 bg-emerald-500/15 text-emerald-500">
+					<InlineKey
+						className="size-5 rounded border-emerald-500/40 bg-emerald-500/15 text-emerald-500"
+						spotlight="refresh"
+					>
 						<RefreshCw className="size-3" />
 					</InlineKey>{' '}
 					— приложение заберёт свежий профиль

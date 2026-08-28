@@ -19,5 +19,7 @@ export {
 	InstallSteps,
 	PlatformDialog,
 	RefreshSubscriptionSteps,
+	SPOTLIGHT_ATTR,
+	type SpotlightTarget,
 	stepBadgeClass,
 } from './ConnectGuide.tsx'
