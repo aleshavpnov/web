@@ -41,6 +41,20 @@ describe('параметр экрана', () => {
 		}
 	})
 
+	// Хеш у Mini App занят Telegram (tgWebAppData), поэтому бот шлёт раздел в query —
+	// см. cabinetUrlFor. Модуль читает адрес при импорте, отсюда resetModules.
+	it('стартовый ?go= из кнопки бота ведёт на свой экран и вычищается из адреса', async () => {
+		vi.resetModules()
+		window.history.replaceState(null, '', '/me/?go=connect/refresh')
+
+		const fresh = await import('./screen.ts')
+
+		expect(fresh.screenAtom()).toBe('connect')
+		expect(fresh.screenParamAtom()).toBe('refresh')
+		expect(window.location.search).toBe('')
+		expect(window.location.hash).toBe('#/connect/refresh')
+	})
+
 	it('у экранов без параметра второй сегмент пуст', () => {
 		expect(paramFromHash('#/tariffs')).toBeNull()
 		expect(paramFromHash('#/')).toBeNull()
