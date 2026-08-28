@@ -144,7 +144,7 @@ export const Referrals = reatomComponent(() => {
 								className="mt-3 w-full"
 								onClick={() =>
 									openLink(
-										`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Пользуюсь этим VPN — работает без танцев с бубном')}`,
+										`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Пользуюсь этим сервисом — работает без танцев с бубном')}`,
 									)
 								}
 							>
