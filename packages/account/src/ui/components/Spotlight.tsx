@@ -63,11 +63,7 @@ function useTarget(target: SpotlightTarget | null): Element | null {
 }
 
 /**
- * Затемнение с вырезом вокруг цели, подсказка и лёгкая левитация самой кнопки.
- *
- * Класс левитации вешается прямо на цель, а вырез анимируется тем же ключевым кадром:
- * обе анимации стартуют в одном кадре и с одинаковой длительностью, поэтому окно едет
- * ровно за кнопкой без пересчёта позиции на каждый тик.
+ * Затемнение с вырезом вокруг цели и запиской рядом.
  *
  * Гасится по любому касанию, Escape и уходу с экрана: подсказка разовая, держать её
  * поверх интерфейса дольше первого взгляда — только мешать.
@@ -98,14 +94,6 @@ export function Spotlight({
 			clearInterval(timer)
 			window.removeEventListener('resize', sync)
 		}
-	}, [el])
-
-	// Левитация — на самой кнопке: подсвеченным должен выглядеть настоящий элемент,
-	// а не его силуэт в затемнении.
-	useEffect(() => {
-		if (!el) return
-		el.classList.add('spotlight-float')
-		return () => el.classList.remove('spotlight-float')
 	}, [el])
 
 	useEffect(() => {
@@ -147,19 +135,20 @@ export function Spotlight({
 			))}
 
 			<div
-				className="spotlight-float absolute rounded-xl ring-2 ring-brand"
+				className="absolute rounded-xl ring-2 ring-brand"
 				style={{
 					top: rect.top,
 					left: rect.left,
 					width: rect.width,
 					height: rect.height,
 					// Одной строкой: свечение вокруг цели и заливка всего остального экрана.
-					boxShadow: '0 0 24px 6px rgba(16, 185, 129, 0.45), 0 0 0 9999px rgba(0, 0, 0, 0.72)',
+					boxShadow: '0 0 24px 6px rgba(16, 185, 129, 0.45), 0 0 0 9999px rgba(0, 0, 0, 0.5)',
 				}}
 			/>
 
 			<div
-				className="absolute max-w-[15rem] rounded-lg bg-brand px-3 py-2 text-sm font-medium text-black shadow-xl"
+				// Плашка темнее фирменного зелёного: белый текст на самом brand почти не читается.
+				className="absolute max-w-[15rem] rounded-lg bg-emerald-700 px-3 py-2 text-sm font-medium text-white shadow-xl"
 				style={{
 					top: below ? rect.top + rect.height + 12 : undefined,
 					bottom: below ? undefined : window.innerHeight - rect.top + 12,

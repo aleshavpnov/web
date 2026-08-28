@@ -241,29 +241,9 @@
 	animation: loading-slide 1.1s ease-in-out infinite;
 }
 
-/*
- * Левитация подсвеченной кнопки (см. ui/components/Spotlight.tsx). Класс висит и на самой
- * кнопке, и на вырезе затемнения: одинаковая анимация, запущенная в одном кадре, держит их
- * вместе без пересчёта координат на каждый тик.
- */
-@keyframes spotlight-float {
-	0%,
-	100% {
-		transform: translateY(0);
-	}
-	50% {
-		transform: translateY(-4px);
-	}
-}
-
-.spotlight-float {
-	animation: spotlight-float 1.6s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
 	.step-in,
-	.result-pop,
-	.spotlight-float {
+	.result-pop {
 		animation: none;
 	}
 
