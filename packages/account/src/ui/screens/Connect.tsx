@@ -49,8 +49,9 @@ import { Spotlight } from '@/ui/components/Spotlight.tsx'
  * жать обновление у подписки; маршруты не применены вовсе — ставить их «Добавить».
  */
 const SPOTLIGHT_NOTE: Record<SpotlightTarget, string> = {
-	refresh: 'Эту кнопку нажмите в приложении — она заберёт свежий профиль',
-	routes: 'Нажмите сюда — приложение добавит маршруты ROSKOM, и российские сайты пойдут мимо VPN',
+	refresh: 'Нажмите эту кнопку в приложении — оно заберёт свежий профиль',
+	routes:
+		'Нажмите эту кнопку — приложение добавит маршруты RoscomVPN, и российские сайты пойдут напрямую, мимо VPN',
 }
 
 function spotlightFromParam(param: string | null): SpotlightTarget | null {
@@ -246,11 +247,14 @@ const SKELETON = (
 )
 
 export const Connect = reatomComponent(() => {
-	const [client, setClient] = useState<ClientId>('happ')
+	const [picked, setPicked] = useState<ClientId | null>(null)
 	const [platform, setPlatform] = useState(detectPlatform)
 	const [platformOpen, setPlatformOpen] = useState(false)
-	const cfg = CLIENTS[client]
 	const error = accessRes.errorAtom()
+	// Пока человек сам не переключил тогглер, показываем его приложение — API узнаёт
+	// его по UA последних фетчей подписки. Ни того, ни другого нет — остаётся Happ.
+	const client = picked ?? accessRes.dataAtom()?.app ?? 'happ'
+	const cfg = CLIENTS[client]
 	// Пришли по кнопке из подсказки бота (см. services/notify.ts) — цель в хеше.
 	const deepLink = spotlightFromParam(screenParamAtom())
 	const [spotlight, setSpotlight] = useState(deepLink)
@@ -304,7 +308,7 @@ export const Connect = reatomComponent(() => {
 							</button>
 						</div>
 
-						<ClientToggle value={client} onChange={setClient} />
+						<ClientToggle value={client} onChange={setPicked} />
 
 						<p className="mt-3 mb-3 text-sm text-muted-foreground">
 							Установите и&nbsp;настройте <ClientLink client={cfg} /> — приложение,
