@@ -15,7 +15,12 @@ export const SubSchema = z.object({
 	tributeExpiresAt: z.string().nullable(),
 	deviceLimit: z.number().nullable(),
 	tributeWebAppLink: z.string().nullable(),
+	/** Доступ приостановлен за шеринг; null — нет. Плашка на главной, перевыпуск скрыт. */
+	sharingSuspendedAt: z.string().nullable().default(null),
 })
+
+export const DeviceGateModeSchema = z.enum(['off', 'observe', 'enforce'])
+export type DeviceGateMode = z.infer<typeof DeviceGateModeSchema>
 
 export const OverviewSchema = z.object({
 	kind: z.enum(['paid', 'vip', 'none']),
@@ -27,6 +32,8 @@ export const OverviewSchema = z.object({
 	/** t.me-ссылка на веб-админку; null — обычному клиенту её не показываем. */
 	adminMiniAppUrl: z.string().nullable(),
 	botUsername: z.string(),
+	/** Режим слотов устройств: в enforce «Забыть» освобождает слот по-настоящему. */
+	deviceGate: DeviceGateModeSchema.default('off'),
 })
 
 export const AccessSchema = z.object({
@@ -93,6 +100,9 @@ export const UsageSchema = z.object({
 	avgPerDayBytes: z.number(),
 	hysteriaBytes: z.number(),
 	deviceLimit: z.number().nullable(),
+	/** Занятых слотов устройств за окно гейта — против лимита сравнивается именно это. */
+	slots: z.number().default(0),
+	slotWindowDays: z.number().default(30),
 	devices: z.array(
 		z.object({
 			/** Публичный хеш устройства — им адресуем переименование и удаление. */
@@ -126,6 +136,7 @@ export const SummarySchema = z.object({
 	/** null — доступа нет: плитка скажет «нет данных», а не нарисует ноль. */
 	usedBytes: z.number().nullable(),
 	devices: z.number().nullable(),
+	slotWindowDays: z.number().default(30),
 	deviceLimit: z.number().nullable(),
 	referrals: z.object({ joined: z.number(), paid: z.number() }),
 })

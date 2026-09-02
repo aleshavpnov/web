@@ -20,7 +20,7 @@ import {
 } from '@shared/skeleton/index.ts'
 
 import { formatBytes, formatDevices, plural } from '@/lib/format.ts'
-import { usageDaysAtom, usageRes } from '@/state/cabinet.ts'
+import { overviewRes, usageDaysAtom, usageRes } from '@/state/cabinet.ts'
 import { Async, SECTION_CARD, SectionTitle, Segmented, StatTile } from '@/ui/components/common.tsx'
 import { DeviceList } from '@/ui/components/DeviceList.tsx'
 import { MoreDevicesCard } from '@/ui/components/MoreDevicesCard.tsx'
@@ -77,6 +77,8 @@ const SKELETON = (
 
 export const Usage = reatomComponent(() => {
 	const days = usageDaysAtom()
+	// Режим гейта и приостановка — из обзора: главная его уже загрузила, второй запрос не нужен.
+	const overview = overviewRes.dataAtom()
 
 	useEffect(() => {
 		void usageRes.load(days)
@@ -113,9 +115,16 @@ export const Usage = reatomComponent(() => {
 									value={formatBytes(usage.usedBytes)}
 									hint={`в среднем ${formatBytes(Math.round(usage.avgPerDayBytes))} в сутки`}
 								/>
+								{/* Плитка — по слотам гейта, а не по выбранному периоду графика: против
+								    лимита сравнивается именно это число, и оно не должно прыгать от
+								    переключения «сутки / 30 дней». */}
 								<StatTile
-									label="Устройств за окно"
-									value={usage.devices.length}
+									label={`Устройств за ${usage.slotWindowDays} ${plural(usage.slotWindowDays, 'день', 'дня', 'дней')}`}
+									value={
+										usage.deviceLimit === null
+											? usage.slots
+											: `${usage.slots} из ${usage.deviceLimit}`
+									}
 									hint={
 										usage.deviceLimit === null
 											? 'без ограничения'
@@ -141,7 +150,12 @@ export const Usage = reatomComponent(() => {
 								<UsageBars points={usage.series} granularity={usage.granularity} />
 							</section>
 
-							<DeviceList devices={usage.devices} onChanged={() => usageRes.load(days)} />
+							<DeviceList
+								devices={usage.devices}
+								gate={overview?.deviceGate ?? 'off'}
+								suspended={Boolean(overview?.sub?.sharingSuspendedAt)}
+								onChanged={() => usageRes.load(days)}
+							/>
 
 							{/* Показываем всем, у кого лимит вообще есть, а не только упёршимся в него:
 							    счёт устройств — нижняя граница (hwid шлёт только Happ), и порог по нему
