@@ -11,7 +11,7 @@ import { CheckIcon, PencilIcon, SmartphoneIcon, Trash2Icon, XIcon } from 'lucide
 import { toast } from 'sonner'
 
 import { ApiError, forgetDevice, renameDevice, rotateAccess } from '@/api/client.ts'
-import type { Device } from '@/api/schemas.ts'
+import type { Device, DeviceGateMode } from '@/api/schemas.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { formatAgo } from '@/lib/format.ts'
 import { confirmAction, hapticError, hapticSuccess } from '@/lib/telegram.ts'
@@ -25,9 +25,11 @@ function deviceTitle(device: Device): string {
 
 function DeviceRow({
 	device,
+	gate,
 	onChanged,
 }: {
 	device: Device
+	gate: DeviceGateMode
 	onChanged: () => void | Promise<void>
 }) {
 	const [editing, setEditing] = useState(false)
@@ -50,9 +52,12 @@ function DeviceRow({
 	}
 
 	async function forget() {
-		// Спрашиваем: строка исчезает, и человек должен понимать, что доступ при этом цел.
+		// Спрашиваем: строка исчезает, и человек должен понимать, что именно произойдёт —
+		// пока гейт не в enforce, доступ цел; в enforce освобождается слот.
 		const ok = await confirmAction(
-			`Убрать «${deviceTitle(device)}» из списка? Доступ не отключится — устройство вернётся, если снова подключится.`,
+			gate === 'enforce'
+				? `Убрать «${deviceTitle(device)}» и освободить слот? Устройство сможет обновить подписку, только если слот останется свободным.`
+				: `Убрать «${deviceTitle(device)}» из списка? Доступ не отключится — устройство вернётся, если снова подключится.`,
 		)
 		if (!ok) return
 		setBusy(true)
@@ -132,9 +137,15 @@ function DeviceRow({
 
 export function DeviceList({
 	devices,
+	gate,
+	suspended,
 	onChanged,
 }: {
 	devices: Device[]
+	/** Режим слотов устройств: в enforce «Забыть» освобождает слот по-настоящему. */
+	gate: DeviceGateMode
+	/** Доступ приостановлен за шеринг — перевыпуск ссылки не поможет, кнопку прячем. */
+	suspended: boolean
 	onChanged: () => void | Promise<void>
 }) {
 	const [rotating, setRotating] = useState(false)
@@ -166,25 +177,28 @@ export function DeviceList({
 			) : (
 				<ul className="divide-y divide-border/60">
 					{devices.map((device) => (
-						<DeviceRow key={device.id} device={device} onChanged={onChanged} />
+						<DeviceRow key={device.id} device={device} gate={gate} onChanged={onChanged} />
 					))}
 				</ul>
 			)}
 
-			<div className="mt-4 border-t border-border/60 pt-4">
-				<p className="mb-3 text-xs text-muted-foreground">
-					Удаление из списка не&nbsp;отключает устройство: ссылка-подписка общая. Чтобы отключить
-					всех разом — выпустите новую.
-				</p>
-				<Button
-					variant="outline"
-					className="w-full"
-					disabled={rotating}
-					onClick={() => void rotate()}
-				>
-					{rotating ? 'Выпускаем…' : 'Отключить все устройства'}
-				</Button>
-			</div>
+			{!suspended && (
+				<div className="mt-4 border-t border-border/60 pt-4">
+					<p className="mb-3 text-xs text-muted-foreground">
+						{gate === 'enforce'
+							? 'Удаление освобождает слот: устройство сможет обновить подписку, только если слот будет свободен. Чтобы отключить всех разом — выпустите новую ссылку.'
+							: 'Удаление из списка не отключает устройство: ссылка-подписка общая. Чтобы отключить всех разом — выпустите новую.'}
+					</p>
+					<Button
+						variant="outline"
+						className="w-full"
+						disabled={rotating}
+						onClick={() => void rotate()}
+					>
+						{rotating ? 'Выпускаем…' : 'Отключить все устройства'}
+					</Button>
+				</div>
+			)}
 		</section>
 	)
 }

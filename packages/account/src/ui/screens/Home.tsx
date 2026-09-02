@@ -83,6 +83,15 @@ function PaidCard({ data }: { data: Overview & { sub: NonNullable<Overview['sub'
 
 			{note && <p className="mt-2 text-xs text-muted-foreground">{note}</p>}
 
+			{/* Автогашение за шеринг: подписка по сроку живая, а VPN не работает — и без
+			    этой плашки человек пойдёт искать поломку в приложении. */}
+			{sub.sharingSuspendedAt && (
+				<p className="mt-3 rounded-lg bg-viz-critical/10 px-3 py-2 text-sm text-viz-critical">
+					Доступ приостановлен: подписка была подключена с очень многих адресов одновременно.
+					Напишите в&nbsp;поддержку — разберёмся и вернём.
+				</p>
+			)}
+
 			{/* Списание Tribute показываем только когда оно расходится с концом доступа:
 			    совпало — вторая дата ничего не добавляет, а вопросов вызывает много. */}
 			{sub.tributeExpiresAt && formatDate(sub.tributeExpiresAt) !== formatDate(sub.expiresAt) && (
