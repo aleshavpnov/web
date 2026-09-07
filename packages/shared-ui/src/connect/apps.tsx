@@ -7,7 +7,7 @@
  * «Подключение»). Разъехавшиеся ссылки на App Store — это разъехавшаяся поддержка.
  */
 import type { ComponentType } from 'react'
-import { Shield } from 'lucide-react'
+import { Shield, Zap } from 'lucide-react'
 
 export type Platform = 'ios' | 'android' | 'windows' | 'mac'
 
@@ -18,8 +18,11 @@ export const platforms: { key: Platform; label: string }[] = [
 	{ key: 'mac', label: 'Mac' },
 ]
 
-/** Порядок в тогглере: Happ слева и по умолчанию. */
-export const CLIENT_ORDER = ['happ', 'incy'] as const
+/**
+ * Порядок в тогглере: Happ слева и по умолчанию. Свой клиент — последним: он только под
+ * Android, и ставить его первым для iOS/десктопа значило бы показывать «недоступен».
+ */
+export const CLIENT_ORDER = ['happ', 'incy', 'aleshavpnov'] as const
 
 export type ClientId = (typeof CLIENT_ORDER)[number]
 
@@ -35,7 +38,8 @@ export interface ClientConfig {
 	id: ClientId
 	name: string
 	site: string
-	routingUrl: string
+	/** Страница с маршрутами обхода. Нет у своего клиента — маршруты зашиты в подписку. */
+	routingUrl?: string
 	Icon: ComponentType<{ className?: string }>
 	install: Record<Platform, InstallMethod>
 }
@@ -65,6 +69,11 @@ const incyStores: Store[] = [
 	{ label: '🇷🇺 RU App Store', href: 'https://apps.apple.com/ru/app/incy/id6756943388' },
 	{ label: '🇺🇸 US App Store', href: 'https://apps.apple.com/us/app/incy/id6756943388' },
 ]
+
+/** Свежий APK своего клиента: релизы живут в публичном репо, latest — без версии в URL. */
+export const APP_APK_URL =
+	'https://github.com/aimuzov/aleshavpnov-releases/releases/latest/download/app-release.apk'
+export const APP_RELEASES_URL = 'https://github.com/aimuzov/aleshavpnov-releases/releases'
 
 export const CLIENTS: Record<ClientId, ClientConfig> = {
 	incy: {
@@ -120,6 +129,18 @@ export const CLIENTS: Record<ClientId, ClientConfig> = {
 				href: 'https://github.com/Happ-proxy/happ-desktop/releases/latest/download/Happ.macOS.universal.dmg',
 				device: 'Mac',
 			},
+		},
+	},
+	aleshavpnov: {
+		id: 'aleshavpnov',
+		name: 'Alesha Vpnov',
+		site: 'https://durov.aimuzov.online/app',
+		Icon: Zap,
+		install: {
+			ios: { kind: 'unavailable' },
+			android: { kind: 'direct', href: APP_APK_URL, device: 'Android' },
+			windows: { kind: 'unavailable' },
+			mac: { kind: 'unavailable' },
 		},
 	},
 }

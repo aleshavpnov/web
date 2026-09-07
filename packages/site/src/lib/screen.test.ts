@@ -7,6 +7,8 @@ describe('screen routing', () => {
 		expect(screenFromPath('/get')).toBe('access')
 		expect(screenFromPath('/status')).toBe('status')
 		expect(screenFromPath('/faq')).toBe('faq')
+		expect(screenFromPath('/app')).toBe('app')
+		expect(screenFromPath('/app/add')).toBe('appAdd')
 		expect(screenFromPath('/whatever')).toBe('notfound')
 	})
 	it('maps screen back to pathname', () => {
@@ -14,5 +16,7 @@ describe('screen routing', () => {
 		expect(pathFromScreen('status')).toBe('/status')
 		expect(pathFromScreen('faq')).toBe('/faq')
 		expect(pathFromScreen('home')).toBe('/')
+		expect(pathFromScreen('app')).toBe('/app')
+		expect(pathFromScreen('appAdd')).toBe('/app/add')
 	})
 })

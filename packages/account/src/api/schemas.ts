@@ -42,7 +42,7 @@ export const AccessSchema = z.object({
 	vlessUrl: z.string(),
 	canUseRouter: z.boolean(),
 	/** Чем человек забирает подписку — по нему выставляется тогглер приложения. */
-	app: z.enum(['happ', 'incy']).nullable(),
+	app: z.enum(['happ', 'incy', 'aleshavpnov']).nullable(),
 })
 
 /** Тариф без ссылки оплаты: витрина отдаёт её отдельно, подбор — в своём ответе. */

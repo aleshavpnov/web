@@ -1,4 +1,6 @@
 export {
+	APP_APK_URL,
+	APP_RELEASES_URL,
 	CLIENTS,
 	CLIENT_ORDER,
 	HappIcon,
@@ -23,3 +25,12 @@ export {
 	type SpotlightTarget,
 	stepBadgeClass,
 } from './ConnectGuide.tsx'
+
+export {
+	APP_ADD_PAGE,
+	APP_PAGE,
+	buildAppAddLink,
+	buildAppIntentUrl,
+	decodeAppAddParam,
+	encodeAppAddParam,
+} from './deeplink.ts'

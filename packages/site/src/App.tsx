@@ -10,6 +10,8 @@ import { Faq } from '@/ui/screens/Faq.tsx'
 import { Privacy } from '@/ui/screens/Privacy.tsx'
 import { Terms } from '@/ui/screens/Terms.tsx'
 import { NotFound } from '@/ui/screens/NotFound.tsx'
+import { AppDownload } from '@/ui/screens/AppDownload.tsx'
+import { AppAdd } from '@/ui/screens/AppAdd.tsx'
 
 export const App = reatomComponent(() => {
 	useEffect(() => {
@@ -38,6 +40,10 @@ export const App = reatomComponent(() => {
 				<Privacy />
 			) : screen === 'terms' ? (
 				<Terms />
+			) : screen === 'app' ? (
+				<AppDownload />
+			) : screen === 'appAdd' ? (
+				<AppAdd />
 			) : screen === 'notfound' ? (
 				<NotFound />
 			) : (

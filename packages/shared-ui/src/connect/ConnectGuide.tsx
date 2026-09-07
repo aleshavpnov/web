@@ -7,7 +7,7 @@
  * «Шаг 1/2/3» на своей вёрстке, у кабинета — карточки shadcn.
  */
 import { useEffect, useState, type ReactNode } from 'react'
-import { Check, Copy, Download, Plus, Power, RefreshCw, Route } from 'lucide-react'
+import { Check, Copy, Download, Plus, Power, RefreshCw, Route, Smartphone } from 'lucide-react'
 
 import {
 	CLIENTS,
@@ -224,25 +224,101 @@ function StepList({ items }: { items: ReactNode[] }) {
 	)
 }
 
-/** Шаги установки приложения: поставить и настроить маршруты обхода. */
+/**
+ * Шаги установки приложения: поставить и настроить маршруты обхода. Шага про маршруты
+ * нет у клиента без `routingUrl` — своему приложению правила приходят вместе с подпиской.
+ */
 export function InstallSteps({ client, platform }: { client: ClientConfig; platform: Platform }) {
+	const items: ReactNode[] = [renderInstall(client.install[platform], client)]
+	if (client.routingUrl)
+		items.push(
+			<>
+				Для работы внутри&nbsp;РФ нужны маршруты: <RoutingButton href={client.routingUrl} />
+			</>,
+		)
+	return <StepList items={items} />
+}
+
+/**
+ * CTA «Открыть в приложении» — своему клиенту подписку отдаём диплинком, без буфера.
+ * Клик уходит в `onOpen`, если он задан: в кабинете ссылку нельзя открывать как обычный
+ * `<a>` — вебвью Telegram её проглотит, нужен `openLink` из SDK. `href` остаётся для
+ * долгого нажатия и читалок.
+ */
+function OpenInAppButton({ href, onOpen }: { href: string; onOpen?: () => void }) {
 	return (
-		<StepList
-			items={[
-				renderInstall(client.install[platform], client),
-				<>
-					Для работы внутри&nbsp;РФ нужны маршруты: <RoutingButton href={client.routingUrl} />
-				</>,
-			]}
-		/>
+		<a
+			href={href}
+			target="_blank"
+			rel="noopener noreferrer"
+			className={downloadBtnClass}
+			onClick={(e) => {
+				if (!onOpen) return
+				e.preventDefault()
+				onOpen()
+			}}
+		>
+			<Smartphone className="size-3.5" />
+			Открыть в приложении
+		</a>
 	)
+}
+
+/** Кнопка «Включить» своего клиента — единственная на его экране. */
+function PowerKey() {
+	return (
+		<InlineKey className="size-5 rounded-full border-emerald-500/40 bg-emerald-500/15 text-emerald-500">
+			<Power className="size-3" />
+		</InlineKey>
+	)
+}
+
+/**
+ * Шаги для своего клиента. Из кабинета (`openInAppHref` задан) подписка добавляется одним
+ * нажатием; на лендинге ссылки на подписку ещё нет — остаётся путь через буфер.
+ */
+function ownAppAddSteps(
+	client: ClientConfig,
+	openInAppHref: string | undefined,
+	onOpenInApp: (() => void) | undefined,
+): ReactNode[] {
+	if (openInAppHref)
+		return [
+			<>
+				Нажмите кнопку — приложение откроется и&nbsp;добавит подписку само{' '}
+				<OpenInAppButton href={openInAppHref} onOpen={onOpenInApp} />
+			</>,
+			<>
+				Нажмите большую кнопку «Включить» <PowerKey />
+			</>,
+		]
+	return [
+		<>Скопируйте ссылку-подписку</>,
+		<>Откройте {client.name}, нажмите «Добавить подписку» и&nbsp;вставьте ссылку</>,
+		<>
+			Нажмите «Включить» <PowerKey />
+		</>,
+	]
 }
 
 /**
  * Шаги добавления ссылки-подписки в приложение. У Incy кнопка «Вставить» добавляет подписку
  * из буфера за один тап, поэтому отдельного шага «Добавить из буфера» (как у Happ) для него нет.
  */
-export function AddSubscriptionSteps({ client }: { client: ClientConfig }) {
+export function AddSubscriptionSteps({
+	client,
+	openInAppHref,
+	onOpenInApp,
+}: {
+	client: ClientConfig
+	/** Диплинк своего клиента с подпиской внутри; без него — шаги через буфер. */
+	openInAppHref?: string
+	/** Как открыть диплинк: в кабинете — `openLink` из Telegram SDK, а не обычный переход. */
+	onOpenInApp?: () => void
+}) {
+	if (client.id === 'aleshavpnov')
+		return <StepList items={ownAppAddSteps(client, openInAppHref, onOpenInApp)} />
+
 	const addText =
 		client.id === 'incy' ? (
 			<>
@@ -285,6 +361,19 @@ export function AddSubscriptionSteps({ client }: { client: ClientConfig }) {
  * перезапустить. Так и вышло 28.08.2026: фетч ежечасный, а RU-домены шли мимо direct.
  */
 export function RefreshSubscriptionSteps({ client }: { client: ClientConfig }) {
+	// У своего клиента кнопки обновления нет: свежий профиль он забирает при каждом включении.
+	if (client.id === 'aleshavpnov')
+		return (
+			<StepList
+				items={[
+					<>
+						Выключите и&nbsp;снова включите VPN кнопкой <PowerKey /> — приложение заберёт свежий
+						профиль
+					</>,
+				]}
+			/>
+		)
+
 	return (
 		<StepList
 			items={[
