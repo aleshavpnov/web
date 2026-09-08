@@ -10,7 +10,6 @@ import { DownloadIcon, InfoIcon, QrCodeIcon, RefreshCwIcon, RouterIcon } from 'l
 import { toast } from 'sonner'
 import {
 	AddSubscriptionSteps,
-	buildAppAddLink,
 	CLIENTS,
 	ClientLink,
 	ClientToggle,
@@ -21,6 +20,7 @@ import {
 	type ClientConfig,
 	type ClientId,
 	type SpotlightTarget,
+	visibleApp,
 } from '@shared/connect/index.ts'
 import { Bone, ButtonBone, ListBone, TextBone } from '@shared/skeleton/index.ts'
 
@@ -255,8 +255,7 @@ export const Connect = reatomComponent(() => {
 	// Пока человек сам не переключил тогглер, показываем его приложение — API узнаёт
 	// его по UA последних фетчей подписки. Ни того, ни другого нет — на Android свой
 	// клиент (подписка добавляется одним нажатием), остальным Happ.
-	const client =
-		picked ?? accessRes.dataAtom()?.app ?? (platform === 'android' ? 'aleshavpnov' : 'happ')
+	const client = picked ?? visibleApp(accessRes.dataAtom()?.app) ?? 'happ'
 	const cfg = CLIENTS[client]
 	// Пришли по кнопке из подсказки бота (см. services/notify.ts) — цель в хеше.
 	const deepLink = spotlightFromParam(screenParamAtom())
@@ -323,11 +322,7 @@ export const Connect = reatomComponent(() => {
 							<p className="mb-3 text-sm text-muted-foreground">
 								Добавьте ссылку-подписку в&nbsp;{cfg.name}:
 							</p>
-							<AddSubscriptionSteps
-								client={cfg}
-								openInAppHref={buildAppAddLink(access.subscriptionUrl)}
-								onOpenInApp={() => openLink(buildAppAddLink(access.subscriptionUrl))}
-							/>
+							<AddSubscriptionSteps client={cfg} />
 						</div>
 					</section>
 

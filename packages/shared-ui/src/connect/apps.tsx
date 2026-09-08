@@ -18,13 +18,21 @@ export const platforms: { key: Platform; label: string }[] = [
 	{ key: 'mac', label: 'Mac' },
 ]
 
-/**
- * Порядок в тогглере: Happ слева и по умолчанию. Свой клиент — последним: он только под
- * Android, и ставить его первым для iOS/десктопа значило бы показывать «недоступен».
- */
-export const CLIENT_ORDER = ['happ', 'incy', 'aleshavpnov'] as const
+/** Порядок в тогглере: Happ слева и по умолчанию. */
+export const CLIENT_ORDER = ['happ', 'incy'] as const
 
-export type ClientId = (typeof CLIENT_ORDER)[number]
+/**
+ * Свой Android-клиент пока не показываем людям: он дорабатывается. Запись в CLIENTS
+ * остаётся — по ней живёт страница-мост /app/add и ответ API, где клиент уже опознан.
+ */
+export const HIDDEN_CLIENTS = ['aleshavpnov'] as const
+
+export type ClientId = (typeof CLIENT_ORDER)[number] | (typeof HIDDEN_CLIENTS)[number]
+
+/** Клиент из ответа API, если его вообще показываем; иначе null. */
+export function visibleApp(id: string | null | undefined): ClientId | null {
+	return CLIENT_ORDER.find((c) => c === id) ?? null
+}
 
 export type Store = { label: string; href: string }
 

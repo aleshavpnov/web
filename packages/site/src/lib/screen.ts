@@ -5,7 +5,6 @@ export type Screen =
 	| 'faq'
 	| 'privacy'
 	| 'terms'
-	| 'app'
 	| 'appAdd'
 	| 'notfound'
 
@@ -16,7 +15,6 @@ const PATH_TO_SCREEN: Record<string, Screen> = {
 	'/faq': 'faq',
 	'/privacy': 'privacy',
 	'/terms': 'terms',
-	'/app': 'app',
 	'/app/add': 'appAdd',
 }
 const SCREEN_TO_PATH: Record<Screen, string> = {
@@ -26,7 +24,6 @@ const SCREEN_TO_PATH: Record<Screen, string> = {
 	faq: '/faq',
 	privacy: '/privacy',
 	terms: '/terms',
-	app: '/app',
 	appAdd: '/app/add',
 	notfound: '/',
 }
