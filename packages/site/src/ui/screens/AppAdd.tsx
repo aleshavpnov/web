@@ -8,16 +8,15 @@
  * отправляем — только собираем intent-ссылку для кнопки.
  */
 import { reatomComponent } from '@reatom/react'
-import { Download, Smartphone, SearchX } from 'lucide-react'
+import { Smartphone, SearchX } from 'lucide-react'
 import { useState } from 'react'
 import {
 	APP_APK_URL,
-	APP_PAGE,
+	APP_RELEASES_URL,
 	buildAppIntentUrl,
 	decodeAppAddParam,
 } from '@shared/connect/index.ts'
 
-import { navigate } from '@/state/screen.ts'
 import { BackLink } from '@/ui/components/BackLink.tsx'
 import { Layout } from '@/ui/components/Layout.tsx'
 import { ctaClass } from '@/ui/cta.ts'
@@ -44,10 +43,6 @@ export const AppAdd = reatomComponent(() => {
 							в&nbsp;приложении» на&nbsp;экране «Подключение».
 						</p>
 					</div>
-					<button className={ctaClass} onClick={() => navigate('app')}>
-						<Download className="size-4" />
-						Страница приложения
-					</button>
 					<BackLink />
 				</main>
 			</Layout>
@@ -70,7 +65,7 @@ export const AppAdd = reatomComponent(() => {
 						Нажмите кнопку — приложение откроется и&nbsp;добавит подписку само. Останется нажать
 						«Включить».
 					</p>
-					<a href={buildAppIntentUrl(u, APP_PAGE)} className={`${ctaClass} cta-glow`}>
+					<a href={buildAppIntentUrl(u, APP_RELEASES_URL)} className={`${ctaClass} cta-glow`}>
 						<Smartphone className="size-4" />
 						Открыть в приложении
 					</a>

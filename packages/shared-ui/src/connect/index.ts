@@ -3,6 +3,7 @@ export {
 	APP_RELEASES_URL,
 	CLIENTS,
 	CLIENT_ORDER,
+	visibleApp,
 	HappIcon,
 	detectPlatform,
 	platforms,
@@ -28,7 +29,6 @@ export {
 
 export {
 	APP_ADD_PAGE,
-	APP_PAGE,
 	buildAppAddLink,
 	buildAppIntentUrl,
 	decodeAppAddParam,
