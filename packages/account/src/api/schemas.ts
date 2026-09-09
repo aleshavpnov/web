@@ -98,7 +98,6 @@ export const UsageSchema = z.object({
 	granularity: z.enum(['hour', 'day']),
 	historyDays: z.number(),
 	avgPerDayBytes: z.number(),
-	hysteriaBytes: z.number(),
 	deviceLimit: z.number().nullable(),
 	/** Занятых слотов устройств за окно гейта — против лимита сравнивается именно это. */
 	slots: z.number().default(0),
