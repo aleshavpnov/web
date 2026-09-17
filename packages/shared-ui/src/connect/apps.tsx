@@ -114,7 +114,7 @@ export const CLIENTS: Record<ClientId, ClientConfig> = {
 				stores: [
 					{
 						label: '🇷🇺 RU App Store',
-						href: 'https://apps.apple.com/ru/app/happ-proxy-utility/id6783623643',
+						href: 'https://apps.apple.com/ru/app/happ-lite/id6799917773',
 					},
 					{
 						label: '🇺🇸 US App Store',
