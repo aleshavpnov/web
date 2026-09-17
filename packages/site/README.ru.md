@@ -1,4 +1,4 @@
-# @aleshavpnov/web — публичный сайт SPA
+# @aleshavpnov/site — публичный сайт SPA
 
 Часть монорепо **aleshavpnov** ([`github.com/aimuzov/aleshavpnov`](https://github.com/aimuzov/aleshavpnov)).
 Английский гайд — [README.md](README.md).
@@ -14,7 +14,7 @@
 ## Структура
 
 ```
-packages/web/
+packages/site/
   src/
     main.tsx              # React root, Reatom ctx, ThemeProvider
     App.tsx               # переключатель экранов (reatomComponent)
@@ -51,19 +51,19 @@ packages/web/
 
 ```bash
 # dev-сервер (http://localhost:5173)
-npm run dev -w @aleshavpnov/web
+npm run dev -w @aleshavpnov/site
 
-# production-сборка → packages/web/dist
-npm run build -w @aleshavpnov/web
+# production-сборка → packages/site/dist
+npm run build -w @aleshavpnov/site
 
 # только проверка типов (без emit)
-npm run typecheck -w @aleshavpnov/web
+npm run typecheck -w @aleshavpnov/site
 
 # unit-тесты (vitest + jsdom)
-npm test -w @aleshavpnov/web
+npm test -w @aleshavpnov/site
 
 # e2e-тесты (Playwright)
-npm run test:e2e -w @aleshavpnov/web
+npm run test:e2e -w @aleshavpnov/site
 ```
 
 ### `VITE_API_BASE`
@@ -72,16 +72,14 @@ API-клиент добавляет `VITE_API_BASE` как префикс ко �
 тот же origin). Для локальной разработки с отдельно запущенным ботом задайте в `.env` или inline:
 
 ```bash
-VITE_API_BASE=https://durov.aimuzov.online:8443 npm run dev -w @aleshavpnov/web
+VITE_API_BASE=https://durov.aimuzov.online:8443 npm run dev -w @aleshavpnov/site
 ```
 
 ## Продакшн
 
-В продакшне сайт раздаёт контейнер **nginx-sub**. Его многоэтапный образ (`nginx/Dockerfile`,
-контекст = корень репо) собирает этот веб-пакет и вшивает `dist/` в `/usr/share/nginx/web`;
-nginx отдаёт его через `root` + `try_files $uri /index.html` (SPA-fallback) и проксирует JSON API
-(`/status.json`, `/api/nonce`, `/api/bridge`) на бот. Сайт полностью клиентский, SSR нет.
-Фронт Timeweb (`deploy/timeweb`, Caddy) раздаёт `dist/` тем же способом.
+В продакшне приватный репозиторий бэкенда собирает этот пакет и раздаёт `dist/` как статику с
+SPA-fallback (`try_files $uri /index.html`); JSON API (`/status.json`, `/api/nonce`, `/api/bridge`)
+проксируется на бот. Сайт полностью клиентский, SSR нет.
 
 ## Ключевые зависимости (точные версии, без `^`/`~`)
 

@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+# gitflow guard: block pushing claude/* worktree-pool branches. Logic lives in
+# dotfiles (~/.config/git/pre-push-checks.sh) so the rule stays in sync across
+# repos; husky bypasses the global hooksPath, so this shim wires it in here.
+checks="${XDG_CONFIG_HOME:-$HOME/.config}/git/pre-push-checks.sh"
+[ -x "$checks" ] && exec "$checks" "$@"
+exit 0 # checks-скрипт отсутствует (напр. CI без дотфайлов) — пропускаем push

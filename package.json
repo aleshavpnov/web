@@ -1,0 +1,49 @@
+{
+	"name": "web",
+	"version": "3.6.0",
+	"private": true,
+	"packageManager": "npm@10.9.8",
+	"type": "module",
+	"description": "Alesha Vpnov web front: public site, user account Mini App and shared UI.",
+	"workspaces": [
+		"packages/*"
+	],
+	"engines": {
+		"node": ">=24.14.0"
+	},
+	"scripts": {
+		"build": "npm run build -w @aleshavpnov/site && npm run build -w @aleshavpnov/account",
+		"typecheck": "npm run -ws --if-present typecheck",
+		"test": "npm test --workspaces --if-present",
+		"lint": "oxlint",
+		"lint:fix": "oxlint --fix",
+		"format": "oxfmt",
+		"format:check": "oxfmt --check",
+		"prepare": "husky",
+		"commit": "cz"
+	},
+	"lint-staged": {
+		"*.{ts,tsx,mjs,cjs,js,jsx}": [
+			"oxfmt --write --no-error-on-unmatched-pattern",
+			"oxlint --fix"
+		],
+		"*.{json,md,yml,yaml}": [
+			"oxfmt --write --no-error-on-unmatched-pattern"
+		]
+	},
+	"config": {
+		"commitizen": {
+			"path": "node_modules/cz-git"
+		}
+	},
+	"devDependencies": {
+		"@commitlint/cli": "21.0.2",
+		"@commitlint/config-conventional": "21.0.2",
+		"commitizen": "4.3.2",
+		"cz-git": "1.13.1",
+		"husky": "9.1.7",
+		"lint-staged": "15.5.2",
+		"oxfmt": "0.55.0",
+		"oxlint": "1.70.0"
+	}
+}

@@ -12,7 +12,7 @@ import type { CSSProperties } from 'react'
 import { themeAtom } from '@/state/cabinet.ts'
 
 /**
- * Отличие от версии в packages/web: тема берётся из themeAtom (его ведёт Telegram),
+ * Отличие от версии в packages/site: тема берётся из themeAtom (его ведёт Telegram),
  * а не из next-themes — вебвью бывает тёмным при светлой системной теме, и наоборот.
  */
 const Toaster = reatomComponent<ToasterProps>(

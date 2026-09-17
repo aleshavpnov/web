@@ -1,4 +1,4 @@
-# @aleshavpnov/web — public site SPA
+# @aleshavpnov/site — public site SPA
 
 Part of the **aleshavpnov** monorepo ([`github.com/aimuzov/aleshavpnov`](https://github.com/aimuzov/aleshavpnov)).
 For the Russian guide see [README.ru.md](README.ru.md).
@@ -14,7 +14,7 @@ with a header toggle (via `next-themes`).
 ## Structure
 
 ```
-packages/web/
+packages/site/
   src/
     main.tsx              # React root, Reatom ctx, ThemeProvider
     App.tsx               # screen switcher (reatomComponent)
@@ -51,19 +51,19 @@ All commands run from the **repo root**:
 
 ```bash
 # dev server (http://localhost:5173)
-npm run dev -w @aleshavpnov/web
+npm run dev -w @aleshavpnov/site
 
-# production build → packages/web/dist
-npm run build -w @aleshavpnov/web
+# production build → packages/site/dist
+npm run build -w @aleshavpnov/site
 
 # type-check only (no emit)
-npm run typecheck -w @aleshavpnov/web
+npm run typecheck -w @aleshavpnov/site
 
 # unit tests (vitest + jsdom)
-npm test -w @aleshavpnov/web
+npm test -w @aleshavpnov/site
 
 # e2e tests (Playwright)
-npm run test:e2e -w @aleshavpnov/web
+npm run test:e2e -w @aleshavpnov/site
 ```
 
 ### `VITE_API_BASE`
@@ -72,16 +72,14 @@ The API client prefixes all fetch calls with `VITE_API_BASE` (empty string by de
 For local dev with a separately running bot set it in `.env` or inline:
 
 ```bash
-VITE_API_BASE=https://durov.aimuzov.online:8443 npm run dev -w @aleshavpnov/web
+VITE_API_BASE=https://durov.aimuzov.online:8443 npm run dev -w @aleshavpnov/site
 ```
 
 ## Production
 
-In production the **nginx-sub** container serves `packages/web/dist`. Its multi-stage image
-(`nginx/Dockerfile`, context = repo root) compiles this web package and bakes `dist/` into
-`/usr/share/nginx/web`; nginx serves it with `root` + `try_files $uri /index.html` (SPA fallback)
-and proxies the JSON API (`/status.json`, `/api/nonce`, `/api/bridge`) to the bot. The site is
-fully client-side, no SSR. The Timeweb front (`deploy/timeweb`, Caddy) serves `dist/` the same way.
+In production the private backend repository builds this package and serves `dist/` as static files
+with an SPA fallback (`try_files $uri /index.html`); the JSON API (`/status.json`, `/api/nonce`,
+`/api/bridge`) is proxied to the bot. The site is fully client-side, no SSR.
 
 ## Key dependencies (pinned, no `^`/`~`)
 

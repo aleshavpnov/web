@@ -7,7 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-	// Кабинет раздаётся из-под /me/ на том же домене (см. deploy/timeweb/Caddyfile).
+	// Кабинет раздаётся из-под /me/ на том же домене (так настроен фронт в приватном репозитории бэкенда).
 	base: '/me/',
 	resolve: {
 		alias: {
