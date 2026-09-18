@@ -4,7 +4,7 @@
 	"private": true,
 	"packageManager": "npm@10.9.8",
 	"type": "module",
-	"description": "Alesha Vpnov web front: public site, user account Mini App and shared UI.",
+	"description": "Alesha Vpnov web front: public site, user cabinet Mini App and shared UI.",
 	"workspaces": [
 		"packages/*"
 	],
@@ -12,7 +12,7 @@
 		"node": ">=24.14.0"
 	},
 	"scripts": {
-		"build": "npm run build -w @aleshavpnov/site && npm run build -w @aleshavpnov/account",
+		"build": "npm run build -w @aleshavpnov/site && npm run build -w @aleshavpnov/cabinet",
 		"typecheck": "npm run -ws --if-present typecheck",
 		"test": "npm test --workspaces --if-present",
 		"lint": "oxlint",
