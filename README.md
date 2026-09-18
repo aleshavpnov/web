@@ -7,7 +7,7 @@
 | Пакет                                         | Что это                                                 |
 | --------------------------------------------- | ------------------------------------------------------- |
 | [`packages/site`](packages/site/README.ru.md) | Лендинг и статус сервиса, страница выдачи доступа (`/`) |
-| `packages/account`                            | Кабинет пользователя, Telegram Mini App (`/me/`)        |
+| `packages/cabinet`                            | Кабинет пользователя, Telegram Mini App (`/me/`)        |
 | `packages/shared-ui`                          | Общая инструкция подключения и кости скелетонов         |
 
 Стек: Vite, React 19, Reatom, Tailwind 4, TypeScript. Версии зависимостей закреплены точно.
@@ -17,8 +17,8 @@
 ```bash
 npm install
 npm run dev -w @aleshavpnov/site        # http://localhost:5173
-npm run dev -w @aleshavpnov/account     # кабинет, требует initData Telegram
-npm run build                           # site + account → packages/*/dist
+npm run dev -w @aleshavpnov/cabinet     # кабинет, требует initData Telegram
+npm run build                           # site + cabinet → packages/*/dist
 npm run typecheck && npm test && npm run lint
 ```
 
