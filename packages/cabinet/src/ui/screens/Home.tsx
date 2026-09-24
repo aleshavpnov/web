@@ -5,7 +5,8 @@
  * Всё остальное (трафик, друзья, настройки) живёт на своих вкладках.
  */
 import { reatomComponent } from '@reatom/react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import {
 	ActivityIcon,
 	CalendarClockIcon,
@@ -19,8 +20,10 @@ import {
 
 import { Bone, ButtonBone, TextBone, TileBone } from '@shared/skeleton/index.ts'
 
+import { ApiError, cancelSbpSubscription } from '@/api/client.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { formatBytes, formatDate, formatDevices, formatRemaining, daysLeft } from '@/lib/format.ts'
+import { confirmAction, hapticError, hapticSuccess } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { overviewRes, summaryRes } from '@/state/cabinet.ts'
 import { navigate } from '@/state/screen.ts'
@@ -46,11 +49,48 @@ const STATUS_NOTE: Record<string, string> = {
 	expired: 'Срок закончился — продлите подписку, чтобы вернуть доступ',
 }
 
+/**
+ * Отключение автопродления по СБП. Tribute так не отключить — у него своя страница
+ * управления, поэтому кнопка только у Platega.
+ */
+function CancelSbpButton() {
+	const [busy, setBusy] = useState(false)
+
+	async function cancel() {
+		const ok = await confirmAction(
+			'Отключить автопродление по СБП? Больше ничего не спишется, доступ продолжит работать до конца оплаченного срока.',
+		)
+		if (!ok) return
+		setBusy(true)
+		try {
+			await cancelSbpSubscription()
+			hapticSuccess()
+			toast.success('Автопродление отключено')
+			await overviewRes.load()
+		} catch (e) {
+			hapticError()
+			toast.error(e instanceof ApiError ? e.message : 'Не удалось отключить автопродление')
+		} finally {
+			setBusy(false)
+		}
+	}
+
+	return (
+		<Button variant="outline" className="mt-4 w-full" disabled={busy} onClick={() => void cancel()}>
+			{busy ? 'Отключаем…' : 'Отключить автопродление'}
+		</Button>
+	)
+}
+
 function PaidCard({ data }: { data: Overview & { sub: NonNullable<Overview['sub']> } }) {
 	const { sub } = data
 	const left = daysLeft(sub.expiresAt)
 	const soon = left <= SOON_DAYS
 	const note = STATUS_NOTE[sub.status]
+	// Дата списания — у того, кто продлевает. null — продлевать некому, даты нет; поля нет
+	// вовсе только у старого бота, тогда остаётся дата Tribute, как было раньше.
+	const chargeAt =
+		sub.autoRenew === undefined ? sub.tributeExpiresAt : (sub.autoRenew?.nextChargeAt ?? null)
 
 	return (
 		<section className={SECTION_CARD}>
@@ -92,11 +132,16 @@ function PaidCard({ data }: { data: Overview & { sub: NonNullable<Overview['sub'
 				</p>
 			)}
 
-			{/* Списание Tribute показываем только когда оно расходится с концом доступа:
-			    совпало — вторая дата ничего не добавляет, а вопросов вызывает много. */}
-			{sub.tributeExpiresAt && formatDate(sub.tributeExpiresAt) !== formatDate(sub.expiresAt) && (
-				<Row label="Следующее списание">{formatDate(sub.tributeExpiresAt)}</Row>
+			{/* Списание показываем только когда оно расходится с концом доступа: совпало —
+			    вторая дата ничего не добавляет, а вопросов вызывает много. */}
+			{chargeAt && formatDate(chargeAt) !== formatDate(sub.expiresAt) && (
+				<Row label="Следующее списание">{formatDate(chargeAt)}</Row>
 			)}
+
+			{sub.autoRenew?.provider === 'platega' && (
+				<p className="mt-2 text-xs text-muted-foreground">Автопродление по СБП</p>
+			)}
+			{sub.autoRenew?.cancelable && <CancelSbpButton />}
 		</section>
 	)
 }

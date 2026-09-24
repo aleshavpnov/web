@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 
 import { Bone } from '@shared/skeleton/index.ts'
 
-import { ApiError, startCheckout } from '@/api/client.ts'
+import { ApiError, startCheckout, type PaymentChoice } from '@/api/client.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { feeNote, formatDevices } from '@/lib/format.ts'
 import { mergeOffers, type PlanOffer } from '@/lib/offers.ts'
@@ -87,10 +87,10 @@ function Offer({
 		})
 	}
 
-	async function payOnce(method: number) {
+	async function payOnce(choice: PaymentChoice) {
 		setBusy(true)
 		try {
-			const { buyUrl } = await startCheckout(offer.code, 'self', method)
+			const { buyUrl } = await startCheckout(offer.code, 'self', choice)
 			openLink(buyUrl)
 			awaitPayment()
 		} catch (e) {
@@ -127,7 +127,7 @@ function Offer({
 			    заблуждение — на форме провайдера она будет другой из-за его комиссии. */}
 			{offer.buyUrl && (
 				<PayOption
-					label={offer.oneTimeMethods.length > 0 ? 'Tribute' : action}
+					label={offer.oneTimeMethods.length > 0 || offer.sbpSubscription ? 'Tribute' : action}
 					fee={subscriptionFee}
 					icon={SUBSCRIPTION_ICON}
 					primary
@@ -137,11 +137,26 @@ function Offer({
 						awaitPayment()
 					}}
 				>
-					{offer.oneTimeMethods.length > 0 && (
+					{(offer.oneTimeMethods.length > 0 || offer.sbpSubscription) && (
 						<OptionNote>
 							Доступно автопродление: следующий месяц спишется сам, отменить можно в любой момент.
 						</OptionNote>
 					)}
+				</PayOption>
+			)}
+
+			{/* Автопродление по СБП: подписка, как у Tribute, но счёт привязывается в банке. */}
+			{offer.sbpSubscription && (
+				<PayOption
+					label="СБП с автопродлением"
+					icon={SUBSCRIPTION_ICON}
+					disabled={busy}
+					onClick={() => void payOnce('sbp_sub')}
+				>
+					<OptionNote>
+						Счёт привязывается в&nbsp;приложении банка, {offer.sbpSubscription.amount}&nbsp;₽
+						спишется сам раз в&nbsp;{offer.durationDays}&nbsp;дн. Отключить можно на&nbsp;главной.
+					</OptionNote>
 				</PayOption>
 			)}
 
