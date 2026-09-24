@@ -22,13 +22,8 @@ import { plansRes } from '@/state/cabinet.ts'
 import { watchPayment } from '@/state/payment-watch.ts'
 import { navigate, screenParamAtom } from '@/state/screen.ts'
 import { Async, PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
-import {
-	GIFT_ICON,
-	OptionNote,
-	PayOption,
-	payMethodIcon,
-	SUBSCRIPTION_ICON,
-} from '@/ui/components/PayOption.tsx'
+import { PayMethods } from '@/ui/components/PayMethods.tsx'
+import { GIFT_ICON, PayOption } from '@/ui/components/PayOption.tsx'
 
 /** Скелетон: карточка тарифа и две кнопки способов — ростом с `PayOption`. */
 const SKELETON = (
@@ -126,51 +121,23 @@ function Offer({
 			{/* Способы оплаты идут списком «кнопка + сноска»: сумма на кнопке вводила бы в
 			    заблуждение — на форме провайдера она будет другой из-за его комиссии. */}
 			{offer.buyUrl && (
-				<PayOption
-					label={offer.oneTimeMethods.length > 0 || offer.sbpSubscription ? 'Tribute' : action}
-					fee={subscriptionFee}
-					icon={SUBSCRIPTION_ICON}
-					primary
-					disabled={busy}
-					onClick={() => {
-						openLink(offer.buyUrl!)
-						awaitPayment()
+				<PayMethods
+					subscriptionLabel={action}
+					subscriptionFee={subscriptionFee}
+					sbpSubscription={offer.sbpSubscription}
+					durationDays={offer.durationDays}
+					oneTimeMethods={offer.oneTimeMethods}
+					busy={busy}
+					onPay={(choice) => {
+						if (choice === undefined) {
+							openLink(offer.buyUrl!)
+							awaitPayment()
+						} else {
+							void payOnce(choice)
+						}
 					}}
-				>
-					{(offer.oneTimeMethods.length > 0 || offer.sbpSubscription) && (
-						<OptionNote>
-							Доступно автопродление: следующий месяц спишется сам, отменить можно в любой момент.
-						</OptionNote>
-					)}
-				</PayOption>
-			)}
-
-			{/* Автопродление по СБП: подписка, как у Tribute, но счёт привязывается в банке. */}
-			{offer.sbpSubscription && (
-				<PayOption
-					label="СБП с автопродлением"
-					icon={SUBSCRIPTION_ICON}
-					disabled={busy}
-					onClick={() => void payOnce('sbp_sub')}
-				>
-					<OptionNote>
-						Счёт привязывается в&nbsp;приложении банка, {offer.sbpSubscription.amount}&nbsp;₽
-						спишется сам раз в&nbsp;{offer.durationDays}&nbsp;дн. Отключить можно на&nbsp;главной.
-					</OptionNote>
-				</PayOption>
-			)}
-
-			{/* Разовая оплата: у неё нет готовой ссылки — форму создаёт бот по нажатию. */}
-			{offer.oneTimeMethods.map((m) => (
-				<PayOption
-					key={m.code}
-					label={`${m.label} — разово`}
-					fee={feeNote(m.feePercent)}
-					icon={payMethodIcon(m.code)}
-					disabled={busy}
-					onClick={() => void payOnce(m.code)}
 				/>
-			))}
+			)}
 
 			{offer.giftUrl && (
 				<PayOption
