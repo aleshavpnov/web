@@ -13,6 +13,8 @@ import type { PaymentChoice } from '@/api/client.ts'
 import type { OneTimeMethod } from '@/api/schemas.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { feeNote } from '@/lib/format.ts'
+import { cn } from '@/lib/utils.ts'
+import { BRAND_ON } from './common.tsx'
 import {
 	OptionNote,
 	PayOption,
@@ -49,26 +51,26 @@ export function PayMethods({
 	const group: Group | null = hasOnce ? picked : 'sub'
 
 	if (group === null) {
+		// Две плитки рядом, пояснение внутри: выбор один из двух, и сноска под кнопкой
+		// читалась как часть следующего способа, а не своего.
 		return (
-			<>
-				<PayOption
-					label="Подписка"
+			<div className="grid grid-cols-2 gap-3">
+				<GroupTile
+					title="Подписка"
+					note="Спишется сама раз в период, отменить можно в любой момент"
 					icon={SUBSCRIPTION_ICON}
 					primary
 					disabled={busy}
 					onClick={() => setPicked('sub')}
-				>
-					<OptionNote>Оплата спишется сама раз в период, отменить можно в любой момент.</OptionNote>
-				</PayOption>
-				<PayOption
-					label="Разово"
+				/>
+				<GroupTile
+					title="Разово"
+					note="Платите один раз, продлевать нужно самому"
 					icon={WalletIcon}
 					disabled={busy}
 					onClick={() => setPicked('once')}
-				>
-					<OptionNote>Платите один раз, продлевать нужно самому.</OptionNote>
-				</PayOption>
-			</>
+				/>
+			</div>
 		)
 	}
 
@@ -125,5 +127,37 @@ export function PayMethods({
 				</Button>
 			)}
 		</>
+	)
+}
+
+function GroupTile({
+	title,
+	note,
+	icon: Icon,
+	primary = false,
+	disabled,
+	onClick,
+}: {
+	title: string
+	note: string
+	icon: PayIcon
+	primary?: boolean
+	disabled: boolean
+	onClick: () => void
+}) {
+	return (
+		<Button
+			className={cn(
+				'h-auto w-full flex-col items-start justify-start gap-2 p-3 text-left whitespace-normal',
+				primary && BRAND_ON,
+			)}
+			variant={primary ? 'default' : 'outline'}
+			disabled={disabled}
+			onClick={onClick}
+		>
+			<Icon className="size-7" strokeWidth={1.75} />
+			<span className="text-lg leading-tight font-semibold">{title}</span>
+			<span className="text-xs leading-snug font-normal opacity-75">{note}</span>
+		</Button>
 	)
 }
