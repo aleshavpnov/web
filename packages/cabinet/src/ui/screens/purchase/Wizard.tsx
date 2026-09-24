@@ -46,13 +46,8 @@ import {
 	type WizardStep,
 } from '@/state/wizard.ts'
 import { PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
-import {
-	GIFT_ICON,
-	OptionNote,
-	PayOption,
-	payMethodIcon,
-	SUBSCRIPTION_ICON,
-} from '@/ui/components/PayOption.tsx'
+import { PayMethods } from '@/ui/components/PayMethods.tsx'
+import { GIFT_ICON, SUBSCRIPTION_ICON } from '@/ui/components/PayOption.tsx'
 
 const AUDIENCE_OPTIONS: Array<{
 	value: Audience
@@ -214,56 +209,20 @@ function Result({
 			</div>
 
 			{/* Способы оплаты идут списком «кнопка + сноска»: сумма на кнопке вводила бы в
-			    заблуждение — на форме провайдера она будет другой из-за его комиссии. */}
-			<PayOption
-				label={
-					busy
-						? 'Открываем оплату…'
-						: audience === 'gift'
-							? 'Оплатить подарок'
-							: advice.oneTimeMethods.length > 0 || advice.sbpSubscription
-								? 'Tribute'
-								: 'Оформить'
+			    заблуждение — на форме провайдера она будет другой из-за его комиссии.
+			    Подарок продаётся только товаром Tribute, выбирать там нечего. */}
+			<PayMethods
+				subscriptionLabel={
+					busy ? 'Открываем оплату…' : audience === 'gift' ? 'Оплатить подарок' : 'Оформить'
 				}
-				fee={audience === 'gift' ? undefined : feeNote(advice.subscriptionFeePercent)}
-				icon={audience === 'gift' ? GIFT_ICON : SUBSCRIPTION_ICON}
-				primary
-				disabled={busy}
-				onClick={() => onBuy()}
-			>
-				{audience !== 'gift' && (advice.oneTimeMethods.length > 0 || advice.sbpSubscription) && (
-					<OptionNote>
-						Доступно автопродление: следующий месяц спишется сам, отменить можно в любой момент.
-					</OptionNote>
-				)}
-			</PayOption>
-
-			{audience !== 'gift' && advice.sbpSubscription && (
-				<PayOption
-					label="СБП с автопродлением"
-					icon={SUBSCRIPTION_ICON}
-					disabled={busy}
-					onClick={() => onBuy('sbp_sub')}
-				>
-					<OptionNote>
-						Счёт привязывается в&nbsp;приложении банка, {advice.sbpSubscription.amount}&nbsp;₽
-						спишется сам раз в&nbsp;{plan.durationDays}&nbsp;дн. Отключить можно на&nbsp;главной.
-					</OptionNote>
-				</PayOption>
-			)}
-
-			{/* Разовая оплата: отдельными кнопками, чтобы разница с подпиской была видна до
-			    нажатия, а не выяснялась на форме провайдера. */}
-			{advice.oneTimeMethods.map((m) => (
-				<PayOption
-					key={m.code}
-					label={m.label}
-					fee={feeNote(m.feePercent)}
-					icon={payMethodIcon(m.code)}
-					disabled={busy}
-					onClick={() => onBuy(m.code)}
-				/>
-			))}
+				subscriptionIcon={audience === 'gift' ? GIFT_ICON : SUBSCRIPTION_ICON}
+				subscriptionFee={audience === 'gift' ? undefined : feeNote(advice.subscriptionFeePercent)}
+				sbpSubscription={audience === 'gift' ? null : advice.sbpSubscription}
+				durationDays={plan.durationDays}
+				oneTimeMethods={audience === 'gift' ? [] : advice.oneTimeMethods}
+				busy={busy}
+				onPay={onBuy}
+			/>
 		</div>
 	)
 }
