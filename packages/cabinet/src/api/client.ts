@@ -114,21 +114,38 @@ export function trackEvent(name: CabinetEvent, value?: string): void {
 }
 
 /**
+ * Чем платить, кроме подписки Tribute: код способа разовой оплаты Platega или
+ * `'sbp_sub'` — автопродление по СБП.
+ */
+export type PaymentChoice = number | 'sbp_sub'
+
+/**
  * Фиксирует намерение и отдаёт ссылку оплаты. Какую именно — решает бот: подписку Tribute,
- * подарочный товар или свежесозданную форму разовой оплаты (`method` — код способа Platega).
+ * подарочный товар, свежесозданную форму разовой оплаты или привязку счёта
+ * для СБП-подписки.
  */
 export const startCheckout = (
 	planCode: string,
 	audience: Audience,
-	oneTimeMethod?: number,
-): Promise<{ buyUrl: string; provider: 'tribute' | 'platega' }> =>
+	choice?: PaymentChoice,
+): Promise<{ buyUrl: string; provider: 'tribute' | 'platega' | 'platega_sub' }> =>
 	request('/checkout', CheckoutSchema, {
 		method: 'POST',
 		body:
-			oneTimeMethod === undefined
+			choice === undefined
 				? { planCode, audience }
-				: { planCode, audience, provider: 'platega', method: oneTimeMethod },
+				: choice === 'sbp_sub'
+					? { planCode, audience, provider: 'platega_sub' }
+					: { planCode, audience, provider: 'platega', method: choice },
 	})
+
+/** Отключить автопродление по СБП. Возвращает, до какого момента остаётся доступ. */
+export const cancelSbpSubscription = (): Promise<{ accessUntil: string | null }> =>
+	request(
+		'/platega-subscription/cancel',
+		z.object({ ok: z.boolean(), accessUntil: z.string().nullable() }),
+		{ method: 'POST', body: {} },
+	)
 
 /**
  * Аватар приглашённого. Не `<img src>`: гейт кабинета читает только заголовок

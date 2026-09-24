@@ -17,6 +17,19 @@ export const SubSchema = z.object({
 	tributeWebAppLink: z.string().nullable(),
 	/** Доступ приостановлен за шеринг; null — нет. Плашка на главной, перевыпуск скрыт. */
 	sharingSuspendedAt: z.string().nullable().default(null),
+	/**
+	 * Кто продлит подписку сам. null — никто: разовая оплата, отмена или триал.
+	 * `cancelable` — отключается прямо из кабинета (СБП через Platega).
+	 */
+	autoRenew: z
+		.object({
+			provider: z.enum(['tribute', 'platega']),
+			nextChargeAt: z.string().nullable(),
+			cancelable: z.boolean(),
+		})
+		.nullable()
+		// Без дефолта: отсутствие поля (старый бот) и null (продлевать некому) значат разное.
+		.optional(),
 })
 
 export const DeviceGateModeSchema = z.enum(['off', 'observe', 'enforce'])
@@ -67,10 +80,15 @@ const OneTimeMethodSchema = z.object({
 	feePercent: z.number().nullable().default(null),
 })
 
+/** Автопродление по СБП через Platega: сумма списания раз в период, без комиссии сверху. */
+const SbpSubscriptionSchema = z.object({ amount: z.number() }).nullable().default(null)
+
 const PlanSchema = PlanBaseSchema.extend({
 	buyUrl: z.string(),
 	/** Пусто — тариф продаётся только подпиской с автопродлением. */
 	oneTimeMethods: z.array(OneTimeMethodSchema).default([]),
+	/** null — автопродлением по СБП этот тариф не продаётся. */
+	sbpSubscription: SbpSubscriptionSchema,
 })
 
 export type OneTimeMethod = z.infer<typeof OneTimeMethodSchema>
@@ -122,12 +140,13 @@ export const AdviceSchema = z.object({
 	plan: PlanBaseSchema.nullable(),
 	buyUrl: z.string().nullable(),
 	oneTimeMethods: z.array(OneTimeMethodSchema).default([]),
+	sbpSubscription: SbpSubscriptionSchema,
 	subscriptionFeePercent: z.number().nullable().default(null),
 })
 
 export const CheckoutSchema = z.object({
 	buyUrl: z.string(),
-	provider: z.enum(['tribute', 'platega']).default('tribute'),
+	provider: z.enum(['tribute', 'platega', 'platega_sub']).default('tribute'),
 })
 
 export const SummarySchema = z.object({

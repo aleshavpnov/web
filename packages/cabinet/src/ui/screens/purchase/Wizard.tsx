@@ -21,7 +21,13 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { ApiError, fetchAdvice, startCheckout, trackEvent } from '@/api/client.ts'
+import {
+	ApiError,
+	fetchAdvice,
+	startCheckout,
+	trackEvent,
+	type PaymentChoice,
+} from '@/api/client.ts'
 import type { Advice, Audience, DeviceNeed } from '@/api/schemas.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { feeNote, formatDevices } from '@/lib/format.ts'
@@ -141,8 +147,11 @@ function Result({
 	audience: Audience
 	loading: boolean
 	busy: boolean
-	/** Без аргумента — подписка Tribute, с кодом метода — разовая оплата (СБП/карта). */
-	onBuy: (oneTimeMethod?: number) => void
+	/**
+	 * Без аргумента — подписка Tribute, с кодом метода — разовая оплата (СБП/карта),
+	 * `'sbp_sub'` — автопродление по СБП.
+	 */
+	onBuy: (choice?: PaymentChoice) => void
 	onRestart: () => void
 }) {
 	if (loading || !advice) {
@@ -212,7 +221,7 @@ function Result({
 						? 'Открываем оплату…'
 						: audience === 'gift'
 							? 'Оплатить подарок'
-							: advice.oneTimeMethods.length > 0
+							: advice.oneTimeMethods.length > 0 || advice.sbpSubscription
 								? 'Tribute'
 								: 'Оформить'
 				}
@@ -222,12 +231,26 @@ function Result({
 				disabled={busy}
 				onClick={() => onBuy()}
 			>
-				{audience !== 'gift' && advice.oneTimeMethods.length > 0 && (
+				{audience !== 'gift' && (advice.oneTimeMethods.length > 0 || advice.sbpSubscription) && (
 					<OptionNote>
 						Доступно автопродление: следующий месяц спишется сам, отменить можно в любой момент.
 					</OptionNote>
 				)}
 			</PayOption>
+
+			{audience !== 'gift' && advice.sbpSubscription && (
+				<PayOption
+					label="СБП с автопродлением"
+					icon={SUBSCRIPTION_ICON}
+					disabled={busy}
+					onClick={() => onBuy('sbp_sub')}
+				>
+					<OptionNote>
+						Счёт привязывается в&nbsp;приложении банка, {advice.sbpSubscription.amount}&nbsp;₽
+						спишется сам раз в&nbsp;{plan.durationDays}&nbsp;дн. Отключить можно на&nbsp;главной.
+					</OptionNote>
+				</PayOption>
+			)}
 
 			{/* Разовая оплата: отдельными кнопками, чтобы разница с подпиской была видна до
 			    нажатия, а не выяснялась на форме провайдера. */}
@@ -284,14 +307,14 @@ export const Wizard = reatomComponent(() => {
 			.finally(() => setLoading(false))
 	}
 
-	async function buy(oneTimeMethod?: number) {
+	async function buy(choice?: PaymentChoice) {
 		if (!advice?.plan || !audience) return
 		setBusy(true)
 		try {
 			// Ссылку берём у бота, а не из подбора: заодно он запомнит намерение и вернёт
 			// человека, если оплата не дойдёт до конца. Для разовой оплаты ссылки заранее и
 			// не существует — форму провайдер создаёт на этот платёж.
-			const { buyUrl } = await startCheckout(advice.plan.code, audience, oneTimeMethod)
+			const { buyUrl } = await startCheckout(advice.plan.code, audience, choice)
 			openLink(buyUrl)
 			// Подарок доступ покупателю не меняет — там ждать нечего, сертификат придёт в чат.
 			if (audience !== 'gift') {
