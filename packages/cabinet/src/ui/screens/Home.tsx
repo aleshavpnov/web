@@ -242,10 +242,6 @@ const SKELETON = (
 const Widgets = reatomComponent<{ overview: Overview }>(({ overview }) => {
 	const summary = summaryRes.dataAtom()
 
-	useEffect(() => {
-		void summaryRes.load()
-	}, [])
-
 	if (summaryRes.errorAtom()) return null
 	if (!summary) return WIDGETS_SKELETON
 
@@ -290,8 +286,10 @@ const Widgets = reatomComponent<{ overview: Overview }>(({ overview }) => {
 export const Home = reatomComponent(() => {
 	const data = overviewRes.dataAtom()
 
+	// Плитки грузим сразу, а не после карточки: иначе главная ждала два запроса подряд.
 	useEffect(() => {
 		void overviewRes.load()
+		void summaryRes.load()
 	}, [])
 
 	return (

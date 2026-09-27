@@ -1,5 +1,5 @@
 import { reatomComponent } from '@reatom/react'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { ArrowLeftIcon, HouseIcon } from 'lucide-react'
 
 import { Toaster } from '@/components/ui/sonner.tsx'
@@ -15,14 +15,23 @@ import {
 import { canGoBack, stepAtom, wizardBack } from '@/state/wizard.ts'
 import { LoadingBar } from '@/ui/components/LoadingBar.tsx'
 import { Nav } from '@/ui/components/Nav.tsx'
-import { Connect } from '@/ui/screens/Connect.tsx'
 import { Home } from '@/ui/screens/Home.tsx'
-import { More } from '@/ui/screens/More.tsx'
-import { Plans } from '@/ui/screens/Plans.tsx'
-import { Referrals } from '@/ui/screens/Referrals.tsx'
-import { Tariffs } from '@/ui/screens/Tariffs.tsx'
-import { PlanPurchase } from '@/ui/screens/purchase/PlanPurchase.tsx'
-import { Usage } from '@/ui/screens/Usage.tsx'
+
+// Главная в основном чанке, остальные экраны догружаются при первом переходе: кабинет
+// открывают ради карточки подписки, и ждать код тарифов и графиков ей незачем.
+const Connect = lazy(() => import('@/ui/screens/Connect.tsx').then((m) => ({ default: m.Connect })))
+const More = lazy(() => import('@/ui/screens/More.tsx').then((m) => ({ default: m.More })))
+const Plans = lazy(() => import('@/ui/screens/Plans.tsx').then((m) => ({ default: m.Plans })))
+const Referrals = lazy(() =>
+	import('@/ui/screens/Referrals.tsx').then((m) => ({ default: m.Referrals })),
+)
+const Tariffs = lazy(() => import('@/ui/screens/Tariffs.tsx').then((m) => ({ default: m.Tariffs })))
+const PlanPurchase = lazy(() =>
+	import('@/ui/screens/purchase/PlanPurchase.tsx').then((m) => ({
+		default: m.PlanPurchase,
+	})),
+)
+const Usage = lazy(() => import('@/ui/screens/Usage.tsx').then((m) => ({ default: m.Usage })))
 
 export const App = reatomComponent(() => {
 	const screen = screenAtom()
@@ -111,23 +120,25 @@ export const App = reatomComponent(() => {
 			</header>
 
 			<main className="flex-1 pt-3">
-				{screen === 'connect' ? (
-					<Connect />
-				) : screen === 'plans' ? (
-					<Plans />
-				) : screen === 'tariffs' ? (
-					<Tariffs />
-				) : screen === 'buy' ? (
-					<PlanPurchase />
-				) : screen === 'usage' ? (
-					<Usage />
-				) : screen === 'refs' ? (
-					<Referrals />
-				) : screen === 'more' ? (
-					<More />
-				) : (
-					<Home />
-				)}
+				<Suspense fallback={null}>
+					{screen === 'connect' ? (
+						<Connect />
+					) : screen === 'plans' ? (
+						<Plans />
+					) : screen === 'tariffs' ? (
+						<Tariffs />
+					) : screen === 'buy' ? (
+						<PlanPurchase />
+					) : screen === 'usage' ? (
+						<Usage />
+					) : screen === 'refs' ? (
+						<Referrals />
+					) : screen === 'more' ? (
+						<More />
+					) : (
+						<Home />
+					)}
+				</Suspense>
 			</main>
 
 			<Nav />
