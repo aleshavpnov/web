@@ -142,7 +142,7 @@ export const CLIENTS: Record<ClientId, ClientConfig> = {
 	aleshavpnov: {
 		id: 'aleshavpnov',
 		name: 'Alesha Vpnov',
-		site: 'https://durov.aimuzov.online/app',
+		site: 'https://aleshavpnov.ru/app',
 		Icon: Zap,
 		install: {
 			ios: { kind: 'unavailable' },
