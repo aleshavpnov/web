@@ -1,7 +1,6 @@
 /** Мелкие переиспользуемые куски интерфейса кабинета. */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { AlertTriangleIcon, CheckIcon, ChevronRightIcon, CopyIcon } from 'lucide-react'
-import QRCode from 'qrcode'
 import { toast } from 'sonner'
 
 import { Skeleton } from '@/components/ui/skeleton.tsx'
@@ -254,8 +253,11 @@ export function Qr({ value, alt }: { value: string; alt: string }) {
 
 	useEffect(() => {
 		let alive = true
+		// Библиотеку тянем только здесь: QR раскрывают редко, а в общем чанке она тормозила
+		// первое открытие кабинета.
 		// width 1024 — с запасом под ширину экрана на ретине: масштабируем вниз, не вверх.
-		QRCode.toDataURL(value, { margin: 1, width: 1024 })
+		import('qrcode')
+			.then(({ default: QRCode }) => QRCode.toDataURL(value, { margin: 1, width: 1024 }))
 			.then((data) => alive && setQr(data))
 			.catch(() => alive && setQr(null))
 		return () => {
