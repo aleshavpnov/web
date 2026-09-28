@@ -150,10 +150,11 @@ export const cancelSbpSubscription = (): Promise<{ accessUntil: string | null }>
 /**
  * Аватар приглашённого. Не `<img src>`: гейт кабинета читает только заголовок
  * `Authorization`, а тег картинки его не шлёт — поэтому качаем сами и отдаём Blob.
+ * `full` — крупная версия для просмотра по тапу, без него — миниатюра для кружка.
  * `null` — фото нет (204), приватность закрыта или бот не достучался до Telegram.
  */
-export async function fetchAvatar(tgId: number): Promise<Blob | null> {
-	const res = await fetch(`${BASE}/avatars/${tgId}`, {
+export async function fetchAvatar(tgId: number, full = false): Promise<Blob | null> {
+	const res = await fetch(`${BASE}/avatars/${tgId}${full ? '?full=1' : ''}`, {
 		headers: { authorization: `tma ${initData()}` },
 	})
 	if (res.status === 204 || !res.ok) return null

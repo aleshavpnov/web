@@ -5,23 +5,86 @@
  * `<img src>` заголовков не шлёт (см. fetchAvatar). Поэтому качаем сами и держим objectURL
  * в модульном кэше — один и тот же человек не должен дёргать Telegram при каждом открытии экрана.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type KeyboardEvent, type MouseEvent } from 'react'
+import { createPortal } from 'react-dom'
 
 import { fetchAvatar } from '@/api/client.ts'
 import { cn } from '@/lib/utils.ts'
 
 /** Промис, а не готовый URL: два кружка одного tgId, смонтированные разом, качают один раз. */
-const cache = new Map<number, Promise<string | null>>()
+const cache = new Map<string, Promise<string | null>>()
 
-function loadAvatar(tgId: number): Promise<string | null> {
-	let pending = cache.get(tgId)
+/** `full` — крупная версия для просмотра; кэшируется отдельно от миниатюры кружка. */
+function loadAvatar(tgId: number, full = false): Promise<string | null> {
+	const key = `${tgId}:${full ? 'full' : 'thumb'}`
+	let pending = cache.get(key)
 	if (!pending) {
-		pending = fetchAvatar(tgId)
+		pending = fetchAvatar(tgId, full)
 			.then((blob) => (blob ? URL.createObjectURL(blob) : null))
 			.catch(() => null)
-		cache.set(tgId, pending)
+		cache.set(key, pending)
 	}
 	return pending
+}
+
+/**
+ * Фото на весь экран. Сразу показывает уже скачанную миниатюру, а крупную подменяет, когда
+ * доедет: пустой экран на время загрузки выглядел бы как поломка.
+ *
+ * Портал — потому что кружок живёт внутри строк списка, и `fixed` там может упереться
+ * в чужой `overflow`/`transform`. Но React-события из портала всё равно всплывают по дереву
+ * компонентов, поэтому клик по оверлею гасим сами — иначе закрытие открыло бы карточку строки.
+ */
+function AvatarViewer({
+	tgId,
+	thumb,
+	label,
+	onClose,
+}: {
+	tgId: number
+	thumb: string
+	label: string
+	onClose: () => void
+}) {
+	const [src, setSrc] = useState(thumb)
+
+	useEffect(() => {
+		let alive = true
+		void loadAvatar(tgId, true).then((value) => {
+			if (alive && value) setSrc(value)
+		})
+		return () => {
+			alive = false
+		}
+	}, [tgId])
+
+	useEffect(() => {
+		const onKey = (e: globalThis.KeyboardEvent) => {
+			if (e.key === 'Escape') onClose()
+		}
+		document.addEventListener('keydown', onKey)
+		return () => document.removeEventListener('keydown', onKey)
+	}, [onClose])
+
+	return createPortal(
+		<div
+			role="dialog"
+			aria-modal="true"
+			aria-label={label}
+			className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
+			onClick={(e) => {
+				e.stopPropagation()
+				onClose()
+			}}
+		>
+			<img
+				src={src}
+				alt={label}
+				className="aspect-square max-h-[80vh] w-full max-w-[min(90vw,640px)] rounded-2xl object-contain"
+			/>
+		</div>,
+		document.body,
+	)
 }
 
 /**
@@ -61,6 +124,7 @@ export function Avatar({
 	className?: string
 }) {
 	const [url, setUrl] = useState<string | null>(null)
+	const [viewing, setViewing] = useState(false)
 
 	useEffect(() => {
 		if (tgId === null) return
@@ -76,14 +140,33 @@ export function Avatar({
 	const { box } = SIZES[size]
 	const tint = TINTS[Math.abs(tgId ?? 0) % TINTS.length]!
 
+	// Строки списков сами кнопки: без stopPropagation тап по кружку заодно открыл бы карточку.
+	const open = (e: MouseEvent | KeyboardEvent) => {
+		e.stopPropagation()
+		e.preventDefault()
+		setViewing(true)
+	}
+
 	return (
 		<span className={cn('relative shrink-0', className)}>
 			{url ? (
-				<img
-					src={url}
-					alt=""
-					className={cn(box, 'rounded-full object-cover ring-1 ring-foreground/10')}
-				/>
+				// Не `<button>`: кружок и так лежит внутри строк-кнопок, а вложенные кнопки невалидны.
+				<span
+					role="button"
+					tabIndex={0}
+					aria-label="Открыть фото"
+					className="block cursor-zoom-in rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+					onClick={open}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') open(e)
+					}}
+				>
+					<img
+						src={url}
+						alt=""
+						className={cn(box, 'rounded-full object-cover ring-1 ring-foreground/10')}
+					/>
+				</span>
 			) : (
 				<span
 					aria-hidden
@@ -91,6 +174,9 @@ export function Avatar({
 				>
 					{initials(label)}
 				</span>
+			)}
+			{viewing && url && tgId !== null && (
+				<AvatarViewer tgId={tgId} thumb={url} label={label} onClose={() => setViewing(false)} />
 			)}
 		</span>
 	)
