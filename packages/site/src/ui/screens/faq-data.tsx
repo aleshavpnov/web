@@ -7,7 +7,7 @@ import type { Screen } from '@/lib/screen.ts'
 /** Диплинк на подписку «Прайм» в Tribute (кнопка Share у подписки в дашборде). */
 const TRIBUTE_SUB_URL = 'https://t.me/tribute/app?startapp=sVea'
 
-export const SUPPORT_EMAIL = 'support@aimuzov.online'
+export const SUPPORT_EMAIL = 'support@aleshavpnov.ru'
 
 const linkClass = 'text-emerald-500 hover:text-emerald-400 underline underline-offset-2'
 
