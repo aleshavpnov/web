@@ -129,6 +129,8 @@ export const UsageSchema = z.object({
 			model: z.string().nullable(),
 			os: z.string().nullable(),
 			lastSeen: z.string(),
+			/** Клиент убирал устройство, а оно подключилось снова: ссылку знает кто-то ещё. */
+			returned: z.boolean().default(false),
 		}),
 	),
 })
