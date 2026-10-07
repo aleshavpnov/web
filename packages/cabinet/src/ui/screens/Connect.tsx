@@ -62,18 +62,20 @@ function spotlightFromParam(param: string | null): SpotlightTarget | null {
 type LinkKind = 'main' | 'backup'
 
 /**
- * Зачем нужна каждая ссылка. Подпись стоит у обеих, а не только у запасной: иначе выбор
- * выглядит как «основная и какая-то ещё», и человек не понимает, когда брать вторую.
+ * Зачем нужна каждая ссылка. Подпись стоит у обеих, а не только у прямой: иначе выбор
+ * выглядит как «рекомендуемая и какая-то ещё», и человек не понимает, когда брать вторую.
  */
 const LINK_NOTE: Record<LinkKind, string> = {
-	main: 'Обычная ссылка-подписка. Подойдёт большинству — начинайте с неё.',
 	backup:
-		'Тот же доступ на другом домене. Возьмите её, если основная перестала открываться у вашего оператора.',
+		'Обновляется и при ограничениях мобильного интернета. Подойдёт большинству — начинайте с неё.',
+	main: 'Тот же доступ напрямую, без промежуточного узла. При ограничениях у оператора перестаёт обновляться — берите её, только если рекомендуемая не открывается.',
 }
 
 /** Ссылка-подписка: копирование одним тапом + QR для соседнего устройства. */
 function SubscriptionLink({ url, backup }: { url: string; backup: string | null }) {
-	const [kind, setKind] = useState<LinkKind>('main')
+	// Зеркало по умолчанию: при ограничениях связи прямая не обновляется, а люди берут
+	// то, что выбрано сразу, и потом пишут, что ничего не работает.
+	const [kind, setKind] = useState<LinkKind>('backup')
 	const [showQr, setShowQr] = useState(false)
 	const link = kind === 'backup' && backup ? backup : url
 
@@ -90,8 +92,8 @@ function SubscriptionLink({ url, backup }: { url: string; backup: string | null 
 						value={kind}
 						onValueChange={setKind}
 						options={[
-							{ value: 'main', label: 'Основная' },
-							{ value: 'backup', label: 'Запасная' },
+							{ value: 'backup', label: 'Рекомендуемая' },
+							{ value: 'main', label: 'Прямая' },
 						]}
 					/>
 					<p className="mb-3 flex items-start gap-2 rounded-lg bg-muted px-3 py-2.5 text-sm">
