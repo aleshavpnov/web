@@ -7,7 +7,14 @@
  * чужого.
  */
 import { useState } from 'react'
-import { CheckIcon, PencilIcon, SmartphoneIcon, Trash2Icon, XIcon } from 'lucide-react'
+import {
+	AlertTriangleIcon,
+	CheckIcon,
+	PencilIcon,
+	SmartphoneIcon,
+	Trash2Icon,
+	XIcon,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { ApiError, forgetDevice, renameDevice, rotateAccess } from '@/api/client.ts'
@@ -109,6 +116,11 @@ function DeviceRow({
 						.filter(Boolean)
 						.join(' · ')}
 				</div>
+				{device.returned && (
+					<div className="text-xs text-viz-warning">
+						Удаляли, но оно подключилось снова — ссылкой пользуется кто-то ещё
+					</div>
+				)}
 			</div>
 			<Button
 				size="icon-sm"
@@ -149,6 +161,9 @@ export function DeviceList({
 	onChanged: () => void | Promise<void>
 }) {
 	const [rotating, setRotating] = useState(false)
+	// Убранное устройство вернулось, значит мелкая подсказка не сработала.
+	// Говорим прямо и выдвигаем перевыпуск вперёд.
+	const intruder = devices.some((d) => d.returned)
 
 	async function rotate() {
 		const ok = await confirmAction(
@@ -184,13 +199,23 @@ export function DeviceList({
 
 			{!suspended && (
 				<div className="mt-4 border-t border-border/60 pt-4">
-					<p className="mb-3 text-xs text-muted-foreground">
-						{gate === 'enforce'
-							? 'Удаление освобождает слот: устройство сможет обновить подписку, только если слот будет свободен. Чтобы отключить всех разом — выпустите новую ссылку.'
-							: 'Удаление из списка не отключает устройство: ссылка-подписка общая. Чтобы отключить всех разом — выпустите новую.'}
-					</p>
+					{intruder ? (
+						<div className="mb-3 flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+							<AlertTriangleIcon className="mt-0.5 size-4 shrink-0" />
+							<span>
+								Кто-то подключается по вашей ссылке. Выпустите новую — чужие устройства отключатся,
+								а свои подключите заново.
+							</span>
+						</div>
+					) : (
+						<p className="mb-3 text-xs text-muted-foreground">
+							{gate === 'enforce'
+								? 'Удаление освобождает слот: устройство сможет обновить подписку, только если слот будет свободен. Чтобы отключить всех разом — выпустите новую ссылку.'
+								: 'Удаление из списка не отключает устройство: ссылка-подписка общая. Чтобы отключить всех разом — выпустите новую.'}
+						</p>
+					)}
 					<Button
-						variant="outline"
+						variant={intruder ? 'default' : 'outline'}
 						className="w-full"
 						disabled={rotating}
 						onClick={() => void rotate()}
