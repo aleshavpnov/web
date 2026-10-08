@@ -131,6 +131,8 @@ export const UsageSchema = z.object({
 			lastSeen: z.string(),
 			/** Клиент убирал устройство, а оно подключилось снова: ссылку знает кто-то ещё. */
 			returned: z.boolean().default(false),
+			/** Устройство, на котором открыт кабинет (метка через ссылку, lib/device-claim.ts). */
+			current: z.boolean().default(false),
 		}),
 	),
 })

@@ -3,8 +3,8 @@
  *
  * «Забыть» убирает устройство из списка и из счётчика, но доступ не отзывает: ключ у всех
  * устройств общий, отдельного у них нет. Поэтому рядом стоит честная кнопка «Отключить
- * все устройства» — она перевыпускает ссылку-подписку, и это единственный способ выгнать
- * чужого.
+ * все устройства» — она перевыпускает и ссылку-подписку, и ключ, и это единственный способ
+ * выгнать чужого.
  */
 import { useState } from 'react'
 import {
@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button.tsx'
 import { formatAgo } from '@/lib/format.ts'
 import { confirmAction, hapticError, hapticSuccess } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
+import { navigate } from '@/state/screen.ts'
 import { SECTION_CARD, SectionTitle } from './common.tsx'
 
 /** Как подписать устройство: имя клиента → модель → честное «неизвестное». */
@@ -109,7 +110,14 @@ function DeviceRow({
 		<li className={cn('flex items-center gap-3 py-2', busy && 'opacity-60')}>
 			<SmartphoneIcon className="size-4 shrink-0 text-muted-foreground" />
 			<div className="min-w-0 flex-1">
-				<div className="truncate text-sm">{deviceTitle(device)}</div>
+				<div className="flex items-center gap-2">
+					<span className="truncate text-sm">{deviceTitle(device)}</span>
+					{device.current && (
+						<span className="shrink-0 rounded-full bg-brand/10 px-2 py-0.5 text-xs text-brand">
+							Это устройство
+						</span>
+					)}
+				</div>
 				<div className="truncate text-xs text-muted-foreground">
 					{/* Когда имя своё, модель уходит в подпись — иначе непонятно, что это за железка. */}
 					{[device.name ? device.model : null, device.os, formatAgo(device.lastSeen)]
@@ -164,18 +172,22 @@ export function DeviceList({
 	// Убранное устройство вернулось, значит мелкая подсказка не сработала.
 	// Говорим прямо и выдвигаем перевыпуск вперёд.
 	const intruder = devices.some((d) => d.returned)
+	// Своё устройство сверху: его ищут первым, чтобы отличить от чужих.
+	const sorted = [...devices].sort((a, b) => Number(b.current) - Number(a.current))
 
 	async function rotate() {
 		const ok = await confirmAction(
-			'Выпустить новую ссылку? Все устройства отключатся, свои нужно будет подключить заново по новой ссылке.',
+			'Выпустить новую ссылку и новый ключ? Все устройства, включая это, отключатся в течение нескольких минут. Свои подключите заново по новой ссылке.',
 		)
 		if (!ok) return
 		setRotating(true)
 		try {
 			await rotateAccess()
 			hapticSuccess()
-			toast.success('Готово: ссылка обновлена, добавьте её в приложение заново')
+			toast.success('Готово: старые ссылка и ключ отключены. Добавьте новую ссылку в приложение')
 			await onChanged()
+			// Новую ссылку человек берёт на экране подключения — ведём туда сразу.
+			navigate('connect')
 		} catch (e) {
 			hapticError()
 			toast.error(e instanceof ApiError ? e.message : 'Не удалось перевыпустить ссылку')
@@ -191,7 +203,7 @@ export function DeviceList({
 				<p className="text-sm text-muted-foreground">За это окно подписку никто не&nbsp;забирал.</p>
 			) : (
 				<ul className="divide-y divide-border/60">
-					{devices.map((device) => (
+					{sorted.map((device) => (
 						<DeviceRow key={device.id} device={device} gate={gate} onChanged={onChanged} />
 					))}
 				</ul>
@@ -203,8 +215,8 @@ export function DeviceList({
 						<div className="mb-3 flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
 							<AlertTriangleIcon className="mt-0.5 size-4 shrink-0" />
 							<span>
-								Кто-то подключается по вашей ссылке. Выпустите новую — чужие устройства отключатся,
-								а свои подключите заново.
+								Кто-то подключается по вашей ссылке. Выпустите новую — все устройства отключатся, а
+								свои подключите заново.
 							</span>
 						</div>
 					) : (

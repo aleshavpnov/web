@@ -24,8 +24,9 @@ import {
 } from '@shared/connect/index.ts'
 import { Bone, ButtonBone, ListBone, TextBone } from '@shared/skeleton/index.ts'
 
-import { sendKeeneticConf } from '@/api/client.ts'
+import { issueDeviceClaim, sendKeeneticConf } from '@/api/client.ts'
 import { Button } from '@/components/ui/button.tsx'
+import { readClaim, saveClaim, withClaim } from '@/lib/device-claim.ts'
 import { closeMiniApp, hapticError, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { accessRes } from '@/state/cabinet.ts'
@@ -77,7 +78,22 @@ function SubscriptionLink({ url, backup }: { url: string; backup: string | null 
 	// то, что выбрано сразу, и потом пишут, что ничего не работает.
 	const [kind, setKind] = useState<LinkKind>('backup')
 	const [showQr, setShowQr] = useState(false)
+	const [claim, setClaim] = useState(readClaim)
 	const link = kind === 'backup' && backup ? backup : url
+
+	// Токен метки «это устройство» едет только в копируемой ссылке: её вставляют в приложение
+	// на этом же телефоне. QR сканируют с другого устройства, и метка ушла бы туда.
+	useEffect(() => {
+		issueDeviceClaim(readClaim())
+			.then(({ token }) => {
+				saveClaim(token)
+				setClaim(token)
+			})
+			.catch(() => {
+				// Без метки ссылка работает как раньше.
+			})
+	}, [])
+	const copyLink = withClaim(link, claim)
 
 	return (
 		<section className={SECTION_CARD}>
@@ -104,7 +120,7 @@ function SubscriptionLink({ url, backup }: { url: string; backup: string | null 
 			)}
 
 			<CopyValue
-				value={link}
+				value={copyLink}
 				className="w-full justify-between rounded-lg bg-muted px-3 py-2.5 font-mono text-sm"
 			>
 				<span className="truncate">{shorten(link)}</span>
