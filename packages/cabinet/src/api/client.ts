@@ -9,6 +9,7 @@
  */
 import { z } from 'zod'
 
+import { readClaim } from '@/lib/device-claim.ts'
 import { initData } from '@/lib/telegram.ts'
 import {
 	AccessSchema,
@@ -67,12 +68,16 @@ async function request<T>(
 	init?: { method: 'POST'; body?: unknown },
 ): Promise<T> {
 	const tz = deviceTimezone()
+	// Токен метки «это устройство»: по нему бот отмечает в списке устройство, на котором
+	// открыт кабинет (lib/device-claim.ts).
+	const claim = readClaim()
 	const res = await fetch(`${BASE}${path}`, {
 		method: init?.method ?? 'GET',
 		headers: {
 			accept: 'application/json',
 			authorization: `tma ${initData()}`,
 			...(tz === undefined ? {} : { 'x-tz': tz }),
+			...(claim === null ? {} : { 'x-device-claim': claim }),
 			...(init?.body === undefined ? {} : { 'content-type': 'application/json' }),
 		},
 		body: init?.body === undefined ? undefined : JSON.stringify(init.body),
@@ -172,7 +177,19 @@ export const renameDevice = (id: string, name: string): Promise<{ ok: boolean }>
 export const forgetDevice = (id: string): Promise<{ ok: boolean }> =>
 	request(`/devices/${id}/forget`, z.object({ ok: z.boolean() }), { method: 'POST' })
 
-/** Новая ссылка-подписка: старая умирает, все устройства отваливаются. */
+/**
+ * Токен метки «это устройство». Свой живой токен бот вернёт как есть, протухший заменит.
+ * claimed — к токену уже привязано устройство.
+ */
+export const issueDeviceClaim = (
+	token: string | null,
+): Promise<{ token: string; claimed: boolean }> =>
+	request('/devices/claim', z.object({ token: z.string(), claimed: z.boolean() }), {
+		method: 'POST',
+		body: { token },
+	})
+
+/** Новые ссылка и ключ: старые умирают, все устройства отваливаются. */
 export const rotateAccess = (): Promise<Access> =>
 	request('/access/rotate', AccessSchema, {
 		method: 'POST',
