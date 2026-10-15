@@ -168,6 +168,8 @@ export const ReferralsSchema = z.object({
 	link: z.string(),
 	/** Ссылка на whitelist-достижимом зеркале; null — SUB_BACKUP_DOMAIN не настроен. */
 	linkBackup: z.string().nullable(),
+	/** Ссылка на бота для шаринга в Telegram; null, если username бота неизвестен. */
+	botLink: z.string().nullable(),
 	rewardDays: z.number(),
 	clicks: z.number(),
 	joined: z.number(),
