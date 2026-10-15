@@ -47,6 +47,10 @@ const LINK_NOTE: Record<LinkKind, string> = {
 	main: 'Прямая ссылка на сайт. У части операторов и при ограничениях мобильного интернета не открывается — давайте её, только если рекомендуемая не подошла.',
 }
 
+/** Текст к ссылке при пересылке другу. Цену сверять с FAQ сайта, если тарифы поменяются. */
+const SHARE_TEXT =
+	'Безлимит, серверы в Европе, несколько способов подключения на случай блокировок. 3 дня бесплатно, дальше от 100 ₽ в месяц.'
+
 /**
  * Скелетон экрана: карточка ссылки, три счётчика, список друзей с кругами аватаров.
  * Переключатель доменов не рисуем: он есть не у всех, и пустая полоска обещала бы выбор,
@@ -145,7 +149,7 @@ export const Referrals = reatomComponent(() => {
 								className="mt-3 w-full"
 								onClick={() =>
 									openLink(
-										`https://t.me/share/url?url=${encodeURIComponent(refs.botLink ?? link)}&text=${encodeURIComponent('Пользуюсь этим сервисом — работает без танцев с бубном')}`,
+										`https://t.me/share/url?url=${encodeURIComponent(refs.botLink ?? link)}&text=${encodeURIComponent(SHARE_TEXT)}`,
 									)
 								}
 							>
