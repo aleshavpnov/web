@@ -7,7 +7,7 @@
  * «Шаг 1/2/3» на своей вёрстке, у кабинета — карточки shadcn.
  */
 import { useEffect, useState, type ReactNode } from 'react'
-import { Check, Copy, Download, Plus, Power, RefreshCw, Route, Smartphone } from 'lucide-react'
+import { Check, Copy, Download, Plus, Power, RefreshCw, Smartphone } from 'lucide-react'
 
 import {
 	CLIENTS,
@@ -126,23 +126,7 @@ function DownloadButton({ href, device }: { href: string; device: string }) {
  * проп через три уровня компонентов ради этого не стоит.
  */
 export const SPOTLIGHT_ATTR = 'data-spotlight'
-export type SpotlightTarget = 'routes' | 'refresh'
-
-/** CTA «Добавить» — открывает routing-страницу клиента, которая ставит маршруты обхода. */
-function RoutingButton({ href }: { href: string }) {
-	return (
-		<a
-			href={href}
-			target="_blank"
-			rel="noopener noreferrer"
-			className={downloadBtnClass}
-			{...{ [SPOTLIGHT_ATTR]: 'routes' satisfies SpotlightTarget }}
-		>
-			<Route className="size-3.5" />
-			Добавить
-		</a>
-	)
-}
+export type SpotlightTarget = 'refresh'
 
 /** Магазины приложений: кнопка открывает поповер с выбором (iOS у обоих, а у Incy и Mac). */
 function StoreDownloadButton({ stores, device }: { stores: Store[]; device: string }) {
@@ -225,18 +209,11 @@ function StepList({ items }: { items: ReactNode[] }) {
 }
 
 /**
- * Шаги установки приложения: поставить и настроить маршруты обхода. Шага про маршруты
- * нет у клиента без `routingUrl` — своему приложению правила приходят вместе с подпиской.
+ * Шаги установки приложения. Маршруты отдельным шагом не ставятся: правила для РФ
+ * приходят вместе с подпиской.
  */
 export function InstallSteps({ client, platform }: { client: ClientConfig; platform: Platform }) {
-	const items: ReactNode[] = [renderInstall(client.install[platform], client)]
-	if (client.routingUrl)
-		items.push(
-			<>
-				Для работы внутри&nbsp;РФ нужны маршруты: <RoutingButton href={client.routingUrl} />
-			</>,
-		)
-	return <StepList items={items} />
+	return <StepList items={[renderInstall(client.install[platform], client)]} />
 }
 
 /**

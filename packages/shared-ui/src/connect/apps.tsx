@@ -46,8 +46,6 @@ export interface ClientConfig {
 	id: ClientId
 	name: string
 	site: string
-	/** Страница с маршрутами обхода. Нет у своего клиента — маршруты зашиты в подписку. */
-	routingUrl?: string
 	Icon: ComponentType<{ className?: string }>
 	install: Record<Platform, InstallMethod>
 }
@@ -88,7 +86,6 @@ export const CLIENTS: Record<ClientId, ClientConfig> = {
 		id: 'incy',
 		name: 'Incy',
 		site: 'https://incy.cc/',
-		routingUrl: 'https://incy.routing.help/',
 		Icon: Shield,
 		install: {
 			ios: { kind: 'stores', device: 'iOS', stores: incyStores },
@@ -105,7 +102,6 @@ export const CLIENTS: Record<ClientId, ClientConfig> = {
 		id: 'happ',
 		name: 'Happ',
 		site: 'https://happ.su',
-		routingUrl: 'https://routing.help/',
 		Icon: HappIcon,
 		install: {
 			ios: {

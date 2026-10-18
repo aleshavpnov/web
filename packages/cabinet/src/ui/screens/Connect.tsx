@@ -46,18 +46,17 @@ import { Spotlight } from '@/ui/components/Spotlight.tsx'
 /**
  * Что подсвечиваем, придя по диплинку из подсказки бота, и что при этом пишем. Ключ —
  * второй сегмент хеша (`#/connect/refresh`), он же значение `data-spotlight` у цели.
- *
- * Целей две, потому что диагнозов два (см. services/routing-hint.ts): профиль устарел —
- * жать обновление у подписки; маршруты не применены вовсе — ставить их «Добавить».
  */
 const SPOTLIGHT_NOTE: Record<SpotlightTarget, string> = {
 	refresh: 'Нажмите эту кнопку в приложении — оно заберёт свежий профиль',
-	routes:
-		'Нажмите эту кнопку — приложение добавит маршруты, и российские сайты пойдут напрямую, мимо наших серверов',
 }
 
+/**
+ * `routes` — цель из старых подсказок бота, пока маршруты ставились отдельной кнопкой.
+ * Сообщения с ней остались в чатах, а лечится то же самое теперь обновлением подписки.
+ */
 function spotlightFromParam(param: string | null): SpotlightTarget | null {
-	return param === 'refresh' || param === 'routes' ? param : null
+	return param === 'refresh' || param === 'routes' ? 'refresh' : null
 }
 
 type LinkKind = 'main' | 'backup'
