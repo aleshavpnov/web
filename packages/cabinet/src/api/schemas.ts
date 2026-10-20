@@ -93,9 +93,17 @@ const PlanSchema = PlanBaseSchema.extend({
 
 export type OneTimeMethod = z.infer<typeof OneTimeMethodSchema>
 
+/** Подарочный тариф: товар Tribute (`buyUrl`) и/или разовая оплата с сертификатом после неё. */
+const GiftSchema = PlanSchema.extend({
+	/** null — товара Tribute нет, подарок продаётся только разовой оплатой. */
+	buyUrl: z.string().nullable(),
+})
+
+export type Gift = z.infer<typeof GiftSchema>
+
 export const PlansSchema = z.object({
 	plans: z.array(PlanSchema),
-	gifts: z.array(PlanSchema),
+	gifts: z.array(GiftSchema),
 	current: z.object({ planCode: z.string(), planName: z.string() }).nullable(),
 	pendingGifts: z.array(z.object({ planName: z.string(), deepLink: z.string() })),
 	manageUrl: z.string().nullable(),

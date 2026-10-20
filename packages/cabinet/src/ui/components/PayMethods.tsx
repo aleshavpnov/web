@@ -16,6 +16,7 @@ import { feeNote } from '@/lib/format.ts'
 import { cn } from '@/lib/utils.ts'
 import { BRAND_ON } from './common.tsx'
 import {
+	GIFT_ICON,
 	OptionNote,
 	PayOption,
 	payMethodIcon,
@@ -159,5 +160,51 @@ function GroupTile({
 			<span className="text-lg leading-tight font-semibold">{title}</span>
 			<span className="text-xs leading-snug font-normal opacity-75">{note}</span>
 		</Button>
+	)
+}
+
+/**
+ * Способы оплаты подарка. Без шага «подписка или разово»: подарок всегда разовый, выбирать
+ * остаётся только чем платить — Platega или товар Tribute.
+ */
+export function GiftPayMethods({
+	tributeUrl,
+	tributeFee,
+	oneTimeMethods,
+	busy,
+	onPay,
+}: {
+	/** Подарочный товар Tribute; null — его нет, только разовая оплата. */
+	tributeUrl: string | null
+	tributeFee: string | undefined
+	oneTimeMethods: OneTimeMethod[]
+	busy: boolean
+	/** Без аргумента — товар Tribute, иначе выбранный способ Platega. */
+	onPay: (choice?: number) => void
+}) {
+	return (
+		<>
+			{oneTimeMethods.map((m, i) => (
+				<PayOption
+					key={m.code}
+					label={m.label}
+					fee={feeNote(m.feePercent)}
+					icon={payMethodIcon(m.code)}
+					primary={i === 0}
+					disabled={busy}
+					onClick={() => onPay(m.code)}
+				/>
+			))}
+			{tributeUrl && (
+				<PayOption
+					label={oneTimeMethods.length > 0 ? 'Tribute' : 'Оплатить подарок'}
+					fee={tributeFee}
+					icon={GIFT_ICON}
+					primary={oneTimeMethods.length === 0}
+					disabled={busy}
+					onClick={() => onPay()}
+				/>
+			)}
+		</>
 	)
 }

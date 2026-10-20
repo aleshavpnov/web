@@ -46,8 +46,7 @@ import {
 	type WizardStep,
 } from '@/state/wizard.ts'
 import { PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
-import { PayMethods } from '@/ui/components/PayMethods.tsx'
-import { GIFT_ICON, SUBSCRIPTION_ICON } from '@/ui/components/PayOption.tsx'
+import { GiftPayMethods, PayMethods } from '@/ui/components/PayMethods.tsx'
 
 const AUDIENCE_OPTIONS: Array<{
 	value: Audience
@@ -158,7 +157,8 @@ function Result({
 		)
 	}
 
-	if (!advice.plan || !advice.buyUrl) {
+	// Подарок без товара Tribute продаётся разовой оплатой — ссылки тогда нет, но купить можно.
+	if (!advice.plan || (!advice.buyUrl && advice.oneTimeMethods.length === 0)) {
 		return (
 			<div className={SECTION_CARD}>
 				<div className="font-semibold">Сейчас нечего предложить</div>
@@ -209,20 +209,26 @@ function Result({
 			</div>
 
 			{/* Способы оплаты идут списком «кнопка + сноска»: сумма на кнопке вводила бы в
-			    заблуждение — на форме провайдера она будет другой из-за его комиссии.
-			    Подарок продаётся только товаром Tribute, выбирать там нечего. */}
-			<PayMethods
-				subscriptionLabel={
-					busy ? 'Открываем оплату…' : audience === 'gift' ? 'Оплатить подарок' : 'Оформить'
-				}
-				subscriptionIcon={audience === 'gift' ? GIFT_ICON : SUBSCRIPTION_ICON}
-				subscriptionFee={audience === 'gift' ? undefined : feeNote(advice.subscriptionFeePercent)}
-				sbpSubscription={audience === 'gift' ? null : advice.sbpSubscription}
-				durationDays={plan.durationDays}
-				oneTimeMethods={audience === 'gift' ? [] : advice.oneTimeMethods}
-				busy={busy}
-				onPay={onBuy}
-			/>
+			    заблуждение — на форме провайдера она будет другой из-за его комиссии. */}
+			{audience === 'gift' ? (
+				<GiftPayMethods
+					tributeUrl={advice.buyUrl}
+					tributeFee={feeNote(advice.subscriptionFeePercent)}
+					oneTimeMethods={advice.oneTimeMethods}
+					busy={busy}
+					onPay={onBuy}
+				/>
+			) : (
+				<PayMethods
+					subscriptionLabel={busy ? 'Открываем оплату…' : 'Оформить'}
+					subscriptionFee={feeNote(advice.subscriptionFeePercent)}
+					sbpSubscription={advice.sbpSubscription}
+					durationDays={plan.durationDays}
+					oneTimeMethods={advice.oneTimeMethods}
+					busy={busy}
+					onPay={onBuy}
+				/>
+			)}
 		</div>
 	)
 }
