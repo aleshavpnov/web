@@ -15,14 +15,14 @@ import { Bone } from '@shared/skeleton/index.ts'
 import { ApiError, startCheckout, type PaymentChoice } from '@/api/client.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { feeNote, formatDevices } from '@/lib/format.ts'
-import { mergeOffers, type PlanOffer } from '@/lib/offers.ts'
+import { canGift, mergeOffers, type PlanOffer } from '@/lib/offers.ts'
 import { hapticError, hapticSuccess, openLink } from '@/lib/telegram.ts'
 import { cn } from '@/lib/utils.ts'
 import { plansRes } from '@/state/cabinet.ts'
 import { watchPayment } from '@/state/payment-watch.ts'
 import { navigate, screenParamAtom } from '@/state/screen.ts'
 import { Async, PlanFigures, SECTION_CARD } from '@/ui/components/common.tsx'
-import { PayMethods } from '@/ui/components/PayMethods.tsx'
+import { GiftPayMethods, PayMethods } from '@/ui/components/PayMethods.tsx'
 import { GIFT_ICON, PayOption } from '@/ui/components/PayOption.tsx'
 
 /** Скелетон: карточка тарифа и две кнопки способов — ростом с `PayOption`. */
@@ -69,6 +69,7 @@ function Offer({
 	subscriptionFee: string | undefined
 }) {
 	const [busy, setBusy] = useState(false)
+	const [giftOpen, setGiftOpen] = useState(false)
 
 	/**
 	 * Человек ушёл платить в другое окно, а оформление осталось открытым. Ждём подтверждения
@@ -88,6 +89,24 @@ function Offer({
 			const { buyUrl } = await startCheckout(offer.code, 'self', choice)
 			openLink(buyUrl)
 			awaitPayment()
+		} catch (e) {
+			hapticError()
+			toast.error(e instanceof ApiError ? e.message : 'Не удалось открыть оплату')
+		} finally {
+			setBusy(false)
+		}
+	}
+
+	/** Подарок доступ покупателю не меняет — ждать нечего, сертификат придёт в чат. */
+	async function payGift(choice?: number) {
+		if (choice === undefined) {
+			openLink(offer.giftUrl!)
+			return
+		}
+		setBusy(true)
+		try {
+			const { buyUrl } = await startCheckout(offer.code, 'gift', choice)
+			openLink(buyUrl)
 		} catch (e) {
 			hapticError()
 			toast.error(e instanceof ApiError ? e.message : 'Не удалось открыть оплату')
@@ -139,16 +158,30 @@ function Offer({
 				/>
 			)}
 
-			{offer.giftUrl && (
+			{/* Тариф только в подарок — способы сразу; иначе сначала кнопка «Подарить», чтобы
+			    способы подарка не смешивались со способами покупки себе. */}
+			{canGift(offer) && (giftOpen || !offer.buyUrl) && (
+				<GiftPayMethods
+					tributeUrl={offer.giftUrl}
+					tributeFee={subscriptionFee}
+					oneTimeMethods={offer.giftMethods}
+					busy={busy}
+					onPay={(choice) => void payGift(choice)}
+				/>
+			)}
+
+			{canGift(offer) && !giftOpen && !!offer.buyUrl && (
 				<PayOption
 					label="Подарить"
 					icon={GIFT_ICON}
 					disabled={busy}
-					onClick={() => openLink(offer.giftUrl!)}
+					onClick={() =>
+						offer.giftMethods.length > 0 ? setGiftOpen(true) : openLink(offer.giftUrl!)
+					}
 				/>
 			)}
 
-			{offer.giftUrl && (
+			{canGift(offer) && (
 				<p className="text-xs text-muted-foreground">
 					«Подарить» оплачивает сертификат: доступ получит тот, кому вы перешлёте ссылку, а ваша
 					подписка не&nbsp;изменится.
