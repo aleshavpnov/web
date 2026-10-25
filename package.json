@@ -1,7 +1,7 @@
 {
 	"name": "web",
 	"type": "module",
-	"version": "3.6.0",
+	"version": "4.0.0",
 	"private": true,
 	"license": "MIT",
 	"description": "Alesha Vpnov web front: public site and the user cabinet Mini App.",
@@ -27,7 +27,6 @@
 	"dependencies": {
 		"@astrojs/sitemap": "3.7.4",
 		"@astrojs/svelte": "9.0.1",
-		"@types/qrcode": "1.5.6",
 		"astro": "7.3.7",
 		"qrcode": "1.5.4",
 		"svelte": "5.57.2"
@@ -42,7 +41,7 @@
 		"@lucide/svelte": "1.55.0",
 		"@playwright/test": "1.64.0",
 		"@types/node": "26.6.5",
-		"@types/qrcode": "1.5.5",
+		"@types/qrcode": "1.5.6",
 		"commitizen": "4.3.2",
 		"cz-git": "1.13.1",
 		"husky": "9.1.7",
