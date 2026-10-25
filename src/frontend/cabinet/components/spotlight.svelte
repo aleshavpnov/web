@@ -178,7 +178,7 @@
 			border-radius: calc(var(--radius) * 1.4);
 			box-shadow:
 				0 0 0 2px var(--brand),
-				0 0 24px 6px rgb(16 185 129 / 45%),
+				0 0 24px 6px color-mix(in srgb, var(--accent-fill) 45%, transparent),
 				0 0 0 9999px rgb(0 0 0 / 50%);
 		}
 
@@ -191,7 +191,7 @@
 			font-size: 0.875rem;
 			font-weight: 500;
 			color: #fff;
-			background: #047857;
+			background: var(--accent);
 			box-shadow: 0 20px 25px -5px rgb(0 0 0 / 20%);
 		}
 	}

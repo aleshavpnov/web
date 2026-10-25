@@ -18,6 +18,6 @@
 		color: var(--accent);
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		background: rgb(16 185 129 / 10%);
+		background: color-mix(in srgb, var(--accent-fill) 10%, transparent);
 	}
 </style>

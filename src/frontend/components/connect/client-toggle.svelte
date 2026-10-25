@@ -52,7 +52,7 @@
 			&--active,
 			&--active:hover {
 				color: var(--accent);
-				background: rgb(16 185 129 / 10%);
+				background: color-mix(in srgb, var(--accent-fill) 10%, transparent);
 			}
 		}
 

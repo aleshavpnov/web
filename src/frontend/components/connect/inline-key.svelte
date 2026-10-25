@@ -54,9 +54,9 @@
 		}
 
 		&--accent {
-			border-color: rgb(16 185 129 / 40%);
+			border-color: color-mix(in srgb, var(--accent-fill) 40%, transparent);
 			color: var(--accent);
-			background: rgb(16 185 129 / 15%);
+			background: color-mix(in srgb, var(--accent-fill) 15%, transparent);
 		}
 
 		&--round {
