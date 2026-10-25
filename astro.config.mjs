@@ -28,7 +28,8 @@ export default defineConfig({
 	// `frame-ancestors` в `<meta>` не работает.
 	security: {
 		csp: {
-			scriptDirective: { resources: ["'self'"] },
+			// SDK Telegram Mini App подключает кабинет `/me/`.
+			scriptDirective: { resources: ["'self'", 'https://telegram.org'] },
 			directives: [
 				"default-src 'self'",
 				"img-src 'self' data: blob: https:",

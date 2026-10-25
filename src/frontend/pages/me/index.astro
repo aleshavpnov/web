@@ -1,0 +1,13 @@
+---
+import App from '#frontend/cabinet/app.svelte'
+import '#frontend/cabinet/styles/cabinet.css'
+import Base from '#frontend/layouts/base.astro'
+---
+
+<Base bare>
+	<!-- SDK Mini App: даёт подписанный initData, тему и системную кнопку «назад». Должен успеть
+	     до приложения, поэтому без defer. Без него страница откроется, но авторизоваться сможет
+	     только дев-обход. -->
+	<script is:inline slot="head" src="https://telegram.org/js/telegram-web-app.js"></script>
+	<App client:only="svelte" />
+</Base>
