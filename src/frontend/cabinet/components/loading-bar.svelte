@@ -49,7 +49,7 @@
 			display: block;
 			width: 33%;
 			height: 100%;
-			background: var(--brand);
+			background: var(--brand-fill);
 			animation: slide 1.1s ease-in-out infinite;
 
 			/* Без движения бегунок замер бы обрубком у левого края — растягиваем во всю ширину. */

@@ -254,7 +254,7 @@
 			transition: background-color 0.3s;
 
 			&--done {
-				background: var(--brand);
+				background: var(--brand-fill);
 			}
 		}
 

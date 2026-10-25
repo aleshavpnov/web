@@ -54,7 +54,7 @@
 		}
 
 		&--on {
-			background: var(--brand);
+			background: var(--brand-fill);
 		}
 
 		&__thumb {

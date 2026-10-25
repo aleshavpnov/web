@@ -75,8 +75,8 @@
 
 			&--active,
 			&--active:hover {
-				color: var(--brand-fg);
-				background: var(--brand);
+				color: var(--brand-fill-fg);
+				background: var(--brand-fill);
 				box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
 			}
 		}

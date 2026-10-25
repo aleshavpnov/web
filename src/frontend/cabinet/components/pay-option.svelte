@@ -79,11 +79,11 @@
 
 		&--primary {
 			border-color: transparent;
-			color: var(--brand-fg);
-			background: var(--brand);
+			color: var(--brand-fill-fg);
+			background: var(--brand-fill);
 
 			&:hover {
-				background: color-mix(in srgb, var(--brand) 85%, transparent);
+				background: color-mix(in srgb, var(--brand-fill) 85%, transparent);
 			}
 		}
 
