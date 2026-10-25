@@ -1,49 +1,64 @@
 {
 	"name": "web",
+	"type": "module",
 	"version": "3.6.0",
 	"private": true,
-	"packageManager": "npm@10.9.8",
-	"type": "module",
-	"description": "Alesha Vpnov web front: public site, user cabinet Mini App and shared UI.",
-	"workspaces": [
-		"packages/*"
-	],
+	"license": "MIT",
+	"description": "Alesha Vpnov web front: public site and the user cabinet Mini App.",
 	"engines": {
-		"node": ">=24.14.0"
+		"node": "26.11.1"
 	},
 	"scripts": {
-		"build": "npm run build -w @aleshavpnov/site && npm run build -w @aleshavpnov/cabinet",
-		"typecheck": "npm run -ws --if-present typecheck",
-		"test": "npm test --workspaces --if-present",
-		"lint": "oxlint",
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"check": "astro check && svelte-check",
+		"test": "node --test 'src/**/*.test.ts'",
+		"test:e2e": "playwright test",
+		"astro": "astro",
+		"format": "oxlint --fix && prettier --write .",
+		"format:check": "prettier --check .",
+		"lint:css": "stylelint \"src/**/*.{css,astro,svelte}\"",
+		"lint:js": "oxlint --deny-warnings",
 		"lint:fix": "oxlint --fix",
-		"format": "oxfmt",
-		"format:check": "oxfmt --check",
 		"prepare": "husky",
 		"commit": "cz"
 	},
-	"lint-staged": {
-		"*.{ts,tsx,mjs,cjs,js,jsx}": [
-			"oxfmt --write --no-error-on-unmatched-pattern",
-			"oxlint --fix"
-		],
-		"*.{json,md,yml,yaml}": [
-			"oxfmt --write --no-error-on-unmatched-pattern"
-		]
+	"dependencies": {
+		"@astrojs/sitemap": "3.7.4",
+		"@astrojs/svelte": "9.0.1",
+		"astro": "7.3.7",
+		"svelte": "5.57.2"
+	},
+	"devDependencies": {
+		"@aimuzov/infra-site-kit": "github:aimuzov/infra-site-kit#v4.1.1",
+		"@astrojs/check": "0.9.10",
+		"@commitlint/cli": "21.0.2",
+		"@commitlint/config-conventional": "21.0.2",
+		"@csstools/postcss-global-data": "4.0.0",
+		"@fontsource-variable/manrope": "5.3.0",
+		"@lucide/svelte": "1.55.0",
+		"@playwright/test": "1.64.0",
+		"@types/node": "26.6.5",
+		"commitizen": "4.3.2",
+		"cz-git": "1.13.1",
+		"husky": "9.1.7",
+		"oxlint": "1.87.0",
+		"postcss-custom-media": "12.0.3",
+		"postcss-nested": "8.0.1",
+		"prettier": "3.9.9",
+		"stylelint": "17.16.0",
+		"svelte-check": "4.7.6",
+		"typescript": "6.0.3",
+		"zod": "3.25.76"
+	},
+	"imports": {
+		"#frontend/*": "./src/frontend/*",
+		"#shared/*": "./src/shared/*"
 	},
 	"config": {
 		"commitizen": {
 			"path": "node_modules/cz-git"
 		}
-	},
-	"devDependencies": {
-		"@commitlint/cli": "21.0.2",
-		"@commitlint/config-conventional": "21.0.2",
-		"commitizen": "4.3.2",
-		"cz-git": "1.13.1",
-		"husky": "9.1.7",
-		"lint-staged": "15.5.2",
-		"oxfmt": "0.55.0",
-		"oxlint": "1.70.0"
 	}
 }

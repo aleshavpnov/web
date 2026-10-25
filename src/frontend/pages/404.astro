@@ -1,0 +1,23 @@
+---
+import NotFound from '@aimuzov/infra-site-kit/not-found.astro'
+
+import Base from '#frontend/layouts/base.astro'
+---
+
+<Base>
+	<main class="missing">
+		<NotFound suggest={false} />
+	</main>
+</Base>
+
+<style>
+	.missing {
+		--not-found-accent: var(--accent);
+		--not-found-muted: var(--muted);
+
+		display: grid;
+		flex: 1;
+		align-items: center;
+		padding: 2rem var(--gutter);
+	}
+</style>
