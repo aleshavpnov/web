@@ -1,32 +1,37 @@
 # Alesha Vpnov — web
 
-Фронтовая часть сервиса [Alesha Vpnov](https://aleshavpnov.ru): публичный сайт, личный
-кабинет (Telegram Mini App) и общие компоненты. Бот, API и инфраструктура живут в приватном
-репозитории; этот собирается и раздаётся оттуда как статика.
+Фронтовая часть сервиса [Alesha Vpnov](https://aleshavpnov.ru): публичный сайт и личный кабинет
+(Telegram Mini App на `/me/`). Бот, API и инфраструктура живут в приватном репозитории; этот
+подключён туда сабмодулем, собирается и раздаётся оттуда как статика.
 
-| Пакет                                         | Что это                                                 |
-| --------------------------------------------- | ------------------------------------------------------- |
-| [`packages/site`](packages/site/README.ru.md) | Лендинг и статус сервиса, страница выдачи доступа (`/`) |
-| `packages/cabinet`                            | Кабинет пользователя, Telegram Mini App (`/me/`)        |
-| `packages/shared-ui`                          | Общая инструкция подключения и кости скелетонов         |
+Стек тот же, что у остальных сайтов из
+[infra-site-template](https://github.com/aimuzov/infra-site-template): Astro, Svelte 5, CSS по БЭМ,
+общие конфиги, проверки и компоненты из
+[infra-site-kit](https://github.com/aimuzov/infra-site-kit).
 
-Стек: Vite, React 19, Reatom, Tailwind 4, TypeScript. Версии зависимостей закреплены точно.
+> Идёт переезд с Vite + React. Уже на Astro: каркас, FAQ, юридические страницы и 404. Главная,
+> `/get`, `/status`, `/app/add` и кабинет переносятся следующими PR, до этого прод собирается
+> из закреплённого в core коммита со старыми пакетами.
+
+## Маскировка
+
+Голая разметка обезличена: нейтральный `<title>Личный кабинет</title>`, `noindex`, ни бренда, ни
+описания. Брендовый текст рисуют острова `client:only`, поэтому сканер без JS сервис не узнаёт.
+e2e проверяет это для каждой страницы. Ключ темы в localStorage тоже без бренда: `app.theme`.
 
 ## Разработка
 
 ```bash
 npm install
-npm run dev -w @aleshavpnov/site        # http://localhost:5173
-npm run dev -w @aleshavpnov/cabinet     # кабинет, требует initData Telegram
-npm run build                           # site + cabinet → packages/*/dist
-npm run typecheck && npm test && npm run lint
+npm run dev            # http://localhost:4321, /api и /status.json проксируются на бота
+npm run build          # → dist/
+npm run format:check && npm run lint:js && npm run lint:css && npm run check && npm test
+npm run test:e2e       # Playwright, headless
 ```
 
-API берётся с того же origin; для локальной разработки против боевого бэкенда задайте
-`VITE_API_BASE` (см. README пакета `site`).
+Бот для прокси берётся из `VITE_BOT_ORIGIN`, по умолчанию `http://127.0.0.1:8443`.
 
-Только npm: `package-lock.json` один, в корне. Коммиты — conventional commits, по-английски
-(`npm run commit`).
+Только npm. Коммиты — conventional commits, по-английски (`npm run commit`).
 
 ## Лицензия
 

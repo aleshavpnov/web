@@ -1,0 +1,114 @@
+/* Палитра Stone, та же, что была у сайта на shadcn. Схему выбирает `color-scheme`:
+   без `data-theme` её ведёт система, с ним -- выбор посетителя. */
+:root {
+	--font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+
+	--column: 28rem;
+	--gutter: 1rem;
+
+	--bg: light-dark(oklch(1 0 0), oklch(0.147 0.004 49.25));
+	--fg: light-dark(oklch(0.147 0.004 49.25), oklch(0.985 0.001 106.423));
+	--card: light-dark(oklch(1 0 0), oklch(0.216 0.006 56.043));
+	--surface: light-dark(oklch(0.97 0.001 106.424), oklch(0.268 0.007 34.298));
+	--muted: light-dark(oklch(0.553 0.013 58.071), oklch(0.709 0.01 56.259));
+	--border: light-dark(oklch(0.923 0.003 48.717), oklch(1 0 0 / 10%));
+	--ring: light-dark(oklch(0.709 0.01 56.259), oklch(0.553 0.013 58.071));
+	--danger: light-dark(oklch(0.577 0.245 27.325), oklch(0.704 0.191 22.216));
+
+	/* Фирменный emerald: иконки заголовков, ссылки, активный пункт меню. Яркий #10b981
+	   на белом не дотягивает до контраста AA, поэтому в светлой схеме он темнее. */
+	--accent: light-dark(#047857, #34d399);
+	--accent-hover: light-dark(#065f46, #6ee7b7);
+	/* Заливка CTA под белым текстом, одна на обе схемы. */
+	--cta-bg: #047857;
+	--cta-bg-hover: #065f46;
+	--cta-fg: #fff;
+
+	--radius: 0.625rem;
+
+	--ui-bg: var(--bg);
+	--ui-fg: var(--fg);
+	--ui-muted: var(--muted);
+	--ui-surface: var(--surface);
+	--ui-border: var(--border);
+	--ui-accent: var(--accent);
+	--ui-accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+	--ui-danger: var(--danger);
+	--ui-radius: calc(var(--radius) * 1.2);
+	--ui-radius-sm: var(--radius);
+	--ui-gutter: var(--gutter);
+	--ui-card-bg: var(--card);
+
+	color-scheme: light dark;
+
+	&[data-theme='light'] {
+		color-scheme: light;
+	}
+
+	&[data-theme='dark'] {
+		color-scheme: dark;
+	}
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	border-color: var(--border);
+}
+
+body {
+	margin: 0;
+	font-family: var(--font-sans);
+	line-height: 1.5;
+	color: var(--fg);
+	background: var(--bg);
+}
+
+h1,
+h2,
+h3,
+p {
+	margin: 0;
+}
+
+/* Safari на iPhone приближает страницу к полю с текстом мельче 16px, стоит в нём встать. */
+input,
+textarea,
+select {
+	@media (--touch) {
+		font-size: max(1rem, 1em);
+	}
+}
+
+img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+}
+
+/* Колонка шириной с телефон, по центру на широком экране: так сайт выглядел и раньше. */
+.column {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	max-width: var(--column);
+	min-height: 100dvh;
+	margin-inline: auto;
+}
+
+/* Ссылка в тексте: фирменный цвет и подчёркивание. */
+.link {
+	cursor: pointer;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	color: var(--accent);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	background: none;
+
+	&:hover {
+		color: var(--accent-hover);
+	}
+}

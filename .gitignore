@@ -1,29 +1,11 @@
-# Секреты
+node_modules/
+dist/
+.astro/
+.DS_Store
 .env
 .env.local
-.env.*.local
-
-# Зависимости и артефакты
-/node_modules
-/.husky/_/
-packages/*/node_modules
-packages/*/dist/
-packages/*/coverage/
-packages/*/*.tsbuildinfo
-packages/*/test-results/
-packages/*/playwright-report/
-
-# Проект только на npm (package-lock.json в корне)
-pnpm-lock.yaml
-pnpm-workspace.yaml
-yarn.lock
-packages/*/package-lock.json
-packages/*/pnpm-lock.yaml
-packages/*/yarn.lock
-
-# Временные файлы
-*.log
-*.swp
-.DS_Store
+test-results/
+playwright-report/
 .serena/
 .superpowers/
+
