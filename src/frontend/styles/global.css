@@ -1,28 +1,32 @@
-/* Палитра Stone, та же, что была у сайта на shadcn. Схему выбирает `color-scheme`:
-   без `data-theme` её ведёт система, с ним -- выбор посетителя. */
+/* Нейтральные Zinc: без тёплого подтона Stone серые не уходят в грязь. Схему выбирает
+   `color-scheme`: без `data-theme` её ведёт система, с ним -- выбор посетителя. */
 :root {
 	--font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
 
 	--column: 28rem;
 	--gutter: 1rem;
 
-	--bg: light-dark(oklch(1 0 0), oklch(0.147 0.004 49.25));
-	--fg: light-dark(oklch(0.147 0.004 49.25), oklch(0.985 0.001 106.423));
-	--card: light-dark(oklch(1 0 0), oklch(0.216 0.006 56.043));
-	--surface: light-dark(oklch(0.97 0.001 106.424), oklch(0.268 0.007 34.298));
-	--muted: light-dark(oklch(0.553 0.013 58.071), oklch(0.709 0.01 56.259));
-	--border: light-dark(oklch(0.923 0.003 48.717), oklch(1 0 0 / 10%));
-	--ring: light-dark(oklch(0.709 0.01 56.259), oklch(0.553 0.013 58.071));
-	--danger: light-dark(oklch(0.577 0.245 27.325), oklch(0.704 0.191 22.216));
+	--bg: light-dark(#fff, #09090b);
+	--fg: light-dark(#09090b, #fafafa);
+	--card: light-dark(#fff, #18181b);
+	--surface: light-dark(#f4f4f5, #27272a);
+	--muted: light-dark(#71717a, #a1a1aa);
+	--border: light-dark(#e4e4e7, rgb(255 255 255 / 10%));
+	--ring: light-dark(#a1a1aa, #52525b);
+	--danger: light-dark(#dc2626, #f87171);
 
-	/* Фирменный emerald: иконки заголовков, ссылки, активный пункт меню. Яркий #10b981
-	   на белом не дотягивает до контраста AA, поэтому в светлой схеме он темнее. */
+	/* Фирменный emerald для текста: ссылки, иконки заголовков, активный пункт меню.
+	   Яркий #10b981 на белом не дотягивает до контраста AA, поэтому в светлой схеме он темнее. */
 	--accent: light-dark(#047857, #34d399);
 	--accent-hover: light-dark(#065f46, #6ee7b7);
-	/* Заливка CTA под белым текстом, одна на обе схемы. */
-	--cta-bg: #047857;
-	--cta-bg-hover: #065f46;
-	--cta-fg: #fff;
+	/* Заливка кнопок -- яркий emerald в обеих схемах. Белый текст на нём не читается,
+	   тёмно-зелёный даёт контраст 8:1. */
+	--accent-fill: #10b981;
+	--accent-fill-hover: #34d399;
+	--accent-fill-fg: #022c22;
+	--cta-bg: var(--accent-fill);
+	--cta-bg-hover: var(--accent-fill-hover);
+	--cta-fg: var(--accent-fill-fg);
 
 	--radius: 0.625rem;
 
