@@ -16,18 +16,20 @@
 		"test": "node --test 'src/**/*.test.ts'",
 		"test:e2e": "playwright test",
 		"astro": "astro",
-		"format": "oxlint --fix && prettier --write .",
+		"format": "oxlint --fix --disable-nested-config && prettier --write .",
 		"format:check": "prettier --check .",
 		"lint:css": "stylelint \"src/**/*.{css,astro,svelte}\"",
-		"lint:js": "oxlint --deny-warnings",
-		"lint:fix": "oxlint --fix",
+		"lint:js": "oxlint --deny-warnings --disable-nested-config",
+		"lint:fix": "oxlint --fix --disable-nested-config",
 		"prepare": "husky",
 		"commit": "cz"
 	},
 	"dependencies": {
 		"@astrojs/sitemap": "3.7.4",
 		"@astrojs/svelte": "9.0.1",
+		"@types/qrcode": "1.5.6",
 		"astro": "7.3.7",
+		"qrcode": "1.5.4",
 		"svelte": "5.57.2"
 	},
 	"devDependencies": {
