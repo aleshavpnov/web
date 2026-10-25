@@ -7,14 +7,10 @@
 	import Eyebrow from '#frontend/components/eyebrow.svelte'
 	import Shell from '#frontend/components/shell.svelte'
 	import { LEGAL_EMAIL as SUPPORT_EMAIL } from '#frontend/site/legal.ts'
-	import { ensureStatus, status } from '#frontend/site/state/status.ts'
+	import { status } from '#frontend/site/state/status.ts'
 
 	/** Диплинк на подписку «Прайм» в Tribute (кнопка Share у подписки в дашборде). */
 	const TRIBUTE_SUB_URL = 'https://t.me/tribute/app?startapp=sVea'
-
-	// Username бота для ссылки на поддержку приходит в статусе, как deepLink у кнопки
-	// «Открыть в Telegram»; пока его нет, вместо ссылки просто текст.
-	ensureStatus()
 
 	const ITEMS: { id: string; q: string; a: Snippet }[] = [
 		{ id: 'what-is', q: 'Что такое Alesha Vepenov?', a: whatIs },

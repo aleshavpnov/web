@@ -23,14 +23,15 @@ export default defineConfig({
 	// Подсветка Shiki несовместима с CSP.
 	markdown: { syntaxHighlight: false },
 	// Astro кладёт в `<meta>` страницы CSP с хешами своих скриптов и стилей.
-	// QR рисуется в data:, мелкие файлы шрифта Vite встраивает в data:.
+	// QR рисуется в data:, мелкие файлы шрифта Vite встраивает в data:. Бейдж рейтинга грузится
+	// с внешнего каталога, а его домен в CSP выдал бы сервис в голой разметке: пускаем любой https:.
 	// `frame-ancestors` в `<meta>` не работает.
 	security: {
 		csp: {
 			scriptDirective: { resources: ["'self'"] },
 			directives: [
 				"default-src 'self'",
-				"img-src 'self' data: blob:",
+				"img-src 'self' data: blob: https:",
 				"font-src 'self' data:",
 				"connect-src 'self'",
 				"object-src 'none'",
