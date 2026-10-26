@@ -50,7 +50,7 @@ test('/get выдаёт временную ссылку и ведёт в бот�
 
 	await page.getByRole('button', { name: 'Получить временный доступ' }).click()
 
-	await expect(page.getByText('https://example.com/s/abc123')).toBeVisible()
+	await expect(page.locator('#sub-url')).toHaveValue('https://example.com/s/abc123')
 
 	await expect(page.getByRole('link', { name: 'Открыть в Telegram' })).toHaveAttribute(
 		'href',
@@ -59,7 +59,7 @@ test('/get выдаёт временную ссылку и ведёт в бот�
 
 	// Ссылка переживает перезагрузку: повторный визит не плодит клиентов.
 	await page.reload()
-	await expect(page.getByText('https://example.com/s/abc123')).toBeVisible()
+	await expect(page.locator('#sub-url')).toHaveValue('https://example.com/s/abc123')
 })
 
 test('/get переключает клиента и платформу', async ({ page }) => {

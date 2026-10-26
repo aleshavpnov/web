@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { Clock, Copy, Send, Zap } from '@lucide/svelte'
+	import { Check, Clock, Copy, Send, Zap } from '@lucide/svelte'
 	import QRCode from 'qrcode'
 
-	import BackLink from '#frontend/components/back-link.svelte'
 	import AddSubscriptionSteps from '#frontend/components/connect/add-subscription-steps.svelte'
 	import { CLIENTS, detectPlatform, type ClientId } from '#frontend/components/connect/apps.ts'
 	import ClientLink from '#frontend/components/connect/client-link.svelte'
@@ -12,7 +11,6 @@
 	import Cta from '#frontend/components/cta.svelte'
 	import Eyebrow from '#frontend/components/eyebrow.svelte'
 	import Shell from '#frontend/components/shell.svelte'
-	import StepBadge from '#frontend/components/step-badge.svelte'
 	import Toaster from '#frontend/components/toaster.svelte'
 	import { toast } from '#frontend/lib/toast.ts'
 	import {
@@ -34,6 +32,8 @@
 	// QR имеет смысл только там, где Telegram-аккаунт живёт на другом устройстве.
 	const isDesktop = defaultPlatform === 'windows' || defaultPlatform === 'mac'
 
+	restoreBridge()
+
 	let client = $state<ClientId>('happ')
 	let platform = $state(defaultPlatform)
 	let dialogOpen = $state(false)
@@ -44,13 +44,13 @@
 	// Ссылка под текущий домен: на зеркале — backup-домен, иначе основной. Хост читаем здесь,
 	// а не при сохранении, чтобы один сохранённый bridge резолвился по хосту визита.
 	const subUrl = $derived($bridge ? pickSubscriptionUrl($bridge, location.hostname) : '')
-	const shortUrl = $derived(subUrl.length > 42 ? `${subUrl.slice(0, 42)}…` : subUrl)
 	const deepLink = $derived($bridge?.deepLink ?? null)
 	const botLink = $derived(
 		deepLink ?? ($status?.botUsername ? `https://t.me/${$status.botUsername}` : BOT_FALLBACK_URL),
 	)
-
-	restoreBridge()
+	// Поставил ли человек приложение, сайт не знает. Ссылка получена — значит, первые два шага
+	// пройдены и дальше Telegram; до этого текущим считается начало.
+	const current = $derived($bridge ? 3 : 1)
 
 	$effect(() => {
 		const error = $bridgeError
@@ -124,95 +124,119 @@
 	}
 </script>
 
-<Shell page="access">
+<!-- Панель доступа: на десктопе в колонке справа, на телефоне внутри шага 2. -->
+{#snippet panel(id: string)}
+	{#if !$bridge}
+		<Cta glow disabled={$bridgeBusy} onclick={() => void requestBridge()}>
+			<Zap size={16} />
+			{$bridgeBusy ? 'Получаем доступ…' : 'Получить временный доступ'}
+		</Cta>
+	{:else}
+		<div class="access__sub">
+			<div class="access__sub-head">
+				<label class="access__sub-label" for={id}>ссылка-подписка</label>
+				<span class="access__countdown"><Clock size={14} />{countdown}</span>
+			</div>
+			<div class="access__sub-row">
+				<input {id} class="access__url" readonly value={subUrl} />
+				<button
+					class="access__copy"
+					type="button"
+					aria-label="Копировать ссылку"
+					onclick={() => void copyUrl()}
+				>
+					<Copy size={17} />
+				</button>
+			</div>
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet marker(n: number)}
+	{@const done = $bridge !== null && n < 3}
+	<span
+		class={['access__mark', done && 'access__mark--done', !done && current === n && 'access__mark--current']}
+		aria-label={done ? `Шаг ${n} пройден` : `Шаг ${n}`}
+	>
+		{#if done}<Check size={18} strokeWidth={2.5} />{:else}{n}{/if}
+	</span>
+{/snippet}
+
+<Shell page="access" wide>
 	<div class="access">
-		<header class="access__head">
-			<Eyebrow icon={Clock}>пробный доступ · 3&nbsp;часа</Eyebrow>
-			<h1 class="access__title">Получение доступа</h1>
-		</header>
+		<div class="access__main">
+			<header class="access__head">
+				<Eyebrow icon={Clock}>пробный доступ · 3&nbsp;часа</Eyebrow>
+				<h1 class="access__title">Получение доступа</h1>
+			</header>
 
-		<div class="access__toggle"><ClientToggle bind:value={client} /></div>
+			<div class="access__toggle"><ClientToggle bind:value={client} /></div>
 
-		<div class="access__steps">
-			<section class="access__card">
-				<div class="access__card-head">
-					<StepBadge>Шаг 1</StepBadge>
-					<button class="link access__other" type="button" onclick={() => (dialogOpen = true)}>
-						другое устройство?
-					</button>
-				</div>
-				<p class="access__text">
-					Установите и&nbsp;настройте <ClientLink client={cfg} /> — приложение, через&nbsp;которое работает ваше
-					соединение.
-				</p>
-				<InstallSteps client={cfg} {platform} />
-			</section>
-
-			<section class="access__card">
-				<div class="access__card-head"><StepBadge>Шаг 2</StepBadge></div>
-				<p class="access__text">
-					Получите временную ссылку-подписку<br />и&nbsp;добавьте её в&nbsp;{cfg.name}.
-				</p>
-				<!-- Высота держит место панели со ссылкой, чтобы инструкция ниже не прыгала
-				     при смене кнопки на панель. -->
-				<div class="access__bridge">
-					{#if !$bridge}
-						<Cta glow disabled={$bridgeBusy} onclick={() => void requestBridge()}>
-							<Zap size={16} />
-							{$bridgeBusy ? 'Получаем доступ…' : 'Получить временный доступ'}
-						</Cta>
-					{:else}
-						<div class="access__sub">
-							<div class="access__sub-head">
-								<p class="access__sub-label">ссылка-подписка</p>
-								<p class="access__countdown">
-									<Clock class="access__clock" size={14} /><span>{countdown}</span>
-								</p>
-							</div>
-							<div class="access__sub-row">
-								<div class="access__url">{shortUrl}</div>
-								<button
-									class="access__copy"
-									type="button"
-									aria-label="Копировать ссылку"
-									onclick={() => void copyUrl()}
-								>
-									<Copy size={16} />
-								</button>
-							</div>
+			<ol class="access__steps">
+				<li class="access__step">
+					<div class="access__rail">{@render marker(1)}<span class="access__line"></span></div>
+					<div class="access__body">
+						<div class="access__body-head">
+							<h2 class="access__subtitle">Установите приложение</h2>
+							<button class="link access__other" type="button" onclick={() => (dialogOpen = true)}>
+								другое устройство?
+							</button>
 						</div>
-					{/if}
-				</div>
-				<div class="access__add"><AddSubscriptionSteps client={cfg} /></div>
-			</section>
+						<p class="access__text">
+							Установите и&nbsp;настройте <ClientLink client={cfg} /> — приложение, через&nbsp;которое работает
+							ваше соединение.
+						</p>
+						<InstallSteps client={cfg} {platform} />
+					</div>
+				</li>
 
-			<!-- Шаг 3: если доступ уже получен на шаге 2 — ссылка с токеном привязки и QR на десктопе.
-			     Иначе кнопка ведёт просто в бота: человек мог получить доступ раньше. -->
+				<li class="access__step">
+					<div class="access__rail">{@render marker(2)}<span class="access__line"></span></div>
+					<div class="access__body">
+						<h2 class="access__subtitle">Добавьте ссылку-подписку в&nbsp;{cfg.name}</h2>
+						<p class="access__text">
+							Временная ссылка работает 3&nbsp;часа и&nbsp;до&nbsp;5&nbsp;ГБ — хватит, чтобы зайти
+							в&nbsp;бота.
+						</p>
+						<div class="access__inline-panel">{@render panel('sub-url-inline')}</div>
+						<AddSubscriptionSteps client={cfg} />
+					</div>
+				</li>
+
+				<li class="access__step">
+					<div class="access__rail">{@render marker(3)}</div>
+					<div class="access__body">
+						<h2 class="access__subtitle">Активируйте подписку в&nbsp;Telegram</h2>
+						<p class="access__text">Перейдите в&nbsp;бота в&nbsp;Telegram и&nbsp;активируйте подписку.</p>
+						<div class="access__tg"><Cta href={botLink}><Send size={16} />Открыть в Telegram</Cta></div>
+					</div>
+				</li>
+			</ol>
+		</div>
+
+		<aside class="access__aside" aria-label="Ваш доступ">
 			<section class="access__card">
-				<div class="access__card-head"><StepBadge>Шаг 3</StepBadge></div>
-				<p class="access__text">Перейдите в&nbsp;бота в&nbsp;Telegram и&nbsp;активируйте подписку.</p>
-				<Cta href={botLink}><Send size={16} />Открыть в Telegram</Cta>
+				<p class="access__card-title">Ваш доступ</p>
+				{@render panel('sub-url')}
 				{#if qr}
 					<div class="access__qr">
 						<img class="access__qr-image" src={qr} alt="QR-код: открыть бота в Telegram" />
 						<p class="access__text">
-							Или отсканируйте с&nbsp;телефона — бот откроется сразу с&nbsp;привязкой вашего доступа.
+							Telegram на&nbsp;телефоне? Отсканируйте — бот откроется сразу с&nbsp;привязкой этого
+							доступа.
 						</p>
 					</div>
 				{/if}
 			</section>
-		</div>
-
-		<section class="access__card access__faq">
-			<p class="access__faq-title">Есть вопросы?</p>
-			<p class="access__text">
-				В&nbsp;FAQ собраны ответы про тариф и&nbsp;оплату, пробный период, поддерживаемые устройства
-				и&nbsp;типичные проблемы с&nbsp;подключением.
-			</p>
-			<Cta href="/faq">Открыть FAQ</Cta>
-		</section>
-
-		<div class="access__back"><BackLink /></div>
+			<section class="access__card access__card--muted">
+				<p class="access__card-title">Есть вопросы?</p>
+				<p class="access__text">
+					Тарифы, пробный период, устройства и&nbsp;типичные проблемы — <a class="link" href="/faq"
+						>в&nbsp;FAQ</a
+					>.
+				</p>
+			</section>
+		</aside>
 	</div>
 	<PlatformDialog open={dialogOpen} bind:value={platform} onclose={() => (dialogOpen = false)} />
 </Shell>
@@ -220,56 +244,170 @@
 
 <style>
 	.access {
-		&__head {
-			margin-bottom: 1.5rem;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 2rem;
+
+		@media (--md) {
+			grid-template-columns: minmax(0, 1fr) 22rem;
+			gap: 3.5rem;
+			align-items: start;
+		}
+
+		&__main {
+			min-width: 0;
 		}
 
 		&__title {
-			font-size: 1.5rem;
-			font-weight: 700;
-			letter-spacing: -0.025em;
+			font-size: clamp(1.75rem, 4vw, 2.5rem);
+			font-weight: 800;
+			letter-spacing: -0.03em;
 		}
 
 		&__toggle {
-			margin-bottom: 1.5rem;
+			margin-block: 1.5rem 2rem;
 		}
 
 		&__steps {
+			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+
+		&__step {
+			display: grid;
+			grid-template-columns: 2.25rem minmax(0, 1fr);
+			column-gap: 1rem;
+
+			@media (--md) {
+				grid-template-columns: 2.5rem minmax(0, 1fr);
+				column-gap: 1.25rem;
+			}
+		}
+
+		&__rail {
 			display: flex;
 			flex-direction: column;
-			gap: 1rem;
-		}
-
-		&__card {
-			padding: 1.25rem;
-			border: 1px solid var(--border);
-			border-radius: calc(var(--radius) * 1.4);
-		}
-
-		&__card-head {
-			display: flex;
-			gap: 0.75rem;
 			align-items: center;
+		}
+
+		&__mark {
+			display: flex;
+			flex-shrink: 0;
+			align-items: center;
+			justify-content: center;
+			box-sizing: border-box;
+			width: 2.25rem;
+			height: 2.25rem;
+			border: 2px solid var(--border);
+			border-radius: 50%;
+			font-size: 0.9375rem;
+			font-weight: 800;
+			color: var(--muted);
+			background: var(--bg);
+
+			&--done {
+				border-color: var(--accent-fill);
+				color: var(--accent-fill-fg);
+				background: var(--accent-fill);
+			}
+
+			&--current {
+				border-color: var(--accent-fill);
+				color: var(--accent);
+				box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent-fill) 18%, transparent);
+			}
+		}
+
+		&__line {
+			flex: 1;
+			width: 2px;
+			margin-block: 0.375rem;
+			background: var(--border);
+
+			.access__mark--done + & {
+				background: var(--accent-fill);
+			}
+		}
+
+		&__body {
+			display: flex;
+			flex-direction: column;
+			gap: 0.875rem;
+			min-width: 0;
+			padding-bottom: 2.25rem;
+
+			.access__step:last-child & {
+				padding-bottom: 0;
+			}
+		}
+
+		&__body-head {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.25rem 1rem;
+			align-items: baseline;
 			justify-content: space-between;
-			margin-bottom: 0.5rem;
+		}
+
+		&__subtitle {
+			margin: 0.375rem 0 0;
+			font-size: 1.1875rem;
+			font-weight: 700;
 		}
 
 		&__other {
-			font-size: 0.75rem;
+			font-size: 0.8125rem;
 		}
 
 		&__text {
-			margin-bottom: 1rem;
-			font-size: 0.875rem;
-			line-height: 1.625;
+			font-size: 0.9375rem;
+			line-height: 1.6;
 			color: var(--muted);
 		}
 
-		&__bridge {
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			min-height: 4.375rem;
+		&__inline-panel {
+			@media (--md) {
+				display: none;
+			}
+		}
+
+		&__tg {
+			@media (--sm) {
+				align-self: flex-start;
+			}
+		}
+
+		&__aside {
+			display: none;
+
+			@media (--md) {
+				position: sticky;
+				top: 1.5rem;
+				display: grid;
+				gap: 1rem;
+			}
+		}
+
+		&__card {
+			display: grid;
+			gap: 1rem;
+			padding: 1.375rem;
+			border: 1px solid var(--border);
+			border-radius: 1.125rem;
+			background: var(--card);
+			box-shadow: 0 12px 32px -16px rgb(0 0 0 / 12%);
+
+			&--muted {
+				gap: 0.25rem;
+				background: none;
+				box-shadow: none;
+			}
+		}
+
+		&__card-title {
+			font-size: 0.9375rem;
+			font-weight: 700;
 		}
 
 		&__sub {
@@ -297,33 +435,27 @@
 			gap: 0.375rem;
 			align-items: center;
 			font-size: 0.875rem;
-			font-weight: 500;
+			font-weight: 700;
 			font-variant-numeric: tabular-nums;
-		}
-
-		:global(.access__clock) {
-			flex-shrink: 0;
-			color: #f59e0b;
+			color: light-dark(#b45309, #fbbf24);
 		}
 
 		&__sub-row {
 			display: flex;
 			gap: 0.5rem;
-			align-items: stretch;
 		}
 
 		&__url {
-			overflow: hidden;
 			flex: 1;
 			min-width: 0;
-			padding: 0.625rem 0.75rem;
+			height: 2.75rem;
+			padding: 0 0.75rem;
 			border: 1px solid var(--border);
-			border-radius: var(--radius);
+			border-radius: 0.625rem;
 			font-family: ui-monospace, sfmono-regular, menlo, monospace;
-			font-size: 0.875rem;
+			font-size: 0.8125rem;
 			color: color-mix(in srgb, var(--fg) 80%, transparent);
 			text-overflow: ellipsis;
-			white-space: nowrap;
 			background: var(--surface);
 		}
 
@@ -333,54 +465,38 @@
 			flex-shrink: 0;
 			align-items: center;
 			justify-content: center;
-			padding-inline: 0.875rem;
+			width: 2.75rem;
+			height: 2.75rem;
 			border: 0;
-			border-radius: var(--radius);
-			color: var(--cta-fg);
-			background: var(--cta-bg);
+			border-radius: 0.625rem;
+			color: var(--accent-fill-fg);
+			background: var(--accent-fill);
 			transition: background-color 0.2s;
 
 			&:hover {
-				background: var(--cta-bg-hover);
+				background: var(--accent-fill-hover);
 			}
-		}
-
-		&__add {
-			margin-top: 1rem;
 		}
 
 		&__qr {
 			display: flex;
 			gap: 1rem;
 			align-items: center;
-			margin-top: 1rem;
+			padding-top: 1rem;
+			border-top: 1px solid var(--border);
 
 			.access__text {
-				margin-bottom: 0;
+				font-size: 0.875rem;
 			}
 		}
 
 		&__qr-image {
 			flex-shrink: 0;
-			width: 10rem;
-			height: 10rem;
-			padding: 0.5rem;
+			width: 8.25rem;
+			height: 8.25rem;
+			padding: 0.375rem;
 			border-radius: var(--radius);
 			background: #fff;
-		}
-
-		&__faq {
-			margin-top: 2rem;
-		}
-
-		&__faq-title {
-			margin-bottom: 0.25rem;
-			font-size: 0.875rem;
-			font-weight: 600;
-		}
-
-		&__back {
-			margin-top: 1.5rem;
 		}
 	}
 </style>
