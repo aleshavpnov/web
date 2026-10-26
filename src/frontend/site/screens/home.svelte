@@ -7,7 +7,7 @@
 	import Eyebrow from '#frontend/components/eyebrow.svelte'
 	import Shell from '#frontend/components/shell.svelte'
 	import { formatMbps } from '#frontend/site/format.ts'
-	import { status, statusError } from '#frontend/site/state/status.ts'
+	import { expectedNodes, status, statusError } from '#frontend/site/state/status.ts'
 
 	import HealthDot from './health-dot.svelte'
 	import { HEALTH_LABEL } from './health.ts'
@@ -19,14 +19,17 @@
 	const pingMs = $derived($status?.internet?.latencyMs ?? null)
 </script>
 
-<!-- Число метрики, а пока оно не пришло — кость на его месте: заголовок читается одинаково
-     в обоих состояниях, и подстановка значения не перекраивает текст. -->
-{#snippet metric(value: string | null, width: string)}
-	{#if value === null}
-		<span class="home__bone"><Skeleton {width} height="0.7em" /></span>
-	{:else}
-		{value}
-	{/if}
+<!-- Число метрики, а пока оно не пришло — кость на его месте. Место под число одной ширины
+     в обоих состояниях (цифры моноширинные, скорость обычно в три знака, пинг в два), поэтому
+     подстановка не двигает текст и не меняет переносы заголовка. -->
+{#snippet metric(value: string | null, kind: 'speed' | 'ping')}
+	<span class="home__digits home__digits--{kind}">
+		{#if value === null}
+			<Skeleton width="100%" height="0.7em" />
+		{:else}
+			{value}
+		{/if}
+	</span>
 {/snippet}
 
 <Shell page="home" wide>
@@ -38,22 +41,21 @@
 				<span class="home__metric">
 					<Gauge size="0.7em" />
 					<span class="home__number"
-						>{@render metric(peakBps === null ? null : formatMbps(peakBps), '2.1em')}&nbsp;Мбит/с</span
+						>{@render metric(peakBps === null ? null : formatMbps(peakBps), 'speed')}&nbsp;Мбит/с</span
 					>
-					{#if avgBps !== null}
-						<span class="home__tip">
-							<InfoTip
-								label="Средняя скорость"
-								text={`Средняя за сегодня — ${formatMbps(avgBps)} Мбит/с`}
-							/>
-						</span>
-					{/if}
+					<!-- Значок держит место и до загрузки, иначе его появление толкало бы текст вбок. -->
+					<span class={['home__tip', avgBps === null && 'home__tip--pending']}>
+						<InfoTip
+							label="Средняя скорость"
+							text={avgBps === null ? '' : `Средняя за сегодня — ${formatMbps(avgBps)} Мбит/с`}
+						/>
+					</span>
 				</span>
 				и&nbsp;пингом
 				<span class="home__metric">
 					<Activity size="0.7em" />
 					<span class="home__number"
-						>{@render metric(pingMs === null ? null : String(pingMs), '1.3em')}&nbsp;мс</span
+						>{@render metric(pingMs === null ? null : String(pingMs), 'ping')}&nbsp;мс</span
 					>
 				</span>
 				за&nbsp;сегодня
@@ -79,7 +81,7 @@
 						<Skeleton width="4rem" height="0.75rem" />
 					</div>
 					<div class="home__nodes">
-						{#each ['a', 'b', 'c'] as k (k)}
+						{#each Array.from({ length: expectedNodes() }, (_, i) => i) as i (i)}
 							<div class="home__node">
 								<Skeleton width="6rem" height="0.75rem" />
 								<Skeleton width="2.5rem" height="0.75rem" />
@@ -152,15 +154,27 @@
 			font-variant-numeric: tabular-nums;
 		}
 
-		&__bone {
+		&__digits {
 			display: inline-block;
 			vertical-align: baseline;
+
+			&--speed {
+				min-width: 3ch;
+			}
+
+			&--ping {
+				min-width: 2ch;
+			}
 		}
 
 		&__tip {
 			font-size: 1rem;
 			font-weight: 400;
 			letter-spacing: normal;
+
+			&--pending {
+				visibility: hidden;
+			}
 		}
 
 		&__lead {
@@ -219,7 +233,7 @@
 			gap: 0.5rem;
 			align-items: center;
 			justify-content: space-between;
-			min-height: 1.25rem;
+			min-height: 1lh;
 			font-size: 0.9375rem;
 
 			&--muted {
@@ -264,7 +278,7 @@
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			min-height: 1.25rem;
+			min-height: 1lh;
 			font-size: 0.875rem;
 		}
 

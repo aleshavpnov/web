@@ -7,7 +7,7 @@
 	import Shell from '#frontend/components/shell.svelte'
 	import type { Health } from '#frontend/site/api/schemas.ts'
 	import { formatPct } from '#frontend/site/format.ts'
-	import { loadStatus, status, statusError } from '#frontend/site/state/status.ts'
+	import { expectedNodes, loadStatus, status, statusError } from '#frontend/site/state/status.ts'
 
 	import HealthDot from './health-dot.svelte'
 	import { HEALTH_LABEL } from './health.ts'
@@ -34,12 +34,14 @@
 				<h1 class="status__title">Статус системы</h1>
 			</div>
 			{#if $status}
-				<span class="status__updated">
+				<span class="status__updated status__line">
 					обновлено {new Date($status.generatedAt).toLocaleTimeString('ru-RU', {
 						hour: '2-digit',
 						minute: '2-digit',
 					})}
 				</span>
+			{:else if !$statusError}
+				<span class="status__updated status__line"><Skeleton width="6.5rem" height="0.75rem" /></span>
 			{/if}
 		</header>
 
@@ -48,21 +50,27 @@
 				<HealthDot status="unknown" /><span class="status__muted">Статус недоступен</span>
 			</div>
 		{:else if !$status}
-			<div class="status__loading" role="status" aria-label="Загрузка статуса">
-				<div class="status__banner">
-					<Skeleton width="11rem" height="1rem" /><Skeleton width="3rem" height="0.75rem" />
-				</div>
-				{#each ['a', 'b'] as k (k)}
+			<!-- Заготовка повторяет разметку загруженной страницы строка в строку, а серверов в ней
+			     столько же, сколько было в прошлый раз: приход данных не двигает страницу. -->
+			<div class="status__banner" role="status" aria-label="Загрузка статуса">
+				<span class="status__overall status__line"><Skeleton width="11rem" height="1rem" /></span>
+				<Skeleton width="3rem" height="0.75rem" />
+			</div>
+			<div class="status__nodes">
+				{#each Array.from({ length: expectedNodes() }, (_, i) => i) as i (i)}
 					<div class="status__node">
 						<div class="status__node-head">
 							<Skeleton width="6rem" height="1rem" /><Skeleton width="4rem" height="0.75rem" />
 						</div>
-						<Skeleton height="1.25rem" />
-						<Skeleton width="11rem" height="0.75rem" />
+						<div class="status__bars">
+							<Skeleton height="1.25rem" />
+							<span class="status__hint status__line"><Skeleton width="3rem" height="0.75rem" /></span>
+						</div>
+						<div class="status__uptime status__line"><Skeleton width="11rem" height="0.75rem" /></div>
 					</div>
 				{/each}
-				<Skeleton width="16rem" height="1.25rem" />
 			</div>
+			<p class="status__hint status__none status__line"><Skeleton width="16rem" height="0.875rem" /></p>
 		{:else}
 			<div class="status__banner status__banner--{$status.overall}">
 				<span class="status__overall status__overall--{$status.overall}">
@@ -173,11 +181,17 @@
 			line-height: 1.625;
 		}
 
-		&__loading,
 		&__nodes,
 		&__incidents {
 			display: grid;
 			gap: 0.75rem;
+		}
+
+		/* Строка заготовки ростом со строку текста, который придёт на её место. */
+		&__line {
+			display: flex;
+			align-items: center;
+			min-height: 1lh;
 		}
 
 		&__banner {
@@ -240,7 +254,7 @@
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			min-height: 1.25rem;
+			min-height: 1.375rem;
 		}
 
 		&__node-name {
