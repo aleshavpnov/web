@@ -97,3 +97,32 @@ test('/app/add без подписки просит открыть ссылку 
 
 	await expect(page.getByRole('heading', { name: 'Ссылка неполная' })).toBeVisible()
 })
+
+test('/faq ищет по тексту ответов и прячет пустые темы', async ({ page }) => {
+	await mockBot(page)
+	await page.goto('/faq')
+
+	await expect(page.getByRole('heading', { level: 3 })).toHaveCount(10)
+
+	// «сертификат» есть только в ответе про подарок, не в вопросе.
+	await page.getByPlaceholder('Поиск по вопросам').fill('сертификат')
+	await expect(page.getByRole('heading', { level: 3 })).toHaveCount(1)
+	await expect(page.getByRole('heading', { name: 'Можно ли подарить подписку?' })).toBeVisible()
+	await expect(page.getByRole('heading', { level: 2, name: 'Устройства' })).toBeHidden()
+
+	await page.getByPlaceholder('Поиск по вопросам').fill('нет такого слова')
+	await expect(page.getByText(/ничего не\s+нашлось/)).toBeVisible()
+})
+
+test('/faq ведёт по оглавлению к теме', async ({ page }) => {
+	await mockBot(page)
+	await page.goto('/faq')
+
+	await page
+		.getByRole('navigation', { name: 'Темы' })
+		.getByRole('link', { name: /Оплата/ })
+		.click()
+
+	await expect(page).toHaveURL(/#topic-payment$/)
+	await expect(page.getByRole('heading', { level: 2, name: 'Оплата' })).toBeInViewport()
+})
