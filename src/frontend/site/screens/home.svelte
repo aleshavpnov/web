@@ -154,16 +154,20 @@
 			font-variant-numeric: tabular-nums;
 		}
 
+		/* Ширина в цифрах Manrope: моноширинная цифра 0.59em, а `ch` (0.674em) шире и оставлял
+		   пробел справа от числа. */
 		&__digits {
+			--digit: 0.59em;
+
 			display: inline-block;
 			vertical-align: baseline;
 
 			&--speed {
-				min-width: 3ch;
+				min-width: calc(var(--digit) * 3);
 			}
 
 			&--ping {
-				min-width: 2ch;
+				min-width: calc(var(--digit) * 2);
 			}
 		}
 
