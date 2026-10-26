@@ -38,9 +38,12 @@ test('главная подставляет метрики из статуса',
 	await mockBot(page)
 	await page.goto('/')
 
-	await expect(page.getByRole('heading', { level: 1 })).toContainText('100 Мбит/с')
-	await expect(page.getByRole('heading', { level: 1 })).toContainText('42 мс')
-	await expect(page.getByText('Нидерланды')).toBeVisible()
+	const tiles = page.getByRole('region', { name: 'Сегодня' })
+
+	await expect(tiles).toContainText('100 Мбит/с')
+	await expect(tiles).toContainText('в среднем 40.0 Мбит/с')
+	await expect(tiles).toContainText('42 мс')
+	await expect(tiles).toContainText('1 из 1 в строю')
 	await expect(page).toHaveTitle('Alesha Vepenov')
 })
 
@@ -48,18 +51,22 @@ test('/get выдаёт временную ссылку и ведёт в бот�
 	await mockBot(page)
 	await page.goto('/get')
 
+	await page.getByRole('button', { name: /Дальше: Ссылка-подписка/ }).click()
 	await page.getByRole('button', { name: 'Получить временный доступ' }).click()
 
-	await expect(page.getByText('https://example.com/s/abc123')).toBeVisible()
+	await expect(page.getByLabel('ссылка-подписка')).toHaveValue('https://example.com/s/abc123')
+
+	await page.getByRole('button', { name: /Дальше: Telegram/ }).click()
 
 	await expect(page.getByRole('link', { name: 'Открыть в Telegram' })).toHaveAttribute(
 		'href',
 		'https://t.me/examplebot?start=c_tok',
 	)
 
-	// Ссылка переживает перезагрузку: повторный визит не плодит клиентов.
+	// Ссылка переживает перезагрузку, и страница открывается сразу на ней: повторный визит
+	// не плодит клиентов.
 	await page.reload()
-	await expect(page.getByText('https://example.com/s/abc123')).toBeVisible()
+	await expect(page.getByLabel('ссылка-подписка')).toHaveValue('https://example.com/s/abc123')
 })
 
 test('/get переключает клиента и платформу', async ({ page }) => {
@@ -67,11 +74,17 @@ test('/get переключает клиента и платформу', async (
 	await page.goto('/get')
 
 	await page.getByRole('button', { name: 'Incy' }).click()
-	await expect(page.getByText(/добавьте её в\s+Incy/).first()).toBeVisible()
-
 	await page.getByRole('button', { name: 'другое устройство?' }).click()
 	await page.getByRole('dialog').getByRole('button', { name: 'Windows' }).click()
 	await expect(page.getByText(/Incy пока недоступен/)).toBeVisible()
+
+	// Шаги наверху переключаются и сами по себе, без «Дальше».
+	await page
+		.getByRole('button', { name: /Ссылка-подписка/ })
+		.first()
+		.click()
+
+	await expect(page.getByRole('heading', { name: /добавьте её в\s+Incy/ })).toBeVisible()
 })
 
 test('/status показывает узлы и аптайм', async ({ page }) => {

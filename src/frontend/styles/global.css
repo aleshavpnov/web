@@ -3,7 +3,9 @@
 :root {
 	--font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
 
-	--column: 28rem;
+	--column: calc(70rem + var(--gutter) * 2);
+	/* Ширина текстовых страниц: FAQ, документы, статус. На телефоне упирается в экран. */
+	--prose: 40rem;
 	--gutter: 1rem;
 
 	--bg: light-dark(#fff, #09090b);
@@ -91,7 +93,7 @@ img {
 	height: auto;
 }
 
-/* Колонка шириной с телефон, по центру на широком экране: так сайт выглядел и раньше. */
+/* Колонка страницы по центру: шапка и подвал во всю её ширину, текст внутри уже (--prose). */
 .column {
 	display: flex;
 	flex-direction: column;
