@@ -50,7 +50,7 @@ test('/get выдаёт временную ссылку и ведёт в бот�
 
 	await page.getByRole('button', { name: 'Получить временный доступ' }).click()
 
-	await expect(page.getByText('https://example.com/s/abc123')).toBeVisible()
+	await expect(page.locator('#sub-url')).toHaveValue('https://example.com/s/abc123')
 
 	await expect(page.getByRole('link', { name: 'Открыть в Telegram' })).toHaveAttribute(
 		'href',
@@ -59,7 +59,7 @@ test('/get выдаёт временную ссылку и ведёт в бот�
 
 	// Ссылка переживает перезагрузку: повторный визит не плодит клиентов.
 	await page.reload()
-	await expect(page.getByText('https://example.com/s/abc123')).toBeVisible()
+	await expect(page.locator('#sub-url')).toHaveValue('https://example.com/s/abc123')
 })
 
 test('/get переключает клиента и платформу', async ({ page }) => {
@@ -74,13 +74,78 @@ test('/get переключает клиента и платформу', async (
 	await expect(page.getByText(/Incy пока недоступен/)).toBeVisible()
 })
 
-test('/status показывает узлы и аптайм', async ({ page }) => {
+test('/status показывает сводку, серверы и пустой список сбоев', async ({ page }) => {
 	await mockBot(page)
 	await page.goto('/status')
 
-	await expect(page.getByText('Всё работает')).toBeVisible()
-	await expect(page.getByText('100.0% / 24ч')).toBeVisible()
-	await expect(page.getByText('Инцидентов за последние 30 дней нет')).toBeVisible()
+	const summary = page.getByRole('region', { name: 'Сводка' })
+
+	await expect(summary).toContainText('Всё работает')
+	await expect(summary).toContainText('1 из 1 сервера на связи')
+	await expect(summary).toContainText('Без сбоев')
+	await expect(page.getByRole('region', { name: 'Серверы' })).toContainText('99.8%')
+	await expect(page.getByText('За 30 дней сбоев не было')).toBeVisible()
+})
+
+test('/status склеивает записи одного сбоя и считает длительность', async ({ page }) => {
+	await mockBot(page)
+
+	const start = new Date(Date.now() - 2 * 86_400_000)
+	const end = new Date(start.getTime() + (4 * 60 + 45) * 60_000)
+	const incident = (id: number, location: string) => ({
+		id,
+		location,
+		severity: 'critical',
+		title: `Узел недоступен: ${location}`,
+		body: null,
+		status: 'closed',
+		startedAt: start.toISOString(),
+		resolvedAt: end.toISOString(),
+	})
+
+	await page.route('**/status.json', (route) =>
+		route.fulfill({ json: { ...STATUS, incidents: [incident(1, 'Амстердам'), incident(2, 'Варшава')] } }),
+	)
+
+	await page.goto('/status')
+
+	await expect(page.getByRole('region', { name: 'Сводка' })).toContainText('1 сбой')
+
+	const outages = page.getByRole('region', { name: 'Сбои' }).getByRole('listitem')
+
+	await expect(outages).toHaveCount(1)
+	await expect(outages.first()).toContainText('2 сервера: Амстердам, Варшава')
+	await expect(outages.first()).toContainText('4 ч 45 мин')
+})
+
+test('/status показывает два последних сбоя, остальные по кнопке', async ({ page }) => {
+	await mockBot(page)
+
+	const incidents = [1, 3, 5].map((daysAgo) => {
+		const start = new Date(Date.now() - daysAgo * 86_400_000)
+
+		return {
+			id: daysAgo,
+			location: 'Амстердам',
+			severity: 'critical',
+			title: 'Узел недоступен: Амстердам',
+			body: null,
+			status: 'closed',
+			startedAt: start.toISOString(),
+			resolvedAt: new Date(start.getTime() + 600_000).toISOString(),
+		}
+	})
+
+	await page.route('**/status.json', (route) => route.fulfill({ json: { ...STATUS, incidents } }))
+	await page.goto('/status')
+
+	const outages = page.getByRole('region', { name: 'Сбои' }).getByRole('listitem')
+
+	await expect(outages).toHaveCount(2)
+	await page.getByRole('button', { name: 'Показать ещё 1 сбой' }).click()
+	await expect(outages).toHaveCount(3)
+	await page.getByRole('button', { name: 'Свернуть' }).click()
+	await expect(outages).toHaveCount(2)
 })
 
 test('/app/add собирает intent-ссылку из фрагмента', async ({ page }) => {
@@ -96,4 +161,33 @@ test('/app/add без подписки просит открыть ссылку 
 	await page.goto('/app/add')
 
 	await expect(page.getByRole('heading', { name: 'Ссылка неполная' })).toBeVisible()
+})
+
+test('/faq ищет по тексту ответов и прячет пустые темы', async ({ page }) => {
+	await mockBot(page)
+	await page.goto('/faq')
+
+	await expect(page.getByRole('heading', { level: 3 })).toHaveCount(10)
+
+	// «сертификат» есть только в ответе про подарок, не в вопросе.
+	await page.getByPlaceholder('Поиск по вопросам').fill('сертификат')
+	await expect(page.getByRole('heading', { level: 3 })).toHaveCount(1)
+	await expect(page.getByRole('heading', { name: 'Можно ли подарить подписку?' })).toBeVisible()
+	await expect(page.getByRole('heading', { level: 2, name: 'Устройства' })).toBeHidden()
+
+	await page.getByPlaceholder('Поиск по вопросам').fill('нет такого слова')
+	await expect(page.getByText(/ничего не\s+нашлось/)).toBeVisible()
+})
+
+test('/faq ведёт по оглавлению к теме', async ({ page }) => {
+	await mockBot(page)
+	await page.goto('/faq')
+
+	await page
+		.getByRole('navigation', { name: 'Темы' })
+		.getByRole('link', { name: /Оплата/ })
+		.click()
+
+	await expect(page).toHaveURL(/#topic-payment$/)
+	await expect(page.getByRole('heading', { level: 2, name: 'Оплата' })).toBeInViewport()
 })

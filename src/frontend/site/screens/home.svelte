@@ -7,7 +7,7 @@
 	import Eyebrow from '#frontend/components/eyebrow.svelte'
 	import Shell from '#frontend/components/shell.svelte'
 	import { formatMbps } from '#frontend/site/format.ts'
-	import { status, statusError } from '#frontend/site/state/status.ts'
+	import { expectedNodes, status, statusError } from '#frontend/site/state/status.ts'
 
 	import HealthDot from './health-dot.svelte'
 	import { HEALTH_LABEL } from './health.ts'
@@ -19,41 +19,43 @@
 	const pingMs = $derived($status?.internet?.latencyMs ?? null)
 </script>
 
-<!-- Число метрики, а пока оно не пришло — кость на его месте: заголовок читается одинаково
-     в обоих состояниях, и подстановка значения не перекраивает текст. -->
-{#snippet metric(value: string | null, width: string)}
-	{#if value === null}
-		<span class="home__bone"><Skeleton {width} height="0.7em" /></span>
-	{:else}
-		{value}
-	{/if}
+<!-- Число метрики, а пока оно не пришло — кость на его месте. Место под число одной ширины
+     в обоих состояниях (цифры моноширинные, скорость обычно в три знака, пинг в два), поэтому
+     подстановка не двигает текст и не меняет переносы заголовка. -->
+{#snippet metric(value: string | null, kind: 'speed' | 'ping')}
+	<span class="home__digits home__digits--{kind}">
+		{#if value === null}
+			<Skeleton width="100%" height="0.7em" />
+		{:else}
+			{value}
+		{/if}
+	</span>
 {/snippet}
 
-<Shell page="home">
+<Shell page="home" wide>
 	<div class="home">
-		<div class="home__intro">
+		<section class="home__intro">
 			<Eyebrow icon={Lock}>Частный доступ</Eyebrow>
 			<h1 class="home__title">
 				В&nbsp;интернет без&nbsp;ограничений со&nbsp;скоростью до
 				<span class="home__metric">
 					<Gauge size="0.7em" />
 					<span class="home__number"
-						>{@render metric(peakBps === null ? null : formatMbps(peakBps), '2.1em')}&nbsp;Мбит/с</span
+						>{@render metric(peakBps === null ? null : formatMbps(peakBps), 'speed')}&nbsp;Мбит/с</span
 					>
-					{#if avgBps !== null}
-						<span class="home__tip">
-							<InfoTip
-								label="Средняя скорость"
-								text={`Средняя за сегодня — ${formatMbps(avgBps)} Мбит/с`}
-							/>
-						</span>
-					{/if}
+					<!-- Значок держит место и до загрузки, иначе его появление толкало бы текст вбок. -->
+					<span class={['home__tip', avgBps === null && 'home__tip--pending']}>
+						<InfoTip
+							label="Средняя скорость"
+							text={avgBps === null ? '' : `Средняя за сегодня — ${formatMbps(avgBps)} Мбит/с`}
+						/>
+					</span>
 				</span>
 				и&nbsp;пингом
 				<span class="home__metric">
 					<Activity size="0.7em" />
 					<span class="home__number"
-						>{@render metric(pingMs === null ? null : String(pingMs), '1.3em')}&nbsp;мс</span
+						>{@render metric(pingMs === null ? null : String(pingMs), 'ping')}&nbsp;мс</span
 					>
 				</span>
 				за&nbsp;сегодня
@@ -61,58 +63,70 @@
 			<p class="home__lead">
 				Ваше радикальное решение проблем, работает везде и&nbsp;всегда, работает лучше остальных
 			</p>
-			<Cta href="/get"><Zap size={16} />Получить доступ</Cta>
-			<RatingBadge />
-		</div>
+			<div class="home__actions">
+				<div class="home__cta"><Cta href="/get" glow><Zap size={18} />Получить доступ</Cta></div>
+				<a class="home__faq" href="/faq">Частые вопросы <ArrowRight size={14} /></a>
+			</div>
+		</section>
 
-		<div class="home__status">
-			{#if $statusError}
-				<p class="home__status-row home__status-row--muted"><HealthDot status="unknown" />Статус недоступен</p>
-			{:else if !$status}
-				<div class="home__status-row" role="status" aria-label="Загрузка статуса">
-					<Skeleton width="8rem" height="1rem" />
-					<Skeleton width="4rem" height="0.75rem" />
-				</div>
-				<div class="home__nodes">
-					{#each ['a', 'b'] as k (k)}
-						<div class="home__node">
-							<Skeleton width="6rem" height="0.75rem" />
-							<Skeleton width="2.5rem" height="0.75rem" />
-						</div>
-					{/each}
-				</div>
-			{:else}
-				<div class="home__status-row">
-					<span class={['home__overall', $status.overall === 'operational' && 'home__overall--ok']}>
-						<HealthDot status={$status.overall} />{HEALTH_LABEL[$status.overall]}
-					</span>
-					<a class="home__more" href="/status">подробнее <ArrowRight size={14} /></a>
-				</div>
-				{#if $status.nodes.length > 0}
+		<aside class="home__aside">
+			<div class="home__status">
+				{#if $statusError}
+					<p class="home__status-row home__status-row--muted">
+						<HealthDot status="unknown" />Статус недоступен
+					</p>
+				{:else if !$status}
+					<div class="home__status-row" role="status" aria-label="Загрузка статуса">
+						<Skeleton width="8rem" height="1rem" />
+						<Skeleton width="4rem" height="0.75rem" />
+					</div>
 					<div class="home__nodes">
-						{#each $status.nodes as node (node.label)}
+						{#each Array.from({ length: expectedNodes() }, (_, i) => i) as i (i)}
 							<div class="home__node">
-								<span class="home__node-label"><HealthDot status={node.status} />{node.label}</span>
-								{#if node.uptime.d1 !== null}
-									<span class="home__node-uptime">{Math.round(node.uptime.d1 * 10) / 10}%</span>
-								{/if}
+								<Skeleton width="6rem" height="0.75rem" />
+								<Skeleton width="2.5rem" height="0.75rem" />
 							</div>
 						{/each}
 					</div>
+				{:else}
+					<div class="home__status-row">
+						<span class={['home__overall', $status.overall === 'operational' && 'home__overall--ok']}>
+							<HealthDot status={$status.overall} />{HEALTH_LABEL[$status.overall]}
+						</span>
+						<a class="home__more" href="/status">подробнее <ArrowRight size={14} /></a>
+					</div>
+					{#if $status.nodes.length > 0}
+						<div class="home__nodes">
+							{#each $status.nodes as node (node.label)}
+								<div class="home__node">
+									<span class="home__node-label"><HealthDot status={node.status} />{node.label}</span>
+									{#if node.uptime.d1 !== null}
+										<span class="home__node-uptime">{Math.round(node.uptime.d1 * 10) / 10}%</span>
+									{/if}
+								</div>
+							{/each}
+						</div>
+					{/if}
 				{/if}
-			{/if}
-		</div>
+			</div>
+			<RatingBadge />
+		</aside>
 	</div>
 </Shell>
 
 <style>
 	.home {
-		display: flex;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		flex: 1;
-		flex-direction: column;
-		gap: 1.5rem;
-		justify-content: center;
-		padding-block: 1rem;
+		gap: 2.5rem;
+		align-content: center;
+
+		@media (--md) {
+			grid-template-columns: minmax(0, 1fr) 24rem;
+			gap: 4.5rem;
+			align-items: center;
+		}
 
 		&__intro {
 			display: grid;
@@ -120,10 +134,10 @@
 		}
 
 		&__title {
-			font-size: clamp(2.25rem, 9vw, 3rem);
-			font-weight: 700;
-			line-height: 1.25;
-			letter-spacing: -0.025em;
+			font-size: clamp(2.25rem, 5.2vw, 3.75rem);
+			font-weight: 800;
+			line-height: 1.1;
+			letter-spacing: -0.03em;
 		}
 
 		&__metric {
@@ -140,30 +154,78 @@
 			font-variant-numeric: tabular-nums;
 		}
 
-		&__bone {
+		&__digits {
 			display: inline-block;
 			vertical-align: baseline;
+
+			&--speed {
+				min-width: 3ch;
+			}
+
+			&--ping {
+				min-width: 2ch;
+			}
 		}
 
 		&__tip {
 			font-size: 1rem;
 			font-weight: 400;
 			letter-spacing: normal;
+
+			&--pending {
+				visibility: hidden;
+			}
 		}
 
 		&__lead {
-			max-width: 24rem;
-			font-size: 1rem;
-			line-height: 1.625;
+			max-width: 32rem;
+			font-size: clamp(1rem, 1.6vw, 1.125rem);
+			line-height: 1.6;
 			color: var(--muted);
+		}
+
+		&__actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1rem 1.5rem;
+			align-items: center;
+		}
+
+		&__cta {
+			width: 100%;
+
+			@media (--sm) {
+				width: auto;
+			}
+		}
+
+		&__faq {
+			display: inline-flex;
+			gap: 0.25rem;
+			align-items: center;
+			font-size: 0.9375rem;
+			font-weight: 600;
+			color: var(--fg);
+			text-decoration: none;
+
+			&:hover {
+				color: var(--accent);
+			}
+		}
+
+		&__aside {
+			display: grid;
+			gap: 1rem;
 		}
 
 		&__status {
 			display: grid;
-			gap: 0.75rem;
-			padding: 1rem;
-			border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
-			border-radius: calc(var(--radius) * 1.4);
+			gap: 1rem;
+			padding: 1.375rem;
+			border: 1px solid var(--border);
+			border-radius: 1.125rem;
+			background: var(--card);
+			box-shadow: 0 12px 32px -16px rgb(0 0 0 / 12%);
 		}
 
 		&__status-row {
@@ -171,8 +233,8 @@
 			gap: 0.5rem;
 			align-items: center;
 			justify-content: space-between;
-			min-height: 1.25rem;
-			font-size: 0.875rem;
+			min-height: 1lh;
+			font-size: 0.9375rem;
 
 			&--muted {
 				justify-content: flex-start;
@@ -184,6 +246,7 @@
 			display: inline-flex;
 			gap: 0.5rem;
 			align-items: center;
+			font-weight: 700;
 
 			&--ok {
 				color: var(--accent);
@@ -194,7 +257,7 @@
 			display: inline-flex;
 			gap: 0.25rem;
 			align-items: center;
-			font-size: 0.75rem;
+			font-size: 0.8125rem;
 			color: var(--muted);
 			text-decoration: none;
 			transition: color 0.15s;
@@ -206,24 +269,23 @@
 
 		&__nodes {
 			display: grid;
-			gap: 0.375rem;
-			padding-top: 0.75rem;
-			border-top: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+			gap: 0.625rem;
+			padding-top: 1rem;
+			border-top: 1px solid var(--border);
 		}
 
 		&__node {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			min-height: 1rem;
-			font-size: 0.75rem;
+			min-height: 1lh;
+			font-size: 0.875rem;
 		}
 
 		&__node-label {
 			display: inline-flex;
-			gap: 0.375rem;
+			gap: 0.5rem;
 			align-items: center;
-			color: color-mix(in srgb, var(--fg) 70%, transparent);
 		}
 
 		&__node-uptime {
