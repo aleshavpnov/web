@@ -74,13 +74,48 @@ test('/get переключает клиента и платформу', async (
 	await expect(page.getByText(/Incy пока недоступен/)).toBeVisible()
 })
 
-test('/status показывает узлы и аптайм', async ({ page }) => {
+test('/status показывает сводку, серверы и пустой список сбоев', async ({ page }) => {
 	await mockBot(page)
 	await page.goto('/status')
 
-	await expect(page.getByText('Всё работает')).toBeVisible()
-	await expect(page.getByText('100.0% / 24ч')).toBeVisible()
-	await expect(page.getByText('Инцидентов за последние 30 дней нет')).toBeVisible()
+	const summary = page.getByRole('region', { name: 'Сводка' })
+
+	await expect(summary).toContainText('Всё работает')
+	await expect(summary).toContainText('1 из 1 сервера на связи')
+	await expect(summary).toContainText('Без сбоев')
+	await expect(page.getByRole('region', { name: 'Серверы' })).toContainText('99.8%')
+	await expect(page.getByText('За 30 дней сбоев не было')).toBeVisible()
+})
+
+test('/status склеивает записи одного сбоя и считает длительность', async ({ page }) => {
+	await mockBot(page)
+
+	const start = new Date(Date.now() - 2 * 86_400_000)
+	const end = new Date(start.getTime() + (4 * 60 + 45) * 60_000)
+	const incident = (id: number, location: string) => ({
+		id,
+		location,
+		severity: 'critical',
+		title: `Узел недоступен: ${location}`,
+		body: null,
+		status: 'closed',
+		startedAt: start.toISOString(),
+		resolvedAt: end.toISOString(),
+	})
+
+	await page.route('**/status.json', (route) =>
+		route.fulfill({ json: { ...STATUS, incidents: [incident(1, 'Амстердам'), incident(2, 'Варшава')] } }),
+	)
+
+	await page.goto('/status')
+
+	await expect(page.getByRole('region', { name: 'Сводка' })).toContainText('1 сбой')
+
+	const outages = page.getByRole('region', { name: 'Сбои' }).getByRole('listitem')
+
+	await expect(outages).toHaveCount(1)
+	await expect(outages.first()).toContainText('2 сервера: Амстердам, Варшава')
+	await expect(outages.first()).toContainText('4 ч 45 мин')
 })
 
 test('/app/add собирает intent-ссылку из фрагмента', async ({ page }) => {
