@@ -1,0 +1,61 @@
+name: Release
+
+# Мёрж в main только обновляет релизный PR release-please. Мёрж самого PR
+# выпускает тег, и после проверок core получает событие web-released с этим
+# тегом. Ключей прода здесь нет, деплой делает core.
+# Ручной запуск шлёт событие ещё раз для любого тега, например для отката.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to send to core, e.g. v4.1.0
+        required: true
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: github.event_name == 'push'
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    uses: aimuzov/.github/.github/workflows/release.yml@v1
+
+  check:
+    needs: release
+    if: needs.release.outputs.created == 'true'
+    uses: ./.github/workflows/check.yml
+
+  # Токен fine-grained, только на aleshavpnov/core с contents: write: меньше
+  # GitHub для repository_dispatch не даёт.
+  notify-core:
+    needs: [release, check]
+    if: >-
+      !cancelled() &&
+      (github.event_name == 'workflow_dispatch' || needs.check.result == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.CORE_DISPATCH_TOKEN }}
+          TAG: ${{ needs.release.outputs.tag || inputs.tag }}
+        run: |
+          if [[ ! $TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "not a release tag: $TAG" >&2
+            exit 1
+          fi
+          if [[ -z $GH_TOKEN ]]; then
+            echo "CORE_DISPATCH_TOKEN is not set, core does not know about $TAG" >&2
+            exit 1
+          fi
+          gh api repos/aleshavpnov/core/dispatches \
+            -f event_type=web-released -f "client_payload[tag]=$TAG"
+          echo "sent web-released $TAG to aleshavpnov/core"

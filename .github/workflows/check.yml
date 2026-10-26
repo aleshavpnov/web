@@ -1,9 +1,7 @@
 name: Check
 
-# Деплоя здесь нет, его делает core, поэтому main проверяется на push.
+# На main проверки вызывает release.yml перед событием в core, ветки идут через PR.
 on:
-  push:
-    branches: [main]
   pull_request:
   workflow_call:
   workflow_dispatch:
