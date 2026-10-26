@@ -8,7 +8,7 @@ const ignoreConsole = [/Failed to load resource/]
 siteChecks({
 	ignoreConsole,
 	notFound: { suggest: false },
-	theme: { button: (page) => page.getByRole('button', { name: /тема/i }), peek: false },
+	theme: { button: (page) => page.getByRole('button', { name: /^Тема:/ }) },
 })
 
 // Голая разметка обезличена: сканер без JS не должен узнать сервис ни по одной странице.

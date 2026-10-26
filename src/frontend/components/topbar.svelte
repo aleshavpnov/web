@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Activity, ArrowLeft, CircleHelp, Globe } from '@lucide/svelte'
 
-	import ThemeButton from '#frontend/components/theme-button.svelte'
+	import ThemeToggle from '#frontend/components/theme-toggle.svelte'
 	import type { Page } from '#frontend/site/pages.ts'
 
 	let { page }: { page: Page } = $props()
@@ -34,7 +34,7 @@
 				{item.label}
 			</a>
 		{/each}
-		<ThemeButton />
+		<ThemeToggle />
 	</nav>
 </header>
 
@@ -43,7 +43,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0.875rem var(--gutter);
+		padding: 0.5rem var(--gutter);
 		border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 
 		&__home {
