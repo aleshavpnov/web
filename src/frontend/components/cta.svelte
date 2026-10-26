@@ -51,7 +51,7 @@
 		&:hover:not(:disabled) {
 			translate: 0 -2px;
 			background: var(--cta-bg-hover);
-			box-shadow: 0 10px 15px -3px rgb(16 185 129 / 40%);
+			box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--accent-fill) 40%, transparent);
 		}
 
 		&:active:not(:disabled) {
@@ -76,11 +76,11 @@
 	@keyframes glow {
 		0%,
 		100% {
-			box-shadow: 0 0 0 0 rgb(16 185 129 / 50%);
+			box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-fill) 50%, transparent);
 		}
 
 		50% {
-			box-shadow: 0 0 24px 5px rgb(16 185 129 / 40%);
+			box-shadow: 0 0 24px 5px color-mix(in srgb, var(--accent-fill) 40%, transparent);
 		}
 	}
 </style>
