@@ -19,6 +19,7 @@
 		border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 		font-size: 0.75rem;
 		color: var(--muted);
+		background: var(--bg);
 
 		&__nav {
 			display: flex;
@@ -26,6 +27,8 @@
 			gap: 0.5rem 1rem;
 			align-items: center;
 			justify-content: center;
+			max-width: var(--column);
+			margin-inline: auto;
 			text-align: center;
 		}
 

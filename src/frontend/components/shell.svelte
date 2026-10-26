@@ -40,6 +40,8 @@
 		flex: 1;
 		flex-direction: column;
 		width: 100%;
+		max-width: var(--column);
+		margin-inline: auto;
 		padding: 2rem var(--gutter);
 
 		@media (--md) {

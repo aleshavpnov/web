@@ -13,38 +13,46 @@
 </script>
 
 <header class="topbar">
-	<a class="topbar__home" href="/">
-		{#if page === 'home'}
-			<Globe class="topbar__mark" size={16} />
-			Alesha Vepenov
-		{:else}
-			<ArrowLeft class="topbar__mark" size={16} />
-			Вернуться
-		{/if}
-	</a>
-	<nav class="topbar__nav">
-		{#each NAV as item (item.page)}
-			{@const Icon = item.icon}
-			<a
-				class={['topbar__link', page === item.page && 'topbar__link--active']}
-				href={item.href}
-				aria-current={page === item.page ? 'page' : undefined}
-			>
-				<Icon class="topbar__icon" size={14} />
-				{item.label}
-			</a>
-		{/each}
-		<ThemeToggle />
-	</nav>
+	<div class="topbar__inner">
+		<a class="topbar__home" href="/">
+			{#if page === 'home'}
+				<Globe class="topbar__mark" size={16} />
+				Alesha Vepenov
+			{:else}
+				<ArrowLeft class="topbar__mark" size={16} />
+				Вернуться
+			{/if}
+		</a>
+		<nav class="topbar__nav">
+			{#each NAV as item (item.page)}
+				{@const Icon = item.icon}
+				<a
+					class={['topbar__link', page === item.page && 'topbar__link--active']}
+					href={item.href}
+					aria-current={page === item.page ? 'page' : undefined}
+				>
+					<Icon class="topbar__icon" size={14} />
+					{item.label}
+				</a>
+			{/each}
+			<ThemeToggle />
+		</nav>
+	</div>
 </header>
 
 <style>
 	.topbar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0.5rem var(--gutter);
 		border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+		background: var(--bg);
+
+		&__inner {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			max-width: var(--column);
+			margin-inline: auto;
+			padding: 0.5rem var(--gutter);
+		}
 
 		&__home {
 			display: inline-flex;

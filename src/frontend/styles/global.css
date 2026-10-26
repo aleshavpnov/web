@@ -9,6 +9,8 @@
 	--gutter: 1rem;
 
 	--bg: light-dark(#fff, #09090b);
+	/* Фон страниц сайта под шапкой: чуть темнее белых шапки, подвала и карточек. */
+	--page: light-dark(#fafafa, #111113);
 	--fg: light-dark(#09090b, #fafafa);
 	--card: light-dark(#fff, #18181b);
 	--surface: light-dark(#f4f4f5, #27272a);
@@ -95,14 +97,14 @@ img {
 	height: auto;
 }
 
-/* Колонка страницы по центру: шапка и подвал во всю её ширину, текст внутри уже (--prose). */
+/* Страница сайта: серый фон во всю ширину экрана, белые шапка и подвал тоже во всю ширину,
+   а содержимое каждой из трёх частей держится в колонке --column по центру. */
 .column {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-	max-width: var(--column);
 	min-height: 100dvh;
-	margin-inline: auto;
+	background: var(--page);
 }
 
 /* Ссылка в тексте: фирменный цвет и подчёркивание. */
