@@ -118,6 +118,36 @@ test('/status склеивает записи одного сбоя и счит�
 	await expect(outages.first()).toContainText('4 ч 45 мин')
 })
 
+test('/status показывает два последних сбоя, остальные по кнопке', async ({ page }) => {
+	await mockBot(page)
+
+	const incidents = [1, 3, 5].map((daysAgo) => {
+		const start = new Date(Date.now() - daysAgo * 86_400_000)
+
+		return {
+			id: daysAgo,
+			location: 'Амстердам',
+			severity: 'critical',
+			title: 'Узел недоступен: Амстердам',
+			body: null,
+			status: 'closed',
+			startedAt: start.toISOString(),
+			resolvedAt: new Date(start.getTime() + 600_000).toISOString(),
+		}
+	})
+
+	await page.route('**/status.json', (route) => route.fulfill({ json: { ...STATUS, incidents } }))
+	await page.goto('/status')
+
+	const outages = page.getByRole('region', { name: 'Сбои' }).getByRole('listitem')
+
+	await expect(outages).toHaveCount(2)
+	await page.getByRole('button', { name: 'Показать ещё 1 сбой' }).click()
+	await expect(outages).toHaveCount(3)
+	await page.getByRole('button', { name: 'Свернуть' }).click()
+	await expect(outages).toHaveCount(2)
+})
+
 test('/app/add собирает intent-ссылку из фрагмента', async ({ page }) => {
 	await page.goto('/app/add#u=aHR0cHM6Ly9leGFtcGxlLmNvbS9zL2FiYzEyMw')
 

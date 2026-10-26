@@ -9,6 +9,7 @@
 	import { expectedNodes, expectedOutages, loadStatus, status, statusError } from '#frontend/site/state/status.ts'
 	import {
 		LOW_UPTIME,
+		OUTAGES_SHOWN,
 		WINDOW_DAYS,
 		describeOutage,
 		formatDuration,
@@ -32,6 +33,9 @@
 	const outages = $derived($status ? groupOutages($status.incidents) : [])
 	const nodesUp = $derived($status?.nodes.filter((n) => n.status === 'operational').length ?? 0)
 	const last = $derived(outages[0])
+	let showAll = $state(false)
+	const shown = $derived(showAll ? outages : outages.slice(0, OUTAGES_SHOWN))
+	const hidden = $derived(outages.length - OUTAGES_SHOWN)
 
 	const isLow = (v: number | null) => v !== null && v < LOW_UPTIME
 	const rows = (n: number) => Array.from({ length: n }, (_, i) => i)
@@ -193,43 +197,67 @@
 				<h2 class="status__subtitle">Сбои за {WINDOW_DAYS}&nbsp;дней</h2>
 				{#if $status}
 					{#if outages.length}
-						<ol class="status__list">
-							{#each outages as o (o.start)}
-								<li class="status__outage">
-									<span class="status__date status__line">{formatOutageDate(o.start, o.end)}</span>
-									<span class="status__what status__line" title={describeOutage(o)}
-										><span class="status__what-text">{describeOutage(o)}</span></span
-									>
-									<span class="status__time status__line">{formatOutageTime(o.start, o.end)}</span>
-									<span class={['status__duration', !o.end && 'status__duration--ongoing']}
-										>{o.end
-											? formatDuration(o.start, o.end)
-											: `идёт ${formatDuration(o.start, null)}`}</span
-									>
-								</li>
-							{/each}
-						</ol>
+						<div class="status__log">
+							<ol class="status__list" id="status-outages">
+								{#each shown as o (o.start)}
+									<li class="status__outage">
+										<span class="status__date status__line">{formatOutageDate(o.start, o.end)}</span
+										>
+										<span class="status__what status__line" title={describeOutage(o)}
+											><span class="status__what-text">{describeOutage(o)}</span></span
+										>
+										<span class="status__time status__line">{formatOutageTime(o.start, o.end)}</span
+										>
+										<span class={['status__duration', !o.end && 'status__duration--ongoing']}
+											>{o.end
+												? formatDuration(o.start, o.end)
+												: `идёт ${formatDuration(o.start, null)}`}</span
+										>
+									</li>
+								{/each}
+							</ol>
+							{#if hidden > 0}
+								<button
+									class="status__more"
+									type="button"
+									aria-controls="status-outages"
+									aria-expanded={showAll}
+									onclick={() => (showAll = !showAll)}
+									>{showAll
+										? 'Свернуть'
+										: `Показать ещё ${hidden} ${plural(hidden, ['сбой', 'сбоя', 'сбоев'])}`}</button
+								>
+							{/if}
+						</div>
 					{:else}
 						<p class="status__empty status__line">За {WINDOW_DAYS}&nbsp;дней сбоев не было</p>
 					{/if}
 				{:else if expectedOutages() > 0}
-					<ol class="status__list">
-						{#each rows(expectedOutages()) as i (i)}
-							<li class="status__outage">
-								<span class="status__date status__line"
-									><Skeleton width="4rem" height="0.875rem" /></span
-								>
-								<span class="status__what status__line"
-									><Skeleton width="10rem" height="0.875rem" /></span
-								>
-								<span class="status__time status__line"><Skeleton width="6rem" height="0.75rem" /></span
-								>
-								<span class="status__duration status__duration--pending"
-									><Skeleton width="4.5rem" height="0.75rem" /></span
-								>
-							</li>
-						{/each}
-					</ol>
+					<div class="status__log">
+						<ol class="status__list">
+							{#each rows(Math.min(expectedOutages(), OUTAGES_SHOWN)) as i (i)}
+								<li class="status__outage">
+									<span class="status__date status__line"
+										><Skeleton width="4rem" height="0.875rem" /></span
+									>
+									<span class="status__what status__line"
+										><Skeleton width="10rem" height="0.875rem" /></span
+									>
+									<span class="status__time status__line"
+										><Skeleton width="6rem" height="0.75rem" /></span
+									>
+									<span class="status__duration status__duration--pending"
+										><Skeleton width="4.5rem" height="0.75rem" /></span
+									>
+								</li>
+							{/each}
+						</ol>
+						{#if expectedOutages() > OUTAGES_SHOWN}
+							<div class="status__more status__more--pending">
+								<span class="status__line"><Skeleton width="10rem" height="0.875rem" /></span>
+							</div>
+						{/if}
+					</div>
 				{:else}
 					<p class="status__empty status__line"><Skeleton width="14rem" height="0.875rem" /></p>
 				{/if}
@@ -535,13 +563,49 @@
 			font-weight: 700;
 		}
 
-		&__list {
+		&__log {
 			overflow: hidden;
-			margin: 0;
-			padding: 0;
 			border: 1px solid var(--border);
 			border-radius: 1.125rem;
+		}
+
+		&__list {
+			margin: 0;
+			padding: 0;
 			list-style: none;
+		}
+
+		&__more {
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			width: 100%;
+			padding: 0.75rem 1rem;
+			border: 0;
+			border-top: 1px solid var(--border);
+			font: inherit;
+			font-size: 0.875rem;
+			font-weight: 600;
+			color: var(--accent);
+			text-align: left;
+			background: none;
+
+			@media (--md) {
+				padding-inline: 1.5rem;
+			}
+
+			&:hover {
+				background: color-mix(in srgb, var(--fg) 4%, transparent);
+			}
+
+			&:focus-visible {
+				outline: 2px solid var(--accent);
+				outline-offset: -2px;
+			}
+
+			&--pending {
+				cursor: default;
+			}
 		}
 
 		/* Сбой. На телефоне: дата и длительность, ниже кого задело и время. На десктопе -- строка. */
