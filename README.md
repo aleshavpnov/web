@@ -37,6 +37,14 @@ npm run test:e2e       # Playwright, headless
 
 Только npm. Коммиты — conventional commits, по-английски (`npm run commit`).
 
+## Релизы
+
+Релизный PR держит release-please: версия в `package.json` и `CHANGELOG.md` по коммитам из
+`main`. Мёрж этого PR ставит тег `vX.Y.Z`, и после проверок приватный репозиторий получает
+событие `web-released` с тегом, дальше сборка и выкатка идут там. Ручной запуск Release
+отправит событие ещё раз для любого тега. Для события нужен секрет `CORE_DISPATCH_TOKEN`:
+fine-grained токен только на приватный репозиторий с правом `Contents: write`.
+
 ## Лицензия
 
 MIT, см. [LICENSE](LICENSE).
