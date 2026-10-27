@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.2.0](https://github.com/aleshavpnov/web/compare/v4.1.0...v4.2.0) (2026-10-27)
+
+
+### Features
+
+* report browser errors to Sentry ([600042a](https://github.com/aleshavpnov/web/commit/600042a3390165d48fdc76743f4eaae707f9203f))
+* report browser errors to Sentry ([0dad9ed](https://github.com/aleshavpnov/web/commit/0dad9ed3d55c7b6e6cb6c34786ff5fdc4998aa3f))
+
 ## [4.1.0](https://github.com/aleshavpnov/web/compare/v4.0.0...v4.1.0) (2026-10-26)
 
 
