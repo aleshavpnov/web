@@ -1,0 +1,88 @@
+name: sentry-autofix
+
+# Алерт Sentry создаёт issue с меткой sentry, и Claude пробует его починить: читает
+# стектрейс, правит код, гоняет проверки и открывает PR со ссылкой на issue. Мёрж
+# и выкат остаются за человеком. Ручной запуск повторяет попытку для issue по номеру.
+on:
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: Issue number with the Sentry error
+        required: true
+
+# Одна попытка на issue: повторное событие ждёт, а не дублирует PR.
+concurrency:
+  group: sentry-autofix-${{ github.event.issue.number || inputs.issue }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  fix:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (contains(github.event.issue.labels.*.name, 'sentry') &&
+       (github.event.action == 'opened' || github.event.label.name == 'sentry'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    env:
+      ISSUE: ${{ github.event.issue.number || inputs.issue }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: npm
+
+      # Тело issue от Sentry обрезано, поэтому полное последнее событие (стектрейс,
+      # крошки, теги) берётся из API, если задан токен. Без токена Claude работает по issue.
+      - name: Fetch the latest Sentry event
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          [[ $ISSUE =~ ^[0-9]+$ ]] || { echo "Issue must be a number: $ISSUE"; exit 1; }
+          gh issue view "$ISSUE" --json title,body > "$RUNNER_TEMP/issue.json"
+          id=$(jq -r .body "$RUNNER_TEMP/issue.json" | grep -oE 'sentry\.io/issues/[0-9]+' | head -1 | grep -oE '[0-9]+$' || true)
+          if [[ -n $SENTRY_AUTH_TOKEN && -n $id ]]; then
+            curl -fsS -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
+              "https://f7b8dd6b2ecf.sentry.io/api/0/organizations/f7b8dd6b2ecf/issues/$id/events/latest/" \
+              > "$RUNNER_TEMP/sentry-event.json" || echo "Sentry API is unavailable, using the issue only"
+          fi
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          allowed_bots: sentry-io[bot]
+          prompt: |
+            Issue #${{ env.ISSUE }} in ${{ github.repository }} was created by a Sentry alert.
+            Its title and body are in ${{ runner.temp }}/issue.json. If
+            ${{ runner.temp }}/sentry-event.json exists, it holds the full latest event:
+            stack trace, breadcrumbs, tags and release.
+
+            1. Find the root cause in this repository. Read CLAUDE.md and .claude/ first.
+            2. If the error is a real bug in this code, fix it with the smallest change,
+               add or update a test when the project has tests for that area, and run
+               the same checks as .github/workflows/check.yml (`npm ci`, then its npm scripts).
+            3. Commit on a new branch `bugfix/sentry-${{ env.ISSUE }}` with a conventional
+               commit in English, push it and open a PR in English whose body says
+               `Fixes #${{ env.ISSUE }}`, explains the cause and how the fix was checked.
+            4. If it is not a code bug (network blip, external service, bad input that is
+               already handled, an expected error) or you cannot reproduce or understand it,
+               do not change code: comment on the issue with what you found instead.
+
+            Never deploy, merge, change workflows or secrets, or touch production.
+          claude_args: |
+            --max-turns 60
+            --allowedTools "Read,Glob,Grep,Edit,Write,MultiEdit,Bash(git:*),Bash(npm ci:*),Bash(npm run:*),Bash(npm test:*),Bash(npx tsc:*),Bash(gh pr create:*),Bash(gh issue comment:*),Bash(gh issue view:*)"
