@@ -35,6 +35,11 @@ npm run test:e2e       # Playwright, headless
 
 Бот для прокси берётся из `VITE_BOT_ORIGIN`, по умолчанию `http://127.0.0.1:8443`.
 
+Ошибки браузера уходят в Sentry компонентом `sentry.astro` из infra-site-kit в общем layout.
+Он включается переменной `PUBLIC_SENTRY_DSN` при сборке: её передаёт сборка образа в приватном
+репозитории, локально без неё скрипта на странице нет. Бренда в разметке это не добавляет: в
+`<meta name="sentry">` только DSN и релиз `web@<версия>`.
+
 Только npm. Коммиты — conventional commits, по-английски (`npm run commit`).
 
 ## Релизы

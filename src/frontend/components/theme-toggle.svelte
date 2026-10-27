@@ -67,7 +67,6 @@
 	}
 </script>
 
-<!-- Рядом ссылки меню: approach выключен, иначе круг рос бы, когда тянешься к ним. -->
 <Button
 	variant="ghost"
 	size="sm"
@@ -78,7 +77,7 @@
 	onpointerleave={hideTip}
 	onfocus={showTip}
 	onblur={hideTip}
-	{@attach (node) => themePeek(node, { approach: false })}
+	{@attach (node) => themePeek(node)}
 >
 	<view.icon size={16} />
 </Button>
