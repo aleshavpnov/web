@@ -3,6 +3,7 @@ import '@fontsource-variable/manrope'
 import '@aimuzov/infra-site-kit/base.css'
 import '@aimuzov/infra-site-kit/ui/tokens.css'
 import ThemeBoot from '@aimuzov/infra-site-kit/theme-boot.astro'
+import Sentry from '@aimuzov/infra-site-kit/sentry.astro'
 
 import { THEME_KEY } from '#frontend/lib/theme.ts'
 import '#frontend/styles/global.css'
@@ -26,6 +27,7 @@ const { bare = false } = Astro.props
 		<meta name="robots" content="noindex, nofollow" />
 		<title>Личный кабинет</title>
 		<ThemeBoot key={THEME_KEY} />
+		<Sentry />
 		<slot name="head" />
 	</head>
 	<body>
