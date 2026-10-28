@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.3.0](https://github.com/aleshavpnov/web/compare/v4.2.0...v4.3.0) (2026-10-28)
+
+
+### Features
+
+* upload source maps to Sentry ([8173aff](https://github.com/aleshavpnov/web/commit/8173aff635d414a63ca28b9d516304a4f9d371a5))
+* upload source maps to Sentry ([a7e1673](https://github.com/aleshavpnov/web/commit/a7e167369b1165ed43f6df4916cd134d7534441b))
+
 ## [4.2.0](https://github.com/aleshavpnov/web/compare/v4.1.0...v4.2.0) (2026-10-27)
 
 
