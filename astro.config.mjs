@@ -1,3 +1,4 @@
+import sentrySourcemaps from '@aimuzov/infra-site-kit/sentry-sourcemaps.js'
 import sitemap from '@astrojs/sitemap'
 import svelte from '@astrojs/svelte'
 import { defineConfig } from 'astro/config'
@@ -17,7 +18,13 @@ export default defineConfig({
 	// CSS немного, и встроенный в HTML он не блокирует первую отрисовку отдельным запросом.
 	build: { inlineStylesheets: 'always' },
 	// Кабинет за авторизацией Telegram, в sitemap ему нечего делать.
-	integrations: [svelte(), sitemap({ filter: (page) => !new URL(page).pathname.startsWith('/me/') })],
+	// Source maps уходят в Sentry, только если есть SENTRY_AUTH_TOKEN (образ в core).
+	// Пакет зовётся web, а проект Sentry -- aleshavpnov-web, его задаёт SENTRY_PROJECT.
+	integrations: [
+		svelte(),
+		sentrySourcemaps(),
+		sitemap({ filter: (page) => !new URL(page).pathname.startsWith('/me/') }),
+	],
 	server: { host: true },
 	vite: { server: { proxy }, preview: { proxy } },
 	// Подсветка Shiki несовместима с CSP.
