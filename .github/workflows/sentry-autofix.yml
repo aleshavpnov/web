@@ -5,7 +5,8 @@ name: sentry-autofix
 # и выкат остаются за человеком. Ручной запуск повторяет попытку для issue по номеру.
 on:
   issues:
-    types: [opened, labeled]
+    # Issue, созданный сразу с меткой, присылает и opened, и labeled: хватает labeled.
+    types: [labeled]
   workflow_dispatch:
     inputs:
       issue:
@@ -23,9 +24,7 @@ permissions:
 jobs:
   fix:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (contains(github.event.issue.labels.*.name, 'sentry') &&
-       (github.event.action == 'opened' || github.event.label.name == 'sentry'))
+      github.event_name == 'workflow_dispatch' || github.event.label.name == 'sentry'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
