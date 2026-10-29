@@ -63,7 +63,7 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          allowed_bots: sentry-io[bot]
+          allowed_bots: sentry[bot]
           prompt: |
             Issue #${{ env.ISSUE }} in ${{ github.repository }} was created by a Sentry alert.
             Its title and body are in ${{ runner.temp }}/issue.json. If
