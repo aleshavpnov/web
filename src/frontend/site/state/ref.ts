@@ -58,3 +58,10 @@ export function getStoredRef(storage: Storage = sessionStorage): string | null {
 		return null
 	}
 }
+
+export function supportLink(botUsername: string, storage?: Storage): string {
+	const ref = getStoredRef(storage)
+	const payload = ref ? `support_ref_${ref}` : 'support'
+
+	return `https://t.me/${botUsername}?start=${payload}`
+}

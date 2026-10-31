@@ -44,6 +44,18 @@ test('главная подставляет метрики из статуса',
 	await expect(page).toHaveTitle('Alesha Vepenov')
 })
 
+test('переход с реферальной страницы в поддержку сохраняет код', async ({ page }) => {
+	await mockBot(page)
+	await page.route('**/api/ref-hit?**', (route) => route.fulfill({ status: 204 }))
+	await page.goto('/?ref=abcd1234')
+	await expect(page).toHaveTitle('Alesha Vepenov')
+	await page.goto('/faq/')
+
+	await expect(
+		page.getByRole('link', { name: 'в техподдержку в Telegram-боте', includeHidden: true }),
+	).toHaveAttribute('href', 'https://t.me/examplebot?start=support_ref_abcd1234')
+})
+
 test('/get выдаёт временную ссылку и ведёт в бота с привязкой', async ({ page }) => {
 	await mockBot(page)
 	await page.goto('/get')
