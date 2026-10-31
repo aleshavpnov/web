@@ -6,6 +6,7 @@
 	import Eyebrow from '#frontend/components/eyebrow.svelte'
 	import Shell from '#frontend/components/shell.svelte'
 	import { LEGAL_EMAIL as SUPPORT_EMAIL } from '#frontend/site/legal.ts'
+	import { supportLink } from '#frontend/site/state/ref.ts'
 	import { status } from '#frontend/site/state/status.ts'
 
 	/** Диплинк на подписку «Прайм» в Tribute (кнопка Share у подписки в дашборде). */
@@ -151,11 +152,8 @@
 	подписку в&nbsp;приложении и&nbsp;убедиться, что включены «маршруты» (нужны для работы из&nbsp;России). Если
 	не&nbsp;помогло — написать
 	{#if $status?.botUsername}
-		<a
-			class="link"
-			href={`https://t.me/${$status.botUsername}?start=support`}
-			target="_blank"
-			rel="noopener noreferrer">в&nbsp;техподдержку в&nbsp;Telegram-боте</a
+		<a class="link" href={supportLink($status.botUsername)} target="_blank" rel="noopener noreferrer"
+			>в&nbsp;техподдержку в&nbsp;Telegram-боте</a
 		>,
 	{:else}
 		в&nbsp;техподдержку в&nbsp;Telegram-боте,

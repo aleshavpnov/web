@@ -3,7 +3,7 @@ import { beforeEach, describe, test } from 'node:test'
 
 import { MemoryStorage } from '#frontend/lib/memory-storage.ts'
 
-import { captureRef, getStoredRef, getVisitorKey } from './ref.ts'
+import { captureRef, getStoredRef, getVisitorKey, supportLink } from './ref.ts'
 
 describe('ref state', () => {
 	let session: MemoryStorage
@@ -35,6 +35,21 @@ describe('ref state', () => {
 
 	test('getStoredRef без сохранённого кода — null', () => {
 		assert.equal(getStoredRef(session), null)
+	})
+
+	test('ссылка поддержки сохраняет код после перехода с реферальной страницы', () => {
+		captureRef('?ref=abcd1234', session)
+		captureRef('', session)
+		assert.equal(supportLink('examplebot', session), 'https://t.me/examplebot?start=support_ref_abcd1234')
+	})
+
+	test('ссылка поддержки без кода остаётся обычной', () => {
+		assert.equal(supportLink('examplebot', session), 'https://t.me/examplebot?start=support')
+	})
+
+	test('ссылка поддержки отбрасывает невалидный сохранённый код', () => {
+		session.setItem('ref:v1', 'bad&start=other')
+		assert.equal(supportLink('examplebot', session), 'https://t.me/examplebot?start=support')
 	})
 
 	test('getVisitorKey стабилен между вызовами', () => {
