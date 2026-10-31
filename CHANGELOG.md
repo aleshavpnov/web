@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.3.1](https://github.com/aleshavpnov/web/compare/v4.3.0...v4.3.1) (2026-10-31)
+
+
+### Bug Fixes
+
+* **ci:** allow the sentry[bot] author in the Sentry autofix ([6829c74](https://github.com/aleshavpnov/web/commit/6829c747ec9dd462eaccfcebb35ea97db1855781))
+* **ci:** allow the sentry[bot] author in the Sentry autofix ([7a94731](https://github.com/aleshavpnov/web/commit/7a947310afdf3c661d7ff50dc9c0083134d9487a))
+* **ci:** start the Sentry autofix once per issue ([d74712f](https://github.com/aleshavpnov/web/commit/d74712fb6b18b8883fbc7a1dbe14782f9e9ee10f))
+* **ci:** start the Sentry autofix once per issue ([5f98877](https://github.com/aleshavpnov/web/commit/5f9887704f03eb5d300c4a7ede1164d5e4a94e69))
+* **referrals:** carry referral codes into support links ([77838eb](https://github.com/aleshavpnov/web/commit/77838ebbc4882dd554250639ac9d40979fd3ba8f))
+* **referrals:** carry referral codes into support links ([63017f3](https://github.com/aleshavpnov/web/commit/63017f3ac3071d904ecf0abc77093dd56cd204ad))
+
 ## [4.3.0](https://github.com/aleshavpnov/web/compare/v4.2.0...v4.3.0) (2026-10-28)
 
 
