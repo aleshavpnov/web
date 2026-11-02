@@ -136,7 +136,7 @@ export const startCheckout = (
 	planCode: string,
 	audience: Audience,
 	choice?: PaymentChoice,
-): Promise<{ buyUrl: string; provider: 'tribute' | 'platega' | 'platega_sub' }> =>
+): Promise<{ buyUrl: string; provider: 'tribute' | 'platega' | 'platega_sub'; deferredUntil: string | null }> =>
 	request('/checkout', CheckoutSchema, {
 		method: 'POST',
 		body:

@@ -111,7 +111,7 @@
 			// Ссылку берём у бота, а не из подбора: заодно он запомнит намерение и вернёт
 			// человека, если оплата не дойдёт до конца. Для разовой оплаты ссылки заранее и
 			// не существует — форму провайдер создаёт на этот платёж.
-			const { buyUrl } = await startCheckout(advice.plan.code, audience, choice)
+			const { buyUrl, deferredUntil } = await startCheckout(advice.plan.code, audience, choice)
 
 			openLink(buyUrl)
 
@@ -119,10 +119,10 @@
 			if (audience !== 'gift')
 				watchPayment(() => {
 					hapticSuccess()
-					toast.success('Оплата прошла — доступ активен')
+					toast.success(deferredUntil ? 'Автопродление по СБП подключено' : 'Оплата прошла — доступ активен')
 					wizardReset()
 					navigate('home')
-				})
+				}, deferredUntil !== null)
 		} catch (e) {
 			hapticError()
 			toast.error(e instanceof ApiError ? e.message : 'Не удалось открыть оплату')

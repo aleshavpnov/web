@@ -37,23 +37,23 @@
 	 * Человек ушёл платить в другое окно, а оформление осталось открытым. Ждём подтверждения
 	 * и уводим на главную — там карточка подписки с новым сроком (см. state/payment-watch).
 	 */
-	function awaitPayment() {
+	function awaitPayment(binding = false) {
 		watchPayment(() => {
 			hapticSuccess()
-			toast.success('Оплата прошла — доступ активен')
+			toast.success(binding ? 'Автопродление по СБП подключено' : 'Оплата прошла — доступ активен')
 			navigate('home')
-		})
+		}, binding)
 	}
 
 	async function checkout(audience: 'self' | 'gift', choice: PaymentChoice) {
 		busy = true
 
 		try {
-			const { buyUrl } = await startCheckout(offer.code, audience, choice)
+			const { buyUrl, deferredUntil } = await startCheckout(offer.code, audience, choice)
 
 			openLink(buyUrl)
 
-			if (audience === 'self') awaitPayment()
+			if (audience === 'self') awaitPayment(deferredUntil !== null)
 		} catch (e) {
 			hapticError()
 			toast.error(e instanceof ApiError ? e.message : 'Не удалось открыть оплату')

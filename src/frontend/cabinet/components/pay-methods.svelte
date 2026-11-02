@@ -11,7 +11,8 @@
 
 	import type { PaymentChoice } from '#frontend/cabinet/api/client.ts'
 	import type { OneTimeMethod } from '#frontend/cabinet/api/schemas.ts'
-	import { feeNote } from '#frontend/cabinet/lib/format.ts'
+	import { feeNote, formatDate } from '#frontend/cabinet/lib/format.ts'
+	import { confirmAction } from '#frontend/cabinet/lib/telegram.ts'
 	import { payMethodIcon, SUBSCRIPTION_ICON } from '#frontend/cabinet/lib/pay-icons.ts'
 
 	import Button from './button.svelte'
@@ -32,7 +33,7 @@
 		/** Подпись кнопки Tribute, когда она единственная в группе («Оформить», «Продлить»). */
 		subscriptionLabel: string
 		subscriptionFee: string | undefined
-		sbpSubscription: { amount: number } | null
+		sbpSubscription: { amount: number; firstChargeAt?: string | null; bindingAmount?: number | null } | null
 		durationDays: number
 		oneTimeMethods: OneTimeMethod[]
 		busy: boolean
@@ -44,6 +45,18 @@
 
 	const hasOnce = $derived(oneTimeMethods.length > 0)
 	const group: Group | null = $derived(hasOnce ? picked : 'sub')
+
+	async function bindSbp() {
+		if (
+			sbpSubscription?.firstChargeAt &&
+			!(await confirmAction(
+				`Сейчас спишется 1 ₽ за привязку СБП. Оплата тарифа ${sbpSubscription.amount} ₽ будет ${formatDate(sbpSubscription.firstChargeAt)}, после окончания текущего доступа с бонусными днями. Подключить?`,
+			))
+		)
+			return
+
+		onpay('sbp_sub')
+	}
 </script>
 
 {#if group === null}
@@ -79,14 +92,16 @@
 			{#if sbpSubscription}<OptionNote>Оплата картой, отменить можно в Tribute.</OptionNote>{/if}
 		</PayOption>
 		{#if sbpSubscription}
-			<PayOption
-				label="СБП с автопродлением"
-				icon={SUBSCRIPTION_ICON}
-				disabled={busy}
-				onclick={() => onpay('sbp_sub')}
-			>
+			<PayOption label="СБП с автопродлением" icon={SUBSCRIPTION_ICON} disabled={busy} onclick={bindSbp}>
 				<OptionNote>
-					Счёт привязывается в&nbsp;приложении банка, {sbpSubscription.amount}&nbsp;₽ спишется сам раз в&nbsp;{durationDays}&nbsp;дн.
+					{#if sbpSubscription.firstChargeAt}
+						Сейчас спишется 1&nbsp;₽ за&nbsp;привязку СБП. Оплата тарифа {sbpSubscription.amount}&nbsp;₽ — {formatDate(
+							sbpSubscription.firstChargeAt,
+						)}, после окончания текущего доступа с&nbsp;бонусными днями. Затем раз в&nbsp;{durationDays}&nbsp;дн.
+					{:else}
+						Счёт привязывается в&nbsp;приложении банка, {sbpSubscription.amount}&nbsp;₽ спишется сам раз
+						в&nbsp;{durationDays}&nbsp;дн.
+					{/if}
 					Отключить можно на&nbsp;главной.
 				</OptionNote>
 			</PayOption>
