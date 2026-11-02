@@ -9,10 +9,10 @@
  *
  * Признак оплаты — смена «отпечатка» доступа (вид доступа + дата окончания): он меняется
  * и при первой покупке, и при продлении уже активной подписки.
+ * Привязку подтверждает активное автопродление: оплаченный срок при ней не меняется.
  */
-import type { Overview } from '#frontend/cabinet/api/schemas.ts'
-
 import { accessRes, overviewRes, plansRes } from './cabinet.ts'
+import { paymentFingerprint } from './payment-fingerprint.ts'
 
 /** Как часто спрашивать бота, пока ждём подтверждения. */
 const POLL_INTERVAL_MS = 4000
@@ -24,13 +24,6 @@ const POLL_INTERVAL_MS = 4000
  */
 const POLL_TIMEOUT_MS = 5 * 60_000
 
-/** Что считаем изменением: вид доступа и до какого числа он действует. */
-function fingerprint(overview: Overview | null): string {
-	if (!overview) return ''
-
-	return `${overview.kind}:${overview.sub?.expiresAt ?? ''}:${overview.vip?.expiresAt ?? ''}`
-}
-
 let stop: (() => void) | null = null
 
 /** Остановить наблюдение (вызывается само по успеху и по таймауту). */
@@ -40,21 +33,21 @@ export function stopPaymentWatch(): void {
 }
 
 /**
- * Начать ждать оплату. `onPaid` вызывается один раз, когда доступ изменился; данные
- * витрины и подключения к этому моменту уже перезагружены.
+ * Начать ждать оплату или привязку. `onPaid` вызывается один раз после подтверждения.
+ * Остальные ресурсы обновляются в фоне.
  */
-export function watchPayment(onPaid: () => void): void {
+export function watchPayment(onPaid: () => void, binding = false): void {
 	stopPaymentWatch()
 
 	// База сравнения. Пусто (экран открыли до первой загрузки, или запрос не прошёл) —
 	// базой станет ПЕРВЫЙ успешный ответ: иначе появление данных из ниоткуда было бы
 	// неотличимо от оплаты, и кабинет радостно поздравлял бы с несуществующей покупкой.
-	let before = fingerprint(overviewRes.data()) || null
+	let before = binding ? 'sbp:false' : paymentFingerprint(overviewRes.data()) || null
 	const startedAt = Date.now()
 
 	const check = async (): Promise<void> => {
 		await overviewRes.load()
-		const now = fingerprint(overviewRes.data())
+		const now = paymentFingerprint(overviewRes.data(), binding)
 
 		if (!now) return
 

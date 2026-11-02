@@ -81,7 +81,14 @@ const OneTimeMethodSchema = z.object({
 })
 
 /** Автопродление по СБП через Platega: сумма списания раз в период, без комиссии сверху. */
-const SbpSubscriptionSchema = z.object({ amount: z.number() }).nullable().default(null)
+const SbpSubscriptionSchema = z
+	.object({
+		amount: z.number(),
+		firstChargeAt: z.string().nullable().default(null),
+		bindingAmount: z.number().nullable().default(null),
+	})
+	.nullable()
+	.default(null)
 
 const PlanSchema = PlanBaseSchema.extend({
 	buyUrl: z.string(),
@@ -156,6 +163,7 @@ export const AdviceSchema = z.object({
 
 export const CheckoutSchema = z.object({
 	buyUrl: z.string(),
+	deferredUntil: z.string().nullable().default(null),
 	provider: z.enum(['tribute', 'platega', 'platega_sub']).default('tribute'),
 })
 
