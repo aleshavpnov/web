@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.4.0](https://github.com/aleshavpnov/web/compare/v4.3.1...v4.4.0) (2026-11-02)
+
+
+### Features
+
+* **cabinet:** guide Tribute users through SBP migration. ([b47a284](https://github.com/aleshavpnov/web/commit/b47a2847f4de4e48595e475202015e3ae1ace61d))
+* **cabinet:** guide Tribute users through SBP migration. ([0f4a0ef](https://github.com/aleshavpnov/web/commit/0f4a0ef8fd969964d604d1709f98e9a9c43f591b))
+
 ## [4.3.1](https://github.com/aleshavpnov/web/compare/v4.3.0...v4.3.1) (2026-10-31)
 
 
