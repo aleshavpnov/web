@@ -12,14 +12,8 @@
  * её Chrome отдаёт приложению по клику. Автопереход без клика Chrome блокирует.
  */
 
-/**
- * Страница-мост на лендинге: сюда ведёт диплинк из кабинета.
- *
- * Хост пока старый, хотя сайт уже живёт на aleshavpnov.ru: это App Link, и вышедшие
- * сборки клиента перехватывают `/app/add` только на durov.aimuzov.online. Переводить
- * после того, как у людей окажется релиз, где в манифесте и в AddLink.HOST есть оба хоста.
- */
-export const APP_ADD_PAGE = 'https://durov.aimuzov.online/app/add'
+/** Страница-мост на лендинге: сюда ведёт диплинк из кабинета. */
+export const APP_ADD_PAGE = 'https://aleshavpnov.ru/app/add'
 
 /** Страница приложения на лендинге — fallback intent-ссылки, если клиент не установлен. */
 export const APP_PAGE = 'https://aleshavpnov.ru/app'
