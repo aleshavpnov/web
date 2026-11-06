@@ -22,3 +22,15 @@ for (const path of ['/', '/get/', '/status/', '/faq/', '/privacy/', '/terms/', '
 		expect(html).toContain('<meta name="robots" content="noindex, nofollow">')
 	})
 }
+
+test('/app/add/: открывает старые сборки Android через intent со ссылкой из фрагмента', async ({ page }) => {
+	const subscription = 'https://aleshapodpiskov.ru/s/test?x=1&y=2'
+	const payload = Buffer.from(subscription).toString('base64url')
+
+	await page.goto(`/app/add/#u=${payload}`)
+
+	await expect(page.getByRole('link', { name: 'Открыть в приложении' })).toHaveAttribute(
+		'href',
+		`intent://add?u=${payload}#Intent;scheme=aleshavpnov;package=online.aimuzov.aleshavpnov;S.browser_fallback_url=${encodeURIComponent('https://github.com/aimuzov/aleshavpnov-releases/releases')};end`,
+	)
+})

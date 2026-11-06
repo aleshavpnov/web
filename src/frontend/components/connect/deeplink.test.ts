@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
-import { APP_ADD_PAGE, buildAppAddLink, buildAppIntentUrl, decodeAppAddParam, encodeAppAddParam } from './deeplink.ts'
+import { buildAppAddLink, buildAppIntentUrl, decodeAppAddParam, encodeAppAddParam } from './deeplink.ts'
 
 const SUB_URL = 'https://durov.aimuzov.online/s/abcDEF123?x=1&y=2'
 
@@ -9,7 +9,7 @@ describe('buildAppAddLink', () => {
 	test('кладёт подписку в фрагмент страницы-моста: секрет не должен попасть в логи сервера', () => {
 		const link = buildAppAddLink(SUB_URL)
 
-		assert.ok(link.startsWith(`${APP_ADD_PAGE}#u=`))
+		assert.ok(link.startsWith('https://aleshavpnov.ru/app/add#u='))
 		// base64url без padding: в хеше не должно быть +, / и =
 		assert.match(link.slice(link.indexOf('#u=') + 3), /^[A-Za-z0-9_-]+$/)
 	})
@@ -43,12 +43,12 @@ describe('decodeAppAddParam', () => {
 describe('buildAppIntentUrl', () => {
 	test('собирает intent:// со схемой, пакетом и fallback на страницу приложения', () => {
 		const u = encodeAppAddParam(SUB_URL)
-		const intent = buildAppIntentUrl(u, 'https://durov.aimuzov.online/app')
+		const intent = buildAppIntentUrl(u, 'https://aleshavpnov.ru/app')
 
 		assert.ok(intent.startsWith(`intent://add?u=${u}#Intent;`))
 		assert.ok(intent.includes('scheme=aleshavpnov;'))
 		assert.ok(intent.includes('package=online.aimuzov.aleshavpnov;'))
-		assert.ok(intent.includes(`S.browser_fallback_url=${encodeURIComponent('https://durov.aimuzov.online/app')};`))
+		assert.ok(intent.includes(`S.browser_fallback_url=${encodeURIComponent('https://aleshavpnov.ru/app')};`))
 		assert.ok(intent.endsWith(';end'))
 	})
 })
