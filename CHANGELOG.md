@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.5.0](https://github.com/aleshavpnov/web/compare/v4.4.0...v4.5.0) (2026-11-06)
+
+
+### Features
+
+* **cabinet:** move the Android App Link to aleshavpnov.ru ([#40](https://github.com/aleshavpnov/web/issues/40)) ([e2da42f](https://github.com/aleshavpnov/web/commit/e2da42fa5dadb1f4ffcb270d1d090082a2623bca))
+
 ## [4.4.0](https://github.com/aleshavpnov/web/compare/v4.3.1...v4.4.0) (2026-11-02)
 
 
