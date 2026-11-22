@@ -31,7 +31,7 @@ test('/me/ вне Telegram открывается без ошибок в кон�
 	expect(errors).toEqual([])
 })
 
-test('кабинет показывает инструкцию OneXray для Android и Windows', async ({ page }) => {
+test('кабинет показывает инструкцию OneXray для Android, Windows и macOS', async ({ page }) => {
 	await page.route('https://telegram.org/**', (route) => route.fulfill({ contentType: 'text/javascript', body: '' }))
 
 	await page.route('**/api/me/access', (route) =>
@@ -57,6 +57,19 @@ test('кабинет показывает инструкцию OneXray для An
 		await page.getByRole('button', { name: 'OneXray' }).click()
 		await expect(page.getByRole('link', { name: `Скачать для ${platform}` })).toHaveAttribute('href', href)
 		await expect(page.getByText(/идентификатора устройства/)).toBeVisible()
+	}
+
+	await page.getByRole('button', { name: 'другое устройство?' }).click()
+	await page.getByRole('dialog').getByRole('button', { name: 'Mac', exact: true }).click()
+	await expect(page.getByRole('button', { name: 'OneXray' })).toHaveAttribute('aria-pressed', 'true')
+	await expect(page.getByText(/идентификатора устройства/)).toBeVisible()
+	await page.getByRole('button', { name: 'Скачать для Mac' }).click()
+
+	for (const region of ['ru', 'us']) {
+		await expect(page.getByRole('dialog').getByRole('link', { name: new RegExp(region, 'i') })).toHaveAttribute(
+			'href',
+			`https://apps.apple.com/${region}/app/onexray/id6745748773`,
+		)
 	}
 })
 

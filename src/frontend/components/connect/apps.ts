@@ -24,8 +24,6 @@ const iosClients = ['onexray', ...otherClients] as const
 export function clientsFor(platform: Platform) {
 	if (platform === 'ios') return iosClients
 
-	if (platform === 'mac') return otherClients
-
 	return [...otherClients, 'onexray'] as const
 }
 
@@ -58,6 +56,11 @@ export type ClientConfig = {
 	install: Record<Platform, InstallMethod>
 }
 
+const oneXrayStores: Store[] = [
+	{ label: '🇷🇺 RU App Store', href: 'https://apps.apple.com/ru/app/onexray/id6745748773' },
+	{ label: '🇺🇸 US App Store', href: 'https://apps.apple.com/us/app/onexray/id6745748773' },
+]
+
 /** Incy на iOS и Mac ставится из App Store по одной и той же ссылке. */
 const incyUS = { label: '🇺🇸 US App Store', href: 'https://apps.apple.com/us/app/incy/id6756943388' }
 const incyStores: Store[] = [
@@ -76,21 +79,14 @@ export const CLIENTS: Record<ClientId, ClientConfig> = {
 		site: 'https://onexray.com/',
 		Icon: Globe,
 		install: {
-			ios: {
-				kind: 'stores',
-				device: 'iOS',
-				stores: [
-					{ label: '🇷🇺 RU App Store', href: 'https://apps.apple.com/ru/app/onexray/id6745748773' },
-					{ label: '🇺🇸 US App Store', href: 'https://apps.apple.com/us/app/onexray/id6745748773' },
-				],
-			},
+			ios: { kind: 'stores', device: 'iOS', stores: oneXrayStores },
 			android: {
 				kind: 'direct',
 				href: 'https://play.google.com/store/apps/details?id=net.yuandev.onexray',
 				device: 'Android',
 			},
 			windows: { kind: 'direct', href: 'https://apps.microsoft.com/detail/9NJ0MVHW215D', device: 'Windows' },
-			mac: { kind: 'unavailable' },
+			mac: { kind: 'stores', device: 'Mac', stores: oneXrayStores },
 		},
 	},
 	incy: {
