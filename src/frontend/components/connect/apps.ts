@@ -22,7 +22,11 @@ const otherClients = ['happ', 'incy'] as const
 const iosClients = ['onexray', ...otherClients] as const
 
 export function clientsFor(platform: Platform) {
-	return platform === 'ios' ? iosClients : otherClients
+	if (platform === 'ios') return iosClients
+
+	if (platform === 'mac') return otherClients
+
+	return [...otherClients, 'onexray'] as const
 }
 
 /**
@@ -80,8 +84,12 @@ export const CLIENTS: Record<ClientId, ClientConfig> = {
 					{ label: '🇺🇸 US App Store', href: 'https://apps.apple.com/us/app/onexray/id6745748773' },
 				],
 			},
-			android: { kind: 'unavailable' },
-			windows: { kind: 'unavailable' },
+			android: {
+				kind: 'direct',
+				href: 'https://play.google.com/store/apps/details?id=net.yuandev.onexray',
+				device: 'Android',
+			},
+			windows: { kind: 'direct', href: 'https://apps.microsoft.com/detail/9NJ0MVHW215D', device: 'Windows' },
 			mac: { kind: 'unavailable' },
 		},
 	},
