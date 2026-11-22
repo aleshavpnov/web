@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.7.0](https://github.com/aleshavpnov/web/compare/v4.6.0...v4.7.0) (2026-11-22)
+
+
+### Features
+
+* **connect:** add OneXray for Android, Windows and macOS ([#48](https://github.com/aleshavpnov/web/issues/48)) ([b695b11](https://github.com/aleshavpnov/web/commit/b695b112460c67184a83b5e909518c177768f6db))
+
 ## [4.6.0](https://github.com/aleshavpnov/web/compare/v4.5.0...v4.6.0) (2026-11-22)
 
 
