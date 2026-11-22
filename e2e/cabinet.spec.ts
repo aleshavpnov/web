@@ -31,6 +31,48 @@ test('/me/ вне Telegram открывается без ошибок в кон�
 	expect(errors).toEqual([])
 })
 
+test('кабинет показывает инструкцию OneXray для Android, Windows и macOS', async ({ page }) => {
+	await page.route('https://telegram.org/**', (route) => route.fulfill({ contentType: 'text/javascript', body: '' }))
+
+	await page.route('**/api/me/access', (route) =>
+		route.fulfill({
+			json: {
+				subscriptionUrl: 'https://example.com/s/test',
+				subscriptionUrlBackup: null,
+				vlessUrl: '',
+				canUseRouter: false,
+				app: 'happ',
+			},
+		}),
+	)
+
+	await page.goto('/me/#/connect')
+
+	for (const [platform, href] of [
+		['Android', 'https://play.google.com/store/apps/details?id=net.yuandev.onexray'],
+		['Windows', 'https://apps.microsoft.com/detail/9NJ0MVHW215D'],
+	]) {
+		await page.getByRole('button', { name: 'другое устройство?' }).click()
+		await page.getByRole('dialog').getByRole('button', { name: platform }).click()
+		await page.getByRole('button', { name: 'OneXray' }).click()
+		await expect(page.getByRole('link', { name: `Скачать для ${platform}` })).toHaveAttribute('href', href)
+		await expect(page.getByText(/идентификатора устройства/)).toBeVisible()
+	}
+
+	await page.getByRole('button', { name: 'другое устройство?' }).click()
+	await page.getByRole('dialog').getByRole('button', { name: 'Mac', exact: true }).click()
+	await expect(page.getByRole('button', { name: 'OneXray' })).toHaveAttribute('aria-pressed', 'true')
+	await expect(page.getByText(/идентификатора устройства/)).toBeVisible()
+	await page.getByRole('button', { name: 'Скачать для Mac' }).click()
+
+	for (const region of ['ru', 'us']) {
+		await expect(page.getByRole('dialog').getByRole('link', { name: new RegExp(region, 'i') })).toHaveAttribute(
+			'href',
+			`https://apps.apple.com/${region}/app/onexray/id6745748773`,
+		)
+	}
+})
+
 test('/me/?go= открывает свой экран и вычищает query', async ({ page }) => {
 	await page.route('https://telegram.org/**', (route) => route.fulfill({ contentType: 'text/javascript', body: '' }))
 	await page.goto('/me/?go=usage')
