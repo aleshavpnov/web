@@ -25,6 +25,7 @@
 
 	const items = $derived.by(() => {
 		if (client.id === 'onexray') return [oneXrayAdd, oneXrayHwid, connect]
+
 		if (client.id === 'aleshavpnov') return openInAppHref ? [ownOpen, ownPower] : [ownCopy, ownPaste, ownPower]
 
 		return client.id === 'incy' ? [incyPaste, connect] : [happPlus, fromClipboard, connect]
