@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { CLIENT_ORDER, CLIENTS, type ClientId } from './apps.ts'
+	import { clientsFor, CLIENTS, type ClientId, type Platform } from './apps.ts'
 
 	/** Тогглер клиента: переключает все ссылки и название приложения в инструкции. */
-	let { value = $bindable() }: { value: ClientId } = $props()
+	let { value = $bindable(), platform }: { value: ClientId; platform: Platform } = $props()
 </script>
 
 <div class="client-toggle">
-	{#each CLIENT_ORDER as id (id)}
+	{#each clientsFor(platform) as id (id)}
 		{@const Icon = CLIENTS[id].Icon}
 		<button
 			class={['client-toggle__option', id === value && 'client-toggle__option--active']}
@@ -23,6 +23,7 @@
 <style>
 	.client-toggle {
 		display: inline-flex;
+		flex-wrap: wrap;
 		padding: 0.125rem;
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
@@ -30,6 +31,7 @@
 		&__option {
 			cursor: pointer;
 			display: inline-flex;
+			flex-wrap: wrap;
 			gap: 0.375rem;
 			align-items: center;
 			min-height: 2.5rem;

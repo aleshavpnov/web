@@ -24,11 +24,21 @@
 	} = $props()
 
 	const items = $derived.by(() => {
+		if (client.id === 'onexray') return [oneXrayAdd, oneXrayHwid, connect]
+
 		if (client.id === 'aleshavpnov') return openInAppHref ? [ownOpen, ownPower] : [ownCopy, ownPaste, ownPower]
 
 		return client.id === 'incy' ? [incyPaste, connect] : [happPlus, fromClipboard, connect]
 	})
 </script>
+
+{#snippet oneXrayAdd()}
+	Откройте OneXray, добавьте подписку, укажите её название и&nbsp;вставьте ссылку в&nbsp;поле URL
+{/snippet}
+
+{#snippet oneXrayHwid()}
+	В дополнительных параметрах подписки включите отправку идентификатора устройства (HWID) и&nbsp;сохраните подписку
+{/snippet}
 
 {#snippet ownOpen()}
 	Нажмите кнопку — приложение откроется и&nbsp;добавит подписку само

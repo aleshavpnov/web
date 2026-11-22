@@ -78,6 +78,24 @@ test('/get переключает клиента и платформу', async (
 	await mockBot(page)
 	await page.goto('/get')
 
+	await page.getByRole('button', { name: 'другое устройство?' }).click()
+	await page.getByRole('dialog').getByRole('button', { name: 'iOS' }).click()
+	const clients = page.locator('.client-toggle button')
+
+	await expect(clients).toHaveText(['OneXray', 'Happ', 'Incy'])
+	await expect(clients.first()).toHaveAttribute('aria-pressed', 'true')
+	await expect(page.getByText(/идентификатора устройства/).first()).toBeVisible()
+	await page.getByRole('button', { name: 'Скачать для iOS' }).click()
+
+	for (const region of ['ru', 'us']) {
+		await expect(page.getByRole('dialog').getByRole('link', { name: new RegExp(region, 'i') })).toHaveAttribute(
+			'href',
+			`https://apps.apple.com/${region}/app/onexray/id6745748773`,
+		)
+	}
+
+	await page.keyboard.press('Escape')
+
 	await page.getByRole('button', { name: 'Incy' }).click()
 	await expect(page.getByText(/добавьте её в\s+Incy/).first()).toBeVisible()
 

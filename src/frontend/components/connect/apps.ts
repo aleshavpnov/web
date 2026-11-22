@@ -5,7 +5,7 @@
  * Одну и ту же инструкцию показывают двое: страница получения доступа на сайте и экран
  * «Подключение» в кабинете. Разъехавшиеся ссылки на App Store — это разъехавшаяся поддержка.
  */
-import { Shield, Zap, type LucideIcon } from '@lucide/svelte'
+import { Globe, Shield, Zap, type LucideIcon } from '@lucide/svelte'
 
 import HappIcon from './happ-icon.svelte'
 
@@ -18,8 +18,12 @@ export const platforms: { key: Platform; label: string }[] = [
 	{ key: 'mac', label: 'Mac' },
 ]
 
-/** Порядок в тогглере: Happ слева и по умолчанию. */
-export const CLIENT_ORDER = ['happ', 'incy'] as const
+const otherClients = ['happ', 'incy'] as const
+const iosClients = ['onexray', ...otherClients] as const
+
+export function clientsFor(platform: Platform) {
+	return platform === 'ios' ? iosClients : otherClients
+}
 
 /**
  * Свой Android-клиент пока не показываем людям: он дорабатывается. Запись в CLIENTS
@@ -27,11 +31,11 @@ export const CLIENT_ORDER = ['happ', 'incy'] as const
  */
 export const HIDDEN_CLIENTS = ['aleshavpnov'] as const
 
-export type ClientId = (typeof CLIENT_ORDER)[number] | (typeof HIDDEN_CLIENTS)[number]
+export type ClientId = (typeof iosClients)[number] | (typeof HIDDEN_CLIENTS)[number]
 
 /** Клиент из ответа API, если его вообще показываем; иначе null. */
-export function visibleApp(id: string | null | undefined): ClientId | null {
-	return CLIENT_ORDER.find((c) => c === id) ?? null
+export function visibleApp(id: string | null | undefined, platform: Platform) {
+	return clientsFor(platform).find((c) => c === id) ?? null
 }
 
 export type Store = { label: string; href: string }
@@ -51,9 +55,10 @@ export type ClientConfig = {
 }
 
 /** Incy на iOS и Mac ставится из App Store по одной и той же ссылке. */
+const incyUS = { label: '🇺🇸 US App Store', href: 'https://apps.apple.com/us/app/incy/id6756943388' }
 const incyStores: Store[] = [
 	{ label: '🇷🇺 RU App Store', href: 'https://apps.apple.com/ru/app/incy/id6756943388' },
-	{ label: '🇺🇸 US App Store', href: 'https://apps.apple.com/us/app/incy/id6756943388' },
+	incyUS,
 ]
 
 /** Свежий APK своего клиента: релизы живут в публичном репо, latest — без версии в URL. */
@@ -61,13 +66,32 @@ export const APP_APK_URL = 'https://github.com/aimuzov/aleshavpnov-releases/rele
 export const APP_RELEASES_URL = 'https://github.com/aimuzov/aleshavpnov-releases/releases'
 
 export const CLIENTS: Record<ClientId, ClientConfig> = {
+	onexray: {
+		id: 'onexray',
+		name: 'OneXray',
+		site: 'https://onexray.com/',
+		Icon: Globe,
+		install: {
+			ios: {
+				kind: 'stores',
+				device: 'iOS',
+				stores: [
+					{ label: '🇷🇺 RU App Store', href: 'https://apps.apple.com/ru/app/onexray/id6745748773' },
+					{ label: '🇺🇸 US App Store', href: 'https://apps.apple.com/us/app/onexray/id6745748773' },
+				],
+			},
+			android: { kind: 'unavailable' },
+			windows: { kind: 'unavailable' },
+			mac: { kind: 'unavailable' },
+		},
+	},
 	incy: {
 		id: 'incy',
 		name: 'Incy',
 		site: 'https://incy.cc/',
 		Icon: Shield,
 		install: {
-			ios: { kind: 'stores', device: 'iOS', stores: incyStores },
+			ios: { kind: 'stores', device: 'iOS', stores: [incyUS] },
 			android: {
 				kind: 'direct',
 				href: 'https://play.google.com/store/apps/details?id=llc.itdev.incy&hl=ru',
@@ -88,7 +112,6 @@ export const CLIENTS: Record<ClientId, ClientConfig> = {
 				kind: 'stores',
 				device: 'iOS',
 				stores: [
-					{ label: '🇷🇺 RU App Store', href: 'https://apps.apple.com/ru/app/happ-lite/id6799917773' },
 					{ label: '🇺🇸 US App Store', href: 'https://apps.apple.com/us/app/happ-proxy-utility/id6504287215' },
 				],
 			},
