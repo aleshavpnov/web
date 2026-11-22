@@ -20,6 +20,7 @@
 	import AddSubscriptionSteps from '#frontend/components/connect/add-subscription-steps.svelte'
 	import {
 		CLIENTS,
+		clientsFor,
 		detectPlatform,
 		visibleApp,
 		type ClientId,
@@ -57,8 +58,8 @@
 	let platformOpen = $state(false)
 
 	// Пока человек сам не переключил тогглер, показываем его приложение — API узнаёт
-	// его по UA последних фетчей подписки. Нет — Happ.
-	const client = $derived(picked ?? visibleApp($data?.app) ?? 'happ')
+	// его по UA последних фетчей подписки.
+	const client = $derived(visibleApp(picked ?? $data?.app, platform) ?? clientsFor(platform)[0])
 	const cfg = $derived(CLIENTS[client])
 
 	// Пришли по кнопке из подсказки бота (см. services/notify.ts) — цель в хеше. Экран
@@ -139,7 +140,7 @@
 					</button>
 				</div>
 
-				<ClientToggle bind:value={() => client, (v) => (picked = v)} />
+				<ClientToggle {platform} bind:value={() => client, (v) => (picked = v)} />
 
 				<p class="connect__text connect__text--intro">
 					Установите и&nbsp;настройте <ClientLink client={cfg} /> — приложение, через&nbsp;которое работает соединение.

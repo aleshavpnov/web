@@ -3,7 +3,13 @@
 	import QRCode from 'qrcode'
 
 	import AddSubscriptionSteps from '#frontend/components/connect/add-subscription-steps.svelte'
-	import { CLIENTS, detectPlatform, type ClientId } from '#frontend/components/connect/apps.ts'
+	import {
+		CLIENTS,
+		clientsFor,
+		detectPlatform,
+		visibleApp,
+		type ClientId,
+	} from '#frontend/components/connect/apps.ts'
 	import ClientLink from '#frontend/components/connect/client-link.svelte'
 	import ClientToggle from '#frontend/components/connect/client-toggle.svelte'
 	import InstallSteps from '#frontend/components/connect/install-steps.svelte'
@@ -34,12 +40,13 @@
 
 	restoreBridge()
 
-	let client = $state<ClientId>('happ')
+	let picked = $state<ClientId | null>(null)
 	let platform = $state(defaultPlatform)
 	let dialogOpen = $state(false)
 	let countdown = $state('')
 	let qr = $state<string | null>(null)
 
+	const client = $derived(visibleApp(picked, platform) ?? clientsFor(platform)[0])
 	const cfg = $derived(CLIENTS[client])
 	// Ссылка под текущий домен: на зеркале — backup-домен, иначе основной. Хост читаем здесь,
 	// а не при сохранении, чтобы один сохранённый bridge резолвился по хосту визита.
@@ -170,7 +177,7 @@
 				<h1 class="access__title">Получение доступа</h1>
 			</header>
 
-			<div class="access__toggle"><ClientToggle bind:value={client} /></div>
+			<div class="access__toggle"><ClientToggle {platform} bind:value={() => client, (v) => (picked = v)} /></div>
 
 			<ol class="access__steps">
 				<li class="access__step">

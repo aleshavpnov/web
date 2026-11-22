@@ -13,6 +13,9 @@
 </script>
 
 {#snippet install()}
+	{#if platform === 'ios' && (client.id === 'happ' || client.id === 'incy')}
+		В российском App Store {client.name} недоступен. Если приложение уже установлено, переходите к добавлению подписки.
+	{/if}
 	{#if method.kind === 'stores'}
 		Установите приложение <DownloadButton kind="stores" stores={method.stores} device={method.device} />
 	{:else if method.kind === 'direct'}

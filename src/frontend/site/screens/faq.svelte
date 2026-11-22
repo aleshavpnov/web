@@ -99,9 +99,10 @@
 {/snippet}
 
 {#snippet devices()}
-	iOS, Android, Windows и&nbsp;macOS. Рекомендуем бесплатные приложения Happ или Incy (Incy недоступен
-	на&nbsp;Windows) — сайт и&nbsp;бот дают ссылки под нужную платформу. Подписка также работает в&nbsp;других
-	совместимых клиентах вроде v2rayNG, Hiddify и&nbsp;NekoBox — достаточно импортировать её по&nbsp;ссылке или QR-коду.
+	iOS, Android, Windows и&nbsp;macOS. Для iOS рекомендуем OneXray. Если Happ или Incy уже установлен, им можно
+	продолжать пользоваться. Для остальных платформ подойдут Happ или Incy (Incy недоступен на&nbsp;Windows) — сайт
+	и&nbsp;бот дают ссылки под нужную платформу. Подписка также работает в&nbsp;других совместимых клиентах вроде
+	v2rayNG, Hiddify и&nbsp;NekoBox — достаточно импортировать её по&nbsp;ссылке или QR-коду.
 {/snippet}
 
 {#snippet limits()}
