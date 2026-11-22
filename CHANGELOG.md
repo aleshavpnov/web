@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.6.0](https://github.com/aleshavpnov/web/compare/v4.5.0...v4.6.0) (2026-11-22)
+
+
+### Features
+
+* **connect:** put OneXray first in the iOS guide ([#45](https://github.com/aleshavpnov/web/issues/45)) ([7593593](https://github.com/aleshavpnov/web/commit/75935937da6a893962db56f888200ebaa6e55fa5))
+
 ## [4.5.0](https://github.com/aleshavpnov/web/compare/v4.4.0...v4.5.0) (2026-11-06)
 
 
